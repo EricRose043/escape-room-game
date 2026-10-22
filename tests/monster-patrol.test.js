@@ -29,6 +29,8 @@ test('首次進入生產線才啟動怪物，離區不重置且活動限區內',
 test('巡邏按 B C D A B 固定順序完成兩圈並每點停一秒', () => {
   assert.ok(area());
   let s=inside(),visited=[],lastWait=monster(s).waitRemaining;
+  // 5b 起怪物會發現玩家；本測試驗證無干擾巡邏，把玩家移到電力室內（隔整面牆，結構上看不到）。
+  s={...s,player:{...s.player,x:0,z:-4}};
   assert.deepEqual(def().patrol,['production.nav.B','production.nav.C','production.nav.D','production.nav.A']);
   assert.equal(def().patrolSpeed,1); assert.equal(def().dwellSeconds,1); assert.equal(def().turnSpeed,Math.PI);
   let elapsed=0,arrivals=[];
