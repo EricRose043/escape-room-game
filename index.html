@@ -17,7 +17,7 @@
         pointer-events: none;
       }
       #pause-screen {
-        position: fixed; inset: 0; display: grid; place-items: center;
+        position: fixed; inset: 0; z-index: 4; display: grid; place-items: center;
         background: #080b1099; color: #e1e7e7; text-align: center;
         font-family: system-ui, sans-serif; pointer-events: none;
       }
@@ -49,6 +49,9 @@
       #keypad-back { width: 100%; }
       #keypad-hint { font-size: 13px; line-height: 1.6; }
       #charge-meter { width: 120px; vertical-align: middle; accent-color: #b6df8b; }
+      #capture-screen { position: fixed; inset: 0; z-index: 3; display: grid; place-items: center; background: #000; pointer-events: none; overflow: hidden; }
+      #capture-screen canvas { width: min(86vw, 86vh); height: min(86vw, 86vh); }
+      #capture-screen[hidden], #capture-screen canvas[hidden] { display: none; }
     </style>
     <script type="importmap">
       {
@@ -101,6 +104,7 @@
         <p id="keypad-hint"></p>
       </section>
     </div>
+    <div id="capture-screen" hidden aria-hidden="true"><canvas id="capture-canvas" hidden></canvas></div>
     <script type="module" src="./src/game/main.js"></script>
   </body>
 </html>

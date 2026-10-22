@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>被抓呈現驗收 — 星星糖果樂園</title>
+  <style>
+    body { margin: 24px auto; max-width: 900px; padding: 0 16px; color: #e1e7e7; background: #151b22; font: 16px system-ui, sans-serif; }
+    button { margin: 4px; padding: 10px 16px; font: inherit; cursor: pointer; }
+    #stage { position: relative; height: min(65vh, 560px); background: #314343; display: grid; place-items: center; overflow: hidden; }
+    #capture-screen { position: absolute; inset: 0; display: grid; place-items: center; background: #000; pointer-events: none; }
+    #capture-screen canvas { display: block; width: min(76vw, 54vh); height: min(76vw, 54vh); }
+    #capture-screen[hidden], #capture-screen canvas[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <h1>被抓呈現驗收</h1>
+  <p>總長 1.2 秒。開啟近景時，0.15～0.50 秒顯示原創近景；其餘時間為純黑。此頁不寫入設定或存檔。</p>
+  <p>
+    <button id="play-black" type="button">播放純黑</button>
+    <button id="play-closeup" type="button">播放近景</button>
+    <button id="disable" type="button">立即關閉近景</button>
+    <button id="pause" type="button">暫停／繼續</button>
+  </p>
+  <p id="status" role="status">尚未播放</p>
+  <div id="stage">
+    <span>場景示意背景（此頁不執行遊戲）</span>
+    <div id="capture-screen" hidden aria-hidden="true"><canvas hidden></canvas></div>
+  </div>
+  <script type="module">
+    import { createCapture, updateCapture, capturePresentation, CAPTURE_SECONDS } from '../src/logic/capture.js';
+    import { createCaptureView } from '../src/game/capture-view.js';
+    const view=createCaptureView(document.querySelector('#capture-screen'));
+    const status=document.querySelector('#status');
+    let ui={mode:'explore'},jumpScare=false,paused=false,previousTime;
+    function sync() {
+      view.sync(ui,{jumpScare,paused});
+      if(ui.mode!=='caught') return;
+      const presentation=capturePresentation(ui,{jumpScare,paused});
+      status.textContent=`${paused?'已暫停（純黑）':presentation.closeup?'近景':'黑畫面'} · ${ui.elapsed.toFixed(2)} / ${CAPTURE_SECONDS.toFixed(2)} 秒`;
+    }
+    function play(enabled) {
+      jumpScare=enabled;paused=false;previousTime=undefined;ui=createCapture({jumpScare});sync();
+    }
+    document.querySelector('#play-black').addEventListener('click',()=>play(false));
+    document.querySelector('#play-closeup').addEventListener('click',()=>play(true));
+    document.querySelector('#disable').addEventListener('click',()=>{
+      jumpScare=false;ui=updateCapture(ui,0,{jumpScare});sync();
+    });
+    function togglePause() {if(ui.mode==='caught') {paused=!paused;previousTime=undefined;sync();}}
+    document.querySelector('#pause').addEventListener('click',togglePause);
+    document.addEventListener('keydown',event=>{
+      if(event.code==='Escape' && !event.repeat) {event.preventDefault();togglePause();}
+    });
+    function pauseForFocusLoss() {
+      if(ui.mode==='caught') {paused=true;previousTime=undefined;sync();}
+    }
+    window.addEventListener('blur',pauseForFocusLoss);
+    document.addEventListener('visibilitychange',()=>{if(document.hidden) pauseForFocusLoss();});
+    function animate(time) {
+      const dt=previousTime===undefined?0:(time-previousTime)/1000;previousTime=time;
+      if(ui.mode==='caught' && !paused) {
+        ui=updateCapture(ui,dt,{jumpScare});
+        if(ui.elapsed>=CAPTURE_SECONDS-1e-9) {
+          ui={mode:'explore'};status.textContent='播放完成（遊戲會在此時回復存檔點）';
+        }
+      }
+      sync();requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

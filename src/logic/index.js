@@ -14,3 +14,4 @@ export * from './monster.js';
 export * from './monster-vision.js';
 export * from './hiding.js';
 export * from './checkpoints.js';
+export * from './capture.js';

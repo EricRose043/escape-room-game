@@ -10,10 +10,13 @@ import {
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
 import { createKeypadView } from './keypad-view.js';
+import { createCaptureView } from './capture-view.js';
 import { compensatedIntensity } from './lighting.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
-let chapter = createChapter();
+// 僅供監督者驗收開啟分支；待 S2 設定接上後移除。
+const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'};
+let chapter = createChapter(chapterOptions);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0c1015);
@@ -119,6 +122,7 @@ const crosshair = document.querySelector('#crosshair');
 const interactionHint = document.querySelector('#interaction-hint');
 const contactHint = document.querySelector('#contact-hint');
 const hidingHint = document.querySelector('#hiding-hint');
+const captureView = createCaptureView(document.querySelector('#capture-screen'));
 const previousPads = new Map();
 let prompt = createPrompt();
 let session = createSession();
@@ -147,6 +151,7 @@ function setText(element, text) {
 function syncUI() {
   pauseScreen.hidden = !session.paused;
   keypadView.sync(chapter.ui,session.paused,prompt.device);
+  captureView.sync(chapter.ui,{...chapterOptions,paused:session.paused});
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
   const target = selectChapterTarget(chapter);
   interactionHint.hidden = !target;
@@ -165,14 +170,14 @@ function syncUI() {
   setText(chargeText, `${Math.ceil(chapter.flashlight.charge)}%`);
   setText(flashlightMode, `${chapter.flashlight.mode === 'uv' ? '紫外光' : '一般光'} · ${chapter.flashlight.enabled ? '開啟' : '關閉'}`);
   const device = prompt.device;
-  setText(controlsHint, hiding
+  setText(controlsHint, chapter.ui.mode==='caught' ? `回復中 · ${buttonLabel('pause',device)} 暫停` : hiding
     ? `${buttonLabel('look', device)} 窺視（左右 45°／上下 25°） · ${buttonLabel('pause',device)} 暫停`
     : `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
   setText(pauseInstructions, device === 'keyboard'
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，或使用下方按鈕切換鍵盤滑鼠。`
       : `按 ${buttonLabel('confirm', device)} 開始（不需要鎖定滑鼠）。`);
-  setText(inputHint, !session.paused && chapter.ui.mode!=='keypad' && device === 'keyboard' && document.pointerLockElement !== renderer.domElement
+  setText(inputHint, !session.paused && !['keypad','caught'].includes(chapter.ui.mode) && device === 'keyboard' && document.pointerLockElement !== renderer.domElement
     ? (pointerLockFailed ? lockMessage.textContent : '點一下畫面以啟用滑鼠轉頭') : '');
 }
 
@@ -211,7 +216,7 @@ function lockFailed() {
 }
 
 async function requestLock() {
-  if (chapter.ui.mode==='keypad' || requestingLock || document.pointerLockElement === renderer.domElement) return;
+  if (['keypad','caught'].includes(chapter.ui.mode) || requestingLock || document.pointerLockElement === renderer.domElement) return;
   requestingLock = true;
   try {
     await renderer.domElement.requestPointerLock();
@@ -223,7 +228,7 @@ async function requestLock() {
 }
 
 resumeButton.addEventListener('click', () => {
-  if (session.paused && chapter.ui.mode==='keypad') applySession({pausePressed:true});
+  if (session.paused && ['keypad','caught'].includes(chapter.ui.mode)) applySession({pausePressed:true});
   else requestLock();
 });
 renderer.domElement.addEventListener('click', () => {
@@ -234,7 +239,7 @@ document.addEventListener('pointerlockerror', lockFailed);
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === renderer.domElement;
   if (locked) {
-    if (chapter.ui.mode==='keypad') { releasePointer('keypad'); return; }
+    if (['keypad','caught'].includes(chapter.ui.mode)) { releasePointer(chapter.ui.mode); return; }
     unlockReason = null;
     pointerLockFailed = false;
     clearInput();
@@ -255,6 +260,11 @@ document.addEventListener('pointerlockchange', () => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if(chapter.ui.mode==='caught') {
+    if(event.code==='Escape' && !event.repeat) applySession({forcePause:true});
+    if(['KeyW','KeyA','KeyS','KeyD','KeyE','KeyF','KeyR','Escape','Enter','Space'].includes(event.code)) event.preventDefault();
+    return;
+  }
   if (chapter.ui.mode==='keypad') {
     keyboardActivity = true;
     // repeat 也要攔截預設行為，避免 Enter／Space 原生 click 再輸入一次。
@@ -287,7 +297,7 @@ document.addEventListener('keyup', (event) => keys.delete(event.code));
 document.addEventListener('mousemove', (event) => {
   if (!event.movementX && !event.movementY) return;
   keyboardActivity = true;
-  if (session.paused || chapter.ui.mode==='keypad' || document.pointerLockElement !== renderer.domElement) return;
+  if (session.paused || ['keypad','caught'].includes(chapter.ui.mode) || document.pointerLockElement !== renderer.domElement) return;
   dYaw -= event.movementX * MOUSE_SENSITIVITY;
   dPitch -= event.movementY * MOUSE_SENSITIVITY;
 });
@@ -409,10 +419,10 @@ function animate(time) {
   previousTime = time;
   const actions = readActions(time);
   const beforeMode=chapter.ui.mode;
-  chapter = updateChapter(chapter, actions, dt);
+  chapter = updateChapter(chapter, actions, dt, chapterOptions);
   if (beforeMode!==chapter.ui.mode) {
     clearInput();
-    if (chapter.ui.mode==='keypad') releasePointer('keypad');
+    if (['keypad','caught'].includes(chapter.ui.mode)) releasePointer(chapter.ui.mode);
   }
   worldView.sync(chapter);
   monsterView.sync(chapter);

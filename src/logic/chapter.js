@@ -7,6 +7,7 @@ import { createKeypad, updateKeypad, resolveKeypadCommand } from './keypad.js';
 import { createMonster, updateMonster, approachFraction, loseMonsterTarget } from './monster.js';
 import { isLockerFront, tryEnterHiding, tryLeaveHiding, updateHidingPlayer } from './hiding.js';
 import { CHECKPOINTS, advanceCheckpoint, checkpointReady } from './checkpoints.js';
+import { createCapture, updateCapture, CAPTURE_SECONDS } from './capture.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
@@ -31,8 +32,9 @@ export function deviceMessage(state, device) {
   return state.inventory.itemIds.includes(device.acceptsItemId) ? '安裝保險絲' : '缺少保險絲';
 }
 
-export function createChapter() {
+export function createChapter({jumpScare=false}={}) {
   return {player:createPlayer(WORLD.spawn),inventory:{itemIds:[]},flashlight:createFlashlight(),
+    jumpScare:jumpScare===true,
     checkpointId:CHECKPOINTS[0].id,
     puzzles:Object.fromEntries(WORLD.areas.flatMap(a=>a.puzzles).map(p=>[p.id,{installedItemId:null,restored:false}])),
     monsters:Object.fromEntries(MONSTERS.map(m=>[m.id,createMonster(m)])),
@@ -113,12 +115,20 @@ function advanceMonsters(state,player,dt,geometry,hidden=false) {
       {occluderBoxes:geometry.occluderBoxes,hidden})]));
   return {monsters,events:MONSTERS.flatMap(d=>monsters[d.id]===state.monsters[d.id]?[]:monsters[d.id].events)};
 }
-export function updateChapter(state,actions={},dt=0) {
+export function updateChapter(state,actions={},dt=0,{jumpScare=state.jumpScare??false}={}) {
+  const allowed=jumpScare===true;
+  if(state.jumpScare!==allowed) state={...state,jumpScare:allowed};
+  if(state.ui.mode==='caught') state={...state,ui:updateCapture(state.ui,0,{jumpScare:allowed})};
   // 暫停優先於任何命令；回來保留面板內容，不重播這一幀輸入。
   if (actions.pausePressed || actions.focusLost || actions.forcePause) {
     return {...state,player:{...state.player,paused:true}};
   }
   if (state.player.paused || actions.gameplayActive===false) return state;
+  if(state.ui.mode==='caught') {
+    const ui=updateCapture(state.ui,dt,{jumpScare:allowed});
+    if(ui.elapsed>=CAPTURE_SECONDS-1e-9) return {...restoreCheckpoint(state),jumpScare:allowed};
+    return ui===state.ui?state:{...state,ui,events:[]};
+  }
   if (state.ui.mode==='keypad') {
     const commands=actions.keypadCommands ?? [];
     // 返回當幀不提交、不移動、不再對場景互動。
@@ -160,11 +170,17 @@ export function updateChapter(state,actions={},dt=0) {
   const next=updateEquipment(state,player,{...equipmentActions,interactPressed:actions.interactPressed && !isDevice},dt,ITEMS,geometry.occluderBoxes);
   const result = advanceCheckpoint(advancePower({...next,player},dt));
   Object.assign(result,advanceMonsters(state,player,dt,geometry));
-  if (!isDevice || !actions.interactPressed) return result;
-  if (target.kind === 'fuseBox' && !isDevicePowered(result,target)
-    && result.inventory.itemIds.includes(target.acceptsItemId)
-    && !Object.values(result.puzzles).some(puzzle => puzzle.installedItemId === target.acceptsItemId)) {
-    result.puzzles = {...result.puzzles,[target.puzzleId]:{...result.puzzles[target.puzzleId],installedItemId:target.acceptsItemId}};
+  if (isDevice && actions.interactPressed) {
+    if (target.kind === 'fuseBox' && !isDevicePowered(result,target)
+      && result.inventory.itemIds.includes(target.acceptsItemId)
+      && !Object.values(result.puzzles).some(puzzle => puzzle.installedItemId === target.acceptsItemId)) {
+      result.puzzles = {...result.puzzles,[target.puzzleId]:{...result.puzzles[target.puzzleId],installedItemId:target.acceptsItemId}};
+    }
+    result.ui={...result.ui,message:deviceMessage(result,target)};
   }
-  return {...result,ui:{...result.ui,message:deviceMessage(result,target)}};
+  // 只消費 advanceMonsters 本幀新產生的事件；舊事件、面板及成功進櫃均不走此分支。
+  if(result.events.some(event=>event.type==='contact')) {
+    return {...result,flashlight:{...result.flashlight,enabled:false},ui:createCapture({jumpScare:allowed})};
+  }
+  return result;
 }
