@@ -90,14 +90,16 @@ test('下一區門保持關閉且同時阻擋移動與視線', () => {
   const ray={origin:{x:20,y:1.6,z:-6.5},direction:{x:1,y:0,z:0}};
   assert.ok(logic.rayBoxDistance(ray,door.bounds)<1.3);
 });
-test('5a 不新增物品密碼或櫃子互動，照明沿用兩盞固定池', () => {
+test('5a～5c 不新增物品與密碼；櫃子可進入躲藏，照明沿用兩盞固定池', () => {
   const p=area(); assert.ok(p);
   assert.equal(logic.ITEMS.length,4);
   assert.equal(logic.WORLD.areas.flatMap(a=>a.puzzles).filter(p=>p.code).length,1);
   let s=state(); s.player={...s.player,x:8.5,z:-1.2,yaw:0,pitch:0};
-  assert.equal(logic.selectChapterTarget(s),null);
+  const locker=p.devices.find(d=>d.id==='production.locker-l1');
+  const target=logic.selectChapterTarget(s);
+  assert.equal(target?.id,locker.id); assert.equal(target?.kind,'locker');
   const next=logic.updateChapter(s,{interactPressed:true},0.1);
-  assert.equal(next.ui.mode,'explore'); assert.deepEqual(next.inventory,s.inventory);
+  assert.equal(next.ui.mode,'hiding'); assert.deepEqual(next.inventory,s.inventory);
   const lights=logic.getActiveLights(s.player);
   assert.ok(lights.length<=2); assert.equal(lights[0].id,p.lights[0].id);
 });
