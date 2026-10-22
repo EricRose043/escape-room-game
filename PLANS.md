@@ -16,8 +16,9 @@
   logic：碰撞（玩家當圓柱、牆和家具當方塊）、視角上下限制；game：Pointer Lock、WASD、暫停畫面
 - [x] **STEP 1b　手把**（VERIFY STEP 1b）
   logic：把鍵盤、滑鼠、手把都轉成同一組「動作」（走、看、互動、手電筒…）、搖桿死區、從手把名稱與廠商編號辨識 Xbox／PS、依最後使用的裝置決定提示文字；game：Gamepad API 每幀讀取、接上／拔掉事件
-- [ ] **STEP 2　互動**（VERIFY STEP 2）
-  logic：背包、2 公尺範圍、視線被擋的判斷；game：準星、提示文字、E 鍵
+- [x] **STEP 2　互動**（VERIFY STEP 2；實作與自動測試完成，瀏覽器驗收待補）
+  logic：背包、2 公尺範圍、中央射線與方塊遮擋；game：準星、依裝置切換的提示、E／A／✕ 撿取及場景移除。
+  R004：53/53 自動測試通過；瀏覽器工具不可用／Chrome 操作未獲准，畫面、Pointer Lock 與實體手把仍待監督者驗收（見 README 清單），本勾選不表示上述項目已通過。
 - [ ] **STEP 3　手電筒**（VERIFY STEP 3）
   logic：電量、開關規則、紫外光可見判斷；game：SpotLight、電量條、隱藏字材質
 - [ ] **STEP 4　入口大廳與電力室**（VERIFY STEP 4）← 第 2 批，做完整段玩一遍

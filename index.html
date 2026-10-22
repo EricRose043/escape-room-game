@@ -7,6 +7,10 @@
     <style>
       html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0c1015; }
       canvas { display: block; width: 100%; height: 100%; }
+      #crosshair, #interaction-hint { position: fixed; pointer-events: none; color: #fff; }
+      #crosshair { left: 50%; top: 50%; transform: translate(-50%, -50%); font: 22px monospace; text-shadow: 0 0 3px #000; }
+      #interaction-hint { left: 50%; top: calc(50% + 24px); transform: translateX(-50%); padding: 5px 9px; background: #000b; font: 16px system-ui, sans-serif; white-space: nowrap; }
+      #crosshair[hidden], #interaction-hint[hidden] { display: none; }
       #fps {
         position: fixed; top: 8px; left: 8px; padding: 4px 6px;
         color: #dbe6de; background: #0009; font: 12px monospace;
@@ -37,6 +41,8 @@
     </script>
   </head>
   <body>
+    <div id="crosshair" hidden aria-hidden="true">+</div>
+    <div id="interaction-hint" hidden role="status"></div>
     <div id="fps" aria-label="每秒畫格數">FPS: —</div>
     <div id="input-hud">
       <p id="controls-hint">WASD 走路 · 滑鼠轉頭 · Esc 暫停</p>

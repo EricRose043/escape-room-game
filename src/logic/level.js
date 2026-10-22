@@ -4,6 +4,7 @@ export const LEVEL_BOXES = [
   { id: 'east', kind: 'wall', minX: 5, maxX: 5.2, minY: 0, maxY: 3.5, minZ: -6.2, maxZ: 6.2 },
   { id: 'north', kind: 'wall', minX: -5, maxX: 5, minY: 0, maxY: 3.5, minZ: -6.2, maxZ: -6 },
   { id: 'south', kind: 'wall', minX: -5, maxX: 5, minY: 0, maxY: 3.5, minZ: 6, maxZ: 6.2 },
+  { id: 'demo-partition', kind: 'partition', minX: 1.5, maxX: 3.5, minY: 0, maxY: 2.5, minZ: 0, maxZ: 0.2 },
   { id: 'table', kind: 'table', minX: -3, maxX: -1.5, minY: 0, maxY: 0.9, minZ: -2, maxZ: -0.8 },
 ];
 

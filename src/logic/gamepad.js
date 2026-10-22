@@ -38,7 +38,7 @@ export function filterStick(rawX, rawY) {
 }
 
 function emptyActions() {
-  return { move: { x: 0, y: 0 }, look: { dYaw: 0, dPitch: 0, yawRate: 0, pitchRate: 0 }, pausePressed: false, confirmPressed: false };
+  return { move: { x: 0, y: 0 }, look: { dYaw: 0, dPitch: 0, yawRate: 0, pitchRate: 0 }, pausePressed: false, confirmPressed: false, interactPressed: false };
 }
 
 export function readGamepad(pad, previousButtons = []) {
@@ -54,6 +54,7 @@ export function readGamepad(pad, previousButtons = []) {
   result.actions.look.pitchRate = -right.y;
   result.actions.pausePressed = Boolean(result.buttons[9] && !previousButtons[9]);
   result.actions.confirmPressed = Boolean(result.buttons[0] && !previousButtons[0]);
+  result.actions.interactPressed = result.actions.confirmPressed;
   result.active = Math.hypot(left.x, left.y, right.x, right.y) > 0 || result.buttons.some(Boolean);
   return result;
 }
@@ -68,6 +69,7 @@ export function mergeActions(keyboard = {}, gamepad = {}) {
       yawRate: finite(gamepad.look?.yawRate), pitchRate: finite(gamepad.look?.pitchRate) },
     pausePressed: Boolean(keyboard.pausePressed || gamepad.pausePressed),
     confirmPressed: Boolean(keyboard.confirmPressed || gamepad.confirmPressed),
+    interactPressed: Boolean(keyboard.interactPressed || gamepad.interactPressed),
   };
 }
 
@@ -95,4 +97,16 @@ export function updateSession(state, actions = {}) {
   if (!state.hasStarted) return actions.confirmPressed ? { hasStarted: true, paused: false } : state;
   if (actions.pausePressed) return { ...state, paused: !state.paused };
   return state;
+}
+
+// 只傳入按鍵資料，不依賴 DOM；keydown 的 repeat 排除長按。
+export function keyboardInteractPressed(event) {
+  return event.code === 'KeyE' && !event.repeat;
+}
+
+// 選單與遊戲共用 A／✕：開始、繼續與暫停當幀不可同時撿物。
+export function gameplayActions(actions, before, after) {
+  return { ...actions, interactPressed: Boolean(actions.interactPressed
+    && before.hasStarted && !before.paused && after.hasStarted && !after.paused
+    && !actions.pausePressed && !actions.focusLost && !actions.forcePause) };
 }

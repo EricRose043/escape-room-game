@@ -1,6 +1,6 @@
 # 密室逃脫遊戲
 
-第一人稱 3D 恐怖密室逃脫，場景是原創的「星星糖果樂園」。目前完成 STEP 1b：鍵盤滑鼠與標準映射手把的第一人稱移動、牆壁與桌子碰撞、暫停與左上角 FPS 顯示，後續依 `PLANS.md` 加入玩法。尚未實作互動、手電筒或完整章節。
+第一人稱 3D 恐怖密室逃脫，場景是原創的「星星糖果樂園」。目前已實作 STEP 2：鍵盤滑鼠與標準映射手把的移動、碰撞、暫停，以及中央準星、物品撿取與 logic 背包。STEP 2 自動測試通過；瀏覽器畫面驗收尚待補驗。尚未實作手電筒或完整章節。
 
 ## 開啟遊戲（三位組員都適用）
 
@@ -46,7 +46,7 @@ npm test
 
 ## 程式怎麼分
 
-- `src/logic/`：純 JavaScript 遊戲規則；不使用 three.js、DOM、`window` 或 `document`，以一般物件和數值交換狀態。目前包含移動、碰撞、視角限制、暫停狀態與共用關卡資料。
+- `src/logic/`：純 JavaScript 遊戲規則；不使用 three.js、DOM、`window` 或 `document`，以一般物件和數值交換狀態。目前包含移動、碰撞、視角限制、暫停狀態、物品射線選取、背包與共用關卡／物品資料。
 - `src/game/`：three.js 畫面，之後處理輸入與聲音，將 logic 狀態畫出來。
 - `tests/`：Node 測試與 logic 邊界檢查。
 
@@ -90,4 +90,30 @@ npm test
 
 辨識規則：先解析 Chrome 的 `Vendor: xxxx` 欄位或 Firefox 開頭的 `xxxx-yyyy-` 廠商碼，`054c` 為 Sony、`045e` 為 Microsoft；有其他廠商碼時回傳 unknown。只有解析不到廠商欄位才比對 Sony／DualShock／DualSense／PlayStation 或 Xbox／XInput／Microsoft 名稱。不用產品碼或名稱中的數字片段猜廠商。
 
-參考：[W3C standard mapping](https://www.w3.org/TR/gamepad/#remapping)、[MDN Gamepad.id](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/id)、[USB ID Repository](https://usb-ids.gowdy.us/)。動作與按鍵名稱表已預留後續功能，本步不會撿物品、開手電筒或使用紫外光。
+參考：[W3C standard mapping](https://www.w3.org/TR/gamepad/#remapping)、[MDN Gamepad.id](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/id)、[USB ID Repository](https://usb-ids.gowdy.us/)。互動已接上 STEP 2；手電筒與紫外光動作仍留待 STEP 3。
+
+
+## STEP 2 互動驗收
+
+遊戲進行中畫面中央顯示準星；瞄準可撿物品時，準星下方才出現「E／A／✕ 撿起」與名稱。按鍵名稱沿用最後使用裝置與 0.5 秒切換保護。E、Xbox A、PS ✕ 的效果相同，長按不連續撿取；開始／繼續當幀不會順便撿物，暫停或失焦不保留待執行互動。
+
+距離從玩家眼睛量到中央射線首次命中的物品表面，恰好 2 m 可撿、超過不可撿。射線碰到較近或同距離的牆、桌子、隔板、地板或天花板時不能撿。多個物品重疊時選最近的未撿物品。每個物品三邊至少 0.25 m，模型與判定共用相同 AABB。撿起後記入 logic 的 `{ itemIds: [] }`，場景模型移除；本步沒有背包選單與存檔，重新整理會重置示範物品。
+
+三個 STEP 2 示範物品（STEP 4 再換正式關卡道具）：
+
+| 名稱 | 中心位置（X, Y, Z；公尺） | 找法 |
+|---|---|---|
+| 藍色代幣 | (0, 1.6, 2) | 開始位置正前方即可瞄準撿取。 |
+| 桌上代幣 | (-2.3, 1.1, -1.4) | 走到左前方桌子附近，稍微低頭瞄準。 |
+| 隔板後代幣 | (2.5, 1.6, -1) | 右側隔板後方；隔著隔板不可撿，可繞兩側取得。 |
+
+瀏覽器補驗清單（本輪尚未完成）：
+
+- [ ] E 撿取後模型與提示消失；移開準星、背對物品、超過 2 m 時無提示且不能撿。
+- [ ] 隔著隔板不能撿，繞到後方可撿；桌上代幣可撿且桌子會正常擋住穿桌視線。
+- [ ] Xbox／PS 的 A／✕ 提示及撿取正確，純手把開始與繼續不要求 Pointer Lock；鍵鼠切換正常。
+- [ ] 長按、開始／繼續當幀、暫停、失焦與同時輸入不造成額外撿取。
+- [ ] 拔除使用中的手把會暫停；重新接上或成功繼續後清除舊拔除訊息；接上不自動繼續。
+- [ ] 準星位於中央，提示位於其下方，暫停時隱藏；調整視窗仍對齊，Console 無錯誤，既有移動與碰撞正常。
+
+本輪驗證：`npm test` 53/53 通過（新增 17 項）；另以 Node 模擬 DOM、three.js 與手把資料執行實際主程式事件及主迴圈，檢查撿取、模型移除、E／A／✕ 提示、遮擋、選單操作隔離、失焦與拔除重接。此模擬不能取代瀏覽器 WebGL、Pointer Lock、畫面與實體手把驗收。當前工具的內建瀏覽器不可用，Chrome 電腦操作未獲准；上述瀏覽器項目與實體手把均保留待驗。

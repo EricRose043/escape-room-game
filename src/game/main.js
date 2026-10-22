@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import {
   createPlayer, updatePlayer, setPaused, EYE_HEIGHT, LEVEL_BOXES, ROOM_SURFACES,
   readGamepad, mergeActions, buttonLabel, createPrompt, updatePrompt, pauseOnDisconnect,
-  createSession, updateSession,
+  createSession, updateSession, keyboardInteractPressed, gameplayActions,
+  ITEMS, selectItem, collectItem,
 } from '../logic/index.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
@@ -28,14 +29,22 @@ function addBox(width, height, depth, x, y, z, material) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
   mesh.position.set(x, y, z);
   scene.add(mesh);
+  return mesh;
 }
 
-const materials = { wall: wallMaterial, table: tableMaterial, floor: floorMaterial, ceiling: ceilingMaterial };
+const materials = { partition: wallMaterial, wall: wallMaterial, table: tableMaterial, floor: floorMaterial, ceiling: ceilingMaterial };
 for (const box of [...LEVEL_BOXES, ...ROOM_SURFACES]) {
   addBox(box.maxX - box.minX, box.maxY - box.minY, box.maxZ - box.minZ,
     (box.minX + box.maxX) / 2, (box.minY + box.maxY) / 2, (box.minZ + box.maxZ) / 2,
     materials[box.kind]);
 }
+
+// 每個模型直接從唯一物品 AABB 建立，不另存座標或尺寸。
+let inventory = { itemIds: [] };
+const itemMeshes = new Map(ITEMS.map(item => [item.id,
+  addBox(item.maxX - item.minX, item.maxY - item.minY, item.maxZ - item.minZ,
+    (item.minX + item.maxX) / 2, (item.minY + item.maxY) / 2, (item.minZ + item.maxZ) / 2,
+    new THREE.MeshLambertMaterial({ color: item.color }))]));
 
 scene.add(new THREE.AmbientLight(0x8e9eae, 0.55));
 const lamp = new THREE.PointLight(0xffd7a0, 45, 18, 2);
@@ -63,11 +72,15 @@ const controlsHint = document.querySelector('#controls-hint');
 const inputHint = document.querySelector('#input-hint');
 const pauseInstructions = document.querySelector('#pause-instructions');
 const gamepadStatus = document.querySelector('#gamepad-status');
+const crosshair = document.querySelector('#crosshair');
+const interactionHint = document.querySelector('#interaction-hint');
 const previousPads = new Map();
 let prompt = createPrompt();
 let session = createSession();
 let selectedPadIndex = null;
 let keyboardActivity = false;
+let interactPending = false;
+let disconnectedMessage = false;
 let dYaw = 0;
 let dPitch = 0;
 let previousTime;
@@ -80,6 +93,10 @@ function setText(element, text) {
 
 function syncUI() {
   pauseScreen.hidden = !session.paused;
+  crosshair.hidden = session.paused;
+  const target = selectItem(player, inventory);
+  interactionHint.hidden = !target;
+  setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} 撿起 ${target.name}` : '');
   setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
   const device = prompt.device;
@@ -94,6 +111,7 @@ function syncUI() {
 
 function clearInput() {
   keys.clear();
+  interactPending = false;
   dYaw = 0;
   dPitch = 0;
   keyboardActivity = false;
@@ -103,6 +121,7 @@ function clearInput() {
 function applySession(actions) {
   const next = updateSession(session, actions);
   if (next.paused !== session.paused || next.hasStarted !== session.hasStarted) clearInput();
+  if (!next.paused && disconnectedMessage) clearDisconnectMessage();
   session = next;
   player = setPaused(player, session.paused);
   syncUI();
@@ -166,6 +185,10 @@ document.addEventListener('keydown', (event) => {
     if (!event.repeat && document.pointerLockElement !== renderer.domElement) applySession({ forcePause: true });
     return;
   }
+  if (keyboardInteractPressed(event) && !session.paused && !document.hidden && document.hasFocus()) {
+    event.preventDefault();
+    interactPending = true;
+  }
   if (session.paused || !['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) return;
   event.preventDefault();
   keys.add(event.code);
@@ -186,6 +209,12 @@ function pauseForFocusLoss() {
 }
 window.addEventListener('blur', pauseForFocusLoss);
 
+function clearDisconnectMessage() {
+  if (!disconnectedMessage) return;
+  disconnectedMessage = false;
+  lockMessage.textContent = '';
+}
+
 function disconnectPad(index) {
   previousPads.delete(index);
   if (selectedPadIndex === index) selectedPadIndex = null;
@@ -194,6 +223,7 @@ function disconnectPad(index) {
     applySession({ forcePause: true });
     if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
     prompt = createPrompt();
+    disconnectedMessage = true;
     lockMessage.textContent = '使用中的手把已拔除；重新連接後按 Start／Options 繼續，或改用鍵盤滑鼠。';
   }
 }
@@ -234,6 +264,7 @@ function pollGamepads() {
   const selected = active.find((result) => result.index === selectedPadIndex) ?? active[0]
     ?? supported.find((result) => result.index === selectedPadIndex) ?? supported[0];
   selectedPadIndex = selected?.index ?? null;
+  if (selected) clearDisconnectMessage();
   const name = selected?.device === 'ps' ? 'PS' : selected?.device === 'xbox' ? 'Xbox' : '未知種類（使用 Xbox 按鍵名稱）';
   setText(gamepadStatus, [selected ? `${name} 手把已連線。` : '按手把任一鍵喚醒。',
     unsupported ? '有手把不是 standard 映射：目前不支援，請改用標準模式或鍵盤滑鼠。' : ''].filter(Boolean).join(' '));
@@ -253,6 +284,7 @@ function readActions(time) {
   prompt = updatePrompt(prompt, candidate, time);
   keyboardActivity = false;
 
+  const before = session;
   if (pad?.actions.pausePressed || (!session.hasStarted && pad?.actions.confirmPressed)) {
     applySession(pad.actions);
     releasePointerForGamepad();
@@ -264,7 +296,9 @@ function readActions(time) {
   x /= length;
   y /= length;
   // 暫停已在 session 處理；交給 movement 的動作不可再次觸發暫停。
-  const actions = mergeActions({ move: { x, y }, look: { dYaw, dPitch } }, pad?.actions);
+  const merged = mergeActions({ move: { x, y }, look: { dYaw, dPitch }, interactPressed: interactPending }, pad?.actions);
+  const actions = gameplayActions(merged, before, session);
+  interactPending = false;
   actions.pausePressed = false;
   dYaw = 0;
   dPitch = 0;
@@ -283,6 +317,16 @@ function animate(time) {
   previousTime = time;
   const actions = readActions(time);
   player = updatePlayer(player, actions, dt);
+  inventory = collectItem(inventory, player, actions);
+  for (const id of inventory.itemIds) {
+    const mesh = itemMeshes.get(id);
+    if (!mesh) continue;
+    scene.remove(mesh);
+    mesh.geometry.dispose();
+    mesh.material.dispose();
+    itemMeshes.delete(id);
+  }
+  syncUI();
   camera.position.set(player.x, EYE_HEIGHT, player.z);
   camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
   renderer.render(scene, camera);
