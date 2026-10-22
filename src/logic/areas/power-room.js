@@ -23,16 +23,19 @@ export const POWER_ROOM = {
     box('power.fuse','fuse',-3.2,-2.8,0.9,1.3,-6.2,-5.8,{name:'保險絲',color:0xa0c8d4}),
     box('power.battery','battery',-3.2,-2.8,0.9,1.3,-2.2,-1.8,{name:'工具桌電池',color:0xe0b960,chargeAmount:25}),
   ],
-  // 4a 僅建模型與資料引用；安裝及密碼操作分別在 4b／4c 實作。
+  // 設備外觀與互動共用 bounds；密碼輸入介面留待 4c。
   devices: [
     {id:'power.fuse-box',kind:'fuseBox',name:'電箱',puzzleId:'power.main',acceptsItemId:'power.fuse',bounds:{minX:4.25,maxX:4.75,minY:0.8,maxY:2,minZ:-3.3,maxZ:-2.7}},
     {id:'power.keypad',kind:'keypad',name:'密碼鎖',puzzleId:'power.main',bounds:{minX:4.5,maxX:4.8,minY:1.15,maxY:1.65,minZ:-5.4,maxZ:-5}},
   ],
-  puzzles: [{id:'power.main'}], clues: [],
+  puzzles: [{id:'power.main',code:'4726',clueId:'power.uv-code'}],
+  clues: [{id:'power.uv-code',puzzleId:'power.main',position:{x:4.98,y:1.6,z:-4.5},
+    normal:{x:-1,y:0,z:0},width:1.8,height:0.4}],
   lights: [{id:'power.ceiling-light',position:{x:0,y:3.1,z:-4.2},powerPuzzleId:'power.main',offIntensity:7,onIntensity:26,color:0xb8c5d8,distance:14}],
   signs: [
     {id:'power.room-sign',text:'電力室｜維修中',position:{x:-1.9,y:1.8,z:-0.22},normal:{x:0,y:0,z:-1},width:1.8,height:0.35},
-    {id:'power.box-sign',text:'電箱｜未供電',position:{x:4.23,y:2.3,z:-3},normal:{x:-1,y:0,z:0},width:1.4,height:0.3},
+    {id:'power.box-sign',text:'電箱｜備援控制',position:{x:4.23,y:2.3,z:-3},normal:{x:-1,y:0,z:0},width:1.4,height:0.3},
+    {id:'power.uv-note',text:'檢修墨跡在普通照明下不可見',position:{x:4.98,y:2.3,z:-4.5},normal:{x:-1,y:0,z:0},width:2.2,height:0.3},
     {id:'power.exit-sign',text:'糖果生產線',position:{x:4.98,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
     {id:'power.landing-sign',text:'後續區域尚未開放',position:{x:7.18,y:1.8,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
   ],

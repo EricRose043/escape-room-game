@@ -36,28 +36,31 @@ export function rayBoxDistance({ origin, direction }, box) {
 }
 
 export function selectItem(player, inventory, items = ITEMS, blockers = [...LEVEL_BOXES, ...ROOM_SURFACES]) {
-  if (player.paused) return null;
-  const ray = viewRay(player);
-  let selected = null;
-  let distance = Infinity;
-  for (const item of items) {
-    if (inventory.itemIds.includes(item.id)) continue;
-    const hit = rayBoxDistance(ray, item);
-    if (hit !== null && hit <= INTERACT_DISTANCE && hit < distance) {
-      selected = item;
-      distance = hit;
-    }
-  }
-  if (!selected) return null;
-  if (blockers.some(box => {
-    const hit = rayBoxDistance(ray, box);
-    return hit !== null && hit <= distance;
-  })) return null;
-  return selected;
+  return selectInteractionTarget(player, inventory, items, [], blockers);
 }
 
 export function collectItem(inventory, player, actions, items = ITEMS, blockers = [...LEVEL_BOXES, ...ROOM_SURFACES]) {
   if (!actions.interactPressed) return inventory;
   const item = selectItem(player, inventory, items, blockers);
   return item ? { ...inventory, itemIds: [...inventory.itemIds, item.id] } : inventory;
+}
+
+// 設備模型本身是遮擋方塊；只略過當前設備自己的方塊，其他表面仍擋住互動。
+export function selectInteractionTarget(player, inventory, items, devices, blockers) {
+  if (player.paused) return null;
+  const ray = viewRay(player);
+  const candidates = [
+    ...items.filter(item => !inventory.itemIds.includes(item.id)),
+    ...devices,
+  ].map(target => ({target, distance:rayBoxDistance(ray, target.bounds ?? target)}))
+    .filter(hit => hit.distance !== null && hit.distance <= INTERACT_DISTANCE)
+    .sort((a,b) => a.distance - b.distance);
+  const hit = candidates[0];
+  if (!hit) return null;
+  if (blockers.some(box => {
+    if (hit.target.bounds && box.id === hit.target.id) return false;
+    const distance = rayBoxDistance(ray, box);
+    return distance !== null && distance <= hit.distance;
+  })) return null;
+  return hit.target;
 }

@@ -3,7 +3,7 @@ import {
   setPaused, EYE_HEIGHT,
   readGamepad, mergeActions, buttonLabel, createPrompt, updatePrompt, pauseOnDisconnect,
   createSession, updateSession, keyboardInteractPressed, gameplayActions,
-  ITEMS, selectItem, keyboardEquipmentActions,
+  ITEMS, selectChapterTarget, deviceMessage, keyboardEquipmentActions,
   BEAM, CLUES, isClueVisible, viewRay, rayBoxDistance,
   createChapter, updateChapter, hasFlashlight, getGeometry,
 } from '../logic/index.js';
@@ -57,7 +57,7 @@ const clueMeshes = new Map(CLUES.map(clue => {
   context.font = 'bold 180px system-ui, sans-serif';
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.fillText(clue.text, canvas.width / 2, canvas.height / 2);
+  context.fillText(clue.text, canvas.width / 2, canvas.height / 2, canvas.width - 32);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(clue.width, clue.height),
@@ -135,9 +135,9 @@ function setText(element, text) {
 function syncUI() {
   pauseScreen.hidden = !session.paused;
   crosshair.hidden = session.paused;
-  const target = selectItem(chapter.player, chapter.inventory, ITEMS, getGeometry(chapter).occluderBoxes);
+  const target = selectChapterTarget(chapter);
   interactionHint.hidden = !target;
-  setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} 撿起 ${target.name}` : '');
+  setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} ${target.bounds ? `${target.name}｜${deviceMessage(chapter,target)}` : `撿起 ${target.name}`}` : '');
   setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
   chargeRow.hidden = !hasFlashlight(chapter);
