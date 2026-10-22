@@ -8,3 +8,4 @@ export * from './illumination.js';
 export * from './clues.js';
 export { WORLD, DOORS, STATIC_BOXES, SURFACES, getGeometry, getActiveLights, isDoorOpen, validateWorld } from './world.js';
 export * from './chapter.js';
+export * from './keypad.js';

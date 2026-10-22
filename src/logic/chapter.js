@@ -3,12 +3,13 @@ import { createPlayer, updatePlayer } from './movement.js';
 import { createFlashlight, updateEquipment } from './flashlight.js';
 import { selectInteractionTarget } from './interaction.js';
 import { getPuzzle } from './clues.js';
+import { createKeypad, updateKeypad, resolveKeypadCommand } from './keypad.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export function isDevicePowered(state, device) {
   return Boolean(state.puzzles[device.puzzleId]?.installedItemId);
 }
-// 純判定，不提交、不開介面、不恢復主電力；4c 可沿用此入口。
+// 顯示與提交驗證共用唯一謎題資料；提交時仍再次檢查安裝狀態。
 export function validatePuzzleCode(state, puzzleId, code) {
   const puzzle = getPuzzle(puzzleId);
   return Boolean(puzzle && state.puzzles[puzzleId]?.installedItemId && code === puzzle.code);
@@ -17,6 +18,7 @@ export function selectChapterTarget(state) {
   return selectInteractionTarget(state.player,state.inventory,ITEMS,DEVICES,getGeometry(state).occluderBoxes);
 }
 export function deviceMessage(state, device) {
+  if (state.puzzles[device.puzzleId]?.restored) return '主電力已恢復';
   if (device.kind === 'keypad') return isDevicePowered(state,device) ? '控制器已通電' : '控制器未通電';
   if (isDevicePowered(state,device)) return '備援控制已接通';
   return state.inventory.itemIds.includes(device.acceptsItemId) ? '安裝保險絲' : '缺少保險絲';
@@ -30,18 +32,61 @@ export function createChapter() {
 export function hasFlashlight(state) {
   return ITEMS.some(i=>i.kind==='flashlight' && state.inventory.itemIds.includes(i.id));
 }
+export const POWER_TRANSITION_SECONDS = 0.6;
+export function powerProgress(state, puzzleId) {
+  const puzzle=state.puzzles[puzzleId];
+  return puzzle?.restored ? Math.min(1,(puzzle.restoreElapsed ?? 0)/POWER_TRANSITION_SECONDS) : 0;
+}
+function advancePower(state, dt) {
+  const seconds=Number.isFinite(dt) && dt>0 ? dt : 0;
+  const puzzles=Object.fromEntries(Object.entries(state.puzzles).map(([id,puzzle])=>[id,
+    puzzle.restored ? {...puzzle,restoreElapsed:Math.min(POWER_TRANSITION_SECONDS,(puzzle.restoreElapsed ?? 0)+seconds)} : puzzle]));
+  return {...state,puzzles};
+}
+export function submitPuzzleCode(state, deviceId, code) {
+  const device=DEVICES.find(candidate=>candidate.id===deviceId && candidate.kind==='keypad');
+  if (!device || state.player.paused || state.ui.mode!=='keypad' || state.ui.deviceId!==deviceId
+    || !isDevicePowered(state,device) || state.puzzles[device.puzzleId]?.restored) return state;
+  if (!validatePuzzleCode(state,device.puzzleId,code)) {
+    return {...state,ui:{...state.ui,buffer:'',message:'密碼錯誤，請重試'}};
+  }
+  return {...state,puzzles:{...state.puzzles,[device.puzzleId]:{
+    ...state.puzzles[device.puzzleId],restored:true,restoreElapsed:0,
+  }},ui:{mode:'explore',message:'主電力已恢復'}};
+}
 export function updateChapter(state,actions={},dt=0) {
+  // 暫停優先於任何命令；回來保留面板內容，不重播這一幀輸入。
+  if (actions.pausePressed || actions.focusLost || actions.forcePause) {
+    return {...state,player:{...state.player,paused:true}};
+  }
+  if (state.player.paused || actions.gameplayActive===false) return state;
+  if (state.ui.mode==='keypad') {
+    const commands=actions.keypadCommands ?? [];
+    // 返回當幀不提交、不移動、不再對場景互動。
+    if (commands.some(command=>command?.type==='cancel')) return {...state,ui:{mode:'explore'}};
+    let next=state;
+    for (const command of commands) {
+      const resolved=resolveKeypadCommand(next.ui,command);
+      if (resolved?.type==='submit') next=submitPuzzleCode(next,next.ui.deviceId,next.ui.buffer);
+      else next={...next,ui:updateKeypad(next.ui,resolved)};
+      if (next.ui.mode!=='keypad') break;
+    }
+    return next;
+  }
+  // 先處理開啟，避免同一個 A／✕ 輸入第一位，或開啟當幀移動／耗電。
+  const initialTarget=selectChapterTarget(state);
+  if (actions.interactPressed && initialTarget?.kind==='keypad' && isDevicePowered(state,initialTarget)
+    && !state.puzzles[initialTarget.puzzleId].restored) {
+    return {...state,ui:createKeypad(initialTarget.id)};
+  }
   const geometry=getGeometry(state);
   const player=updatePlayer(state.player,actions,dt,geometry.collisionBoxes);
-  // 電量規則維持獨立可測；持有規則只由關卡的取得紀錄推導。
   const equipmentActions=hasFlashlight(state)?actions:{...actions,flashlightPressed:false,uvPressed:false};
   const target = selectChapterTarget({...state,player});
   const isDevice = Boolean(target?.bounds);
-  // 設備與物品一次只執行最近的同一個目標；補電繼續沿用既有撿取結果。
   const next=updateEquipment(state,player,{...equipmentActions,interactPressed:actions.interactPressed && !isDevice},dt,ITEMS,geometry.occluderBoxes);
-  const result = {...next,player};
-  if (!isDevice || !actions.interactPressed || player.paused || actions.gameplayActive === false
-    || actions.focusLost || actions.forcePause || actions.pausePressed) return result;
+  const result = advancePower({...next,player},dt);
+  if (!isDevice || !actions.interactPressed) return result;
   if (target.kind === 'fuseBox' && !isDevicePowered(result,target)
     && result.inventory.itemIds.includes(target.acceptsItemId)
     && !Object.values(result.puzzles).some(puzzle => puzzle.installedItemId === target.acceptsItemId)) {

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { WORLD, STATIC_BOXES, SURFACES, DOORS, isDoorOpen, getActiveLights } from '../logic/world.js';
-import { DEVICES, isDevicePowered } from '../logic/chapter.js';
+import { DEVICES, isDevicePowered, powerProgress } from '../logic/chapter.js';
 
 export function createWorldView(scene) {
   const palette = {wall:0x586367,table:0x66504c,floor:0x42434a,ceiling:0x343941,fuseBox:0x46525a,keypad:0x58626a,door:0x5d6964};
@@ -38,7 +38,7 @@ export function createWorldView(scene) {
     scene.add(mesh);
     return [device.id,material];
   }));
-  // 密碼鎖的數字鍵僅為外觀；沒有輸入介面或事件。
+  // 場景數字鍵是外觀；實際操作由獨立 DOM 面板提供。
   for(const device of DEVICES.filter(device=>device.kind==='keypad')) {
     const b=device.bounds;
     for(let row=0;row<4;row++) for(let col=0;col<3;col++) {
@@ -66,7 +66,8 @@ export function createWorldView(scene) {
         if(!data) continue;
         light.position.set(data.position.x,data.position.y,data.position.z);
         light.color.setHex(data.color);light.distance=data.distance;
-        light.intensity=state.puzzles[data.powerPuzzleId]?.restored?data.onIntensity:data.offIntensity;
+        const progress=powerProgress(state,data.powerPuzzleId);
+        light.intensity=data.offIntensity+(data.onIntensity-data.offIntensity)*progress;
       }
     },
   };

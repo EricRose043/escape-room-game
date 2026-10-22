@@ -31,6 +31,21 @@
         font: 13px system-ui, sans-serif; pointer-events: none;
       }
       #input-hud p { margin: 4px 0; }
+      #keypad-screen {
+        position: fixed; inset: 0; z-index: 2; display: grid; place-items: center;
+        background: #080b10bb; color: #e1e7e7; font: 16px system-ui, sans-serif;
+      }
+      #keypad-screen[hidden] { display: none; }
+      #keypad-screen section { width: min(340px, calc(100vw - 64px)); padding: 20px; background: #151b22; border: 1px solid #71827d; text-align: center; }
+      #keypad-screen h2 { margin: 0 0 12px; }
+      #keypad-buffer { display: block; font: 32px monospace; letter-spacing: 0.25em; margin: 12px; }
+      #keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      #keypad-screen button { padding: 12px; color: #e1e7e7; background: #29363c; border: 2px solid #53606c; font: inherit; cursor: pointer; touch-action: manipulation; }
+      #keypad-screen button.selected { border-color: #c4ed9b; background: #405442; }
+      #keypad-screen button:focus-visible { outline: 3px solid #e8efd5; outline-offset: 2px; }
+      #keypad-message { min-height: 1.5em; color: #f4cf94; }
+      #keypad-back { width: 100%; }
+      #keypad-hint { font-size: 13px; line-height: 1.6; }
       #charge-meter { width: 120px; vertical-align: middle; accent-color: #b6df8b; }
     </style>
     <script type="importmap">
@@ -57,6 +72,29 @@
         <p id="pause-instructions">按手把任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。</p>
         <button id="resume" type="button">開始（鍵盤滑鼠）</button>
         <p id="lock-message" role="status">點房間畫面或按「開始」鎖定滑鼠。</p>
+      </section>
+    </div>
+    <div id="keypad-screen" hidden>
+      <section role="dialog" aria-modal="true" aria-labelledby="keypad-title" aria-describedby="keypad-hint">
+        <h2 id="keypad-title">電力室控制器</h2>
+        <output id="keypad-buffer" aria-label="已輸入的檢修碼" aria-live="polite">＿＿＿＿</output>
+        <div id="keypad-grid" role="group" aria-label="密碼鎖按鍵">
+          <button type="button" data-key="1">1</button>
+          <button type="button" data-key="2">2</button>
+          <button type="button" data-key="3">3</button>
+          <button type="button" data-key="4">4</button>
+          <button type="button" data-key="5">5</button>
+          <button type="button" data-key="6">6</button>
+          <button type="button" data-key="7">7</button>
+          <button type="button" data-key="8">8</button>
+          <button type="button" data-key="9">9</button>
+          <button type="button" data-key="delete">刪除</button>
+          <button type="button" data-key="0">0</button>
+          <button type="button" data-key="submit">確認</button>
+        </div>
+        <p id="keypad-message" role="status"></p>
+        <button id="keypad-back" type="button">返回</button>
+        <p id="keypad-hint"></p>
       </section>
     </div>
     <script type="module" src="./src/game/main.js"></script>

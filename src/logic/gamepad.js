@@ -1,3 +1,5 @@
+import { keypadButtonCommand } from './keypad.js';
+
 // Standard Gamepad 軸與按鈕索引：https://www.w3.org/TR/gamepad/#remapping
 // id 常見格式：https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/id
 // 廠商碼資料：https://usb-ids.gowdy.us/（045e Microsoft、054c Sony）
@@ -57,6 +59,9 @@ export function readGamepad(pad, previousButtons = []) {
   result.actions.interactPressed = result.actions.confirmPressed;
   result.actions.flashlightPressed = Boolean(result.buttons[5] && !previousButtons[5]);
   result.actions.uvPressed = Boolean(result.buttons[4] && !previousButtons[4]);
+  result.actions.cancelPressed = Boolean(result.buttons[1] && !previousButtons[1]);
+  result.actions.menuDirection = [[12,'up'],[13,'down'],[14,'left'],[15,'right']]
+    .find(([index])=>result.buttons[index] && !previousButtons[index])?.[1] ?? null;
   result.active = Math.hypot(left.x, left.y, right.x, right.y) > 0 || result.buttons.some(Boolean);
   return result;
 }
@@ -74,6 +79,7 @@ export function mergeActions(keyboard = {}, gamepad = {}) {
     interactPressed: Boolean(keyboard.interactPressed || gamepad.interactPressed),
     flashlightPressed: Boolean(keyboard.flashlightPressed || gamepad.flashlightPressed),
     uvPressed: Boolean(keyboard.uvPressed || gamepad.uvPressed),
+    keypadCommands: [...(keyboard.keypadCommands ?? []), ...[gamepadKeypadCommand(gamepad)].filter(Boolean)],
   };
 }
 
@@ -120,5 +126,21 @@ export function gameplayActions(actions, before, after) {
   return { ...actions, gameplayActive: Boolean(active),
     interactPressed: Boolean(active && actions.interactPressed),
     flashlightPressed: Boolean(active && actions.flashlightPressed),
-    uvPressed: Boolean(active && actions.uvPressed) };
+    uvPressed: Boolean(active && actions.uvPressed),
+    keypadCommands: active ? (actions.keypadCommands ?? []) : [] };
+}
+
+// 鍵鼠、畫面按鈕與手把均交給同一套純密碼鎖命令。
+export function keyboardKeypadCommand(event) {
+  if (event.repeat) return null;
+  const digit = event.code?.match(/^(?:Digit|Numpad)([0-9])$/)?.[1];
+  if (digit) return keypadButtonCommand(digit);
+  const key = {Backspace:'delete',Enter:'submit',NumpadEnter:'submit',Escape:'cancel'}[event.code];
+  return key ? keypadButtonCommand(key) : null;
+}
+export function gamepadKeypadCommand(actions = {}) {
+  if (actions.pausePressed) return null;
+  if (actions.cancelPressed) return {type:'cancel'};
+  if (actions.menuDirection) return {type:'move',direction:actions.menuDirection};
+  return actions.confirmPressed ? {type:'activate'} : null;
 }

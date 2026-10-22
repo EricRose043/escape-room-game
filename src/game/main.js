@@ -5,9 +5,10 @@ import {
   createSession, updateSession, keyboardInteractPressed, gameplayActions,
   ITEMS, selectChapterTarget, deviceMessage, keyboardEquipmentActions,
   BEAM, CLUES, isClueVisible, viewRay, rayBoxDistance,
-  createChapter, updateChapter, hasFlashlight, getGeometry,
+  createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
+import { createKeypadView } from './keypad-view.js';
 import { compensatedIntensity } from './lighting.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
@@ -126,7 +127,14 @@ let dYaw = 0;
 let dPitch = 0;
 let previousTime;
 let requestingLock = false;
-let unlockForGamepad = false;
+let pointerLockFailed = false;
+let unlockReason = null;
+let keypadPending = [];
+const keypadView = createKeypadView(document.querySelector('#keypad-screen'),command=>{
+  if (chapter.ui.mode !== 'keypad' || session.paused || document.hidden || !document.hasFocus()) return;
+  keyboardActivity = true;
+  keypadPending.push(command);
+});
 
 function setText(element, text) {
   if (element.textContent !== text) element.textContent = text;
@@ -134,8 +142,9 @@ function setText(element, text) {
 
 function syncUI() {
   pauseScreen.hidden = !session.paused;
-  crosshair.hidden = session.paused;
-  const target = selectChapterTarget(chapter);
+  keypadView.sync(chapter.ui,session.paused,prompt.device);
+  crosshair.hidden = session.paused || chapter.ui.mode==='keypad';
+  const target = chapter.ui.mode==='keypad' ? null : selectChapterTarget(chapter);
   interactionHint.hidden = !target;
   setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} ${target.bounds ? `${target.name}｜${deviceMessage(chapter,target)}` : `撿起 ${target.name}`}` : '');
   setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
@@ -150,13 +159,14 @@ function syncUI() {
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，或使用下方按鈕切換鍵盤滑鼠。`
       : `按 ${buttonLabel('confirm', device)} 開始（不需要鎖定滑鼠）。`);
-  setText(inputHint, !session.paused && device === 'keyboard' && document.pointerLockElement !== renderer.domElement
-    ? '點一下畫面以啟用滑鼠轉頭' : '');
+  setText(inputHint, !session.paused && chapter.ui.mode!=='keypad' && device === 'keyboard' && document.pointerLockElement !== renderer.domElement
+    ? (pointerLockFailed ? lockMessage.textContent : '點一下畫面以啟用滑鼠轉頭') : '');
 }
 
 function clearInput() {
   keys.clear();
   interactPending = false;
+  keypadPending = [];
   equipmentPending = { flashlightPressed: false, uvPressed: false };
   dYaw = 0;
   dPitch = 0;
@@ -173,20 +183,22 @@ function applySession(actions) {
   syncUI();
 }
 
-function releasePointerForGamepad() {
+function releasePointer(reason) {
   if (document.pointerLockElement === renderer.domElement) {
-    // 這次解鎖是切換操作方式，不是玩家按 Esc；不可再把遊戲暫停。
-    unlockForGamepad = true;
+    // 明確區分開啟密碼鎖／切換手把與 Esc 解鎖，避免誤觸暫停。
+    unlockReason = reason;
     document.exitPointerLock();
   }
 }
 
 function lockFailed() {
-  lockMessage.textContent = '無法鎖定滑鼠，請再點一次鍵盤滑鼠的開始／繼續按鈕。';
+  pointerLockFailed = true;
+  lockMessage.textContent = '無法鎖定滑鼠，請再點一次畫面，或使用鍵盤滑鼠的開始／繼續按鈕。';
+  syncUI();
 }
 
 async function requestLock() {
-  if (requestingLock || document.pointerLockElement === renderer.domElement) return;
+  if (chapter.ui.mode==='keypad' || requestingLock || document.pointerLockElement === renderer.domElement) return;
   requestingLock = true;
   try {
     await renderer.domElement.requestPointerLock();
@@ -197,7 +209,10 @@ async function requestLock() {
   }
 }
 
-resumeButton.addEventListener('click', requestLock);
+resumeButton.addEventListener('click', () => {
+  if (session.paused && chapter.ui.mode==='keypad') applySession({pausePressed:true});
+  else requestLock();
+});
 renderer.domElement.addEventListener('click', () => {
   keyboardActivity = true;
   if (!session.hasStarted || !session.paused) requestLock();
@@ -206,13 +221,15 @@ document.addEventListener('pointerlockerror', lockFailed);
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === renderer.domElement;
   if (locked) {
-    unlockForGamepad = false;
+    if (chapter.ui.mode==='keypad') { releasePointer('keypad'); return; }
+    unlockReason = null;
+    pointerLockFailed = false;
     clearInput();
     keyboardActivity = true;
     applySession(session.hasStarted ? { pausePressed: session.paused } : { confirmPressed: true });
     lockMessage.textContent = '';
-  } else if (unlockForGamepad) {
-    unlockForGamepad = false;
+  } else if (unlockReason) {
+    unlockReason = null;
     dYaw = 0;
     dPitch = 0;
     syncUI();
@@ -225,6 +242,14 @@ document.addEventListener('pointerlockchange', () => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if (chapter.ui.mode==='keypad') {
+    keyboardActivity = true;
+    // repeat 也要攔截預設行為，避免 Enter／Space 原生 click 再輸入一次。
+    if (/^(Digit[0-9]|Numpad[0-9]|NumpadEnter|Enter|Backspace|Escape|Space)$/.test(event.code)) event.preventDefault();
+    const command=keyboardKeypadCommand(event);
+    if (command && !session.paused && !document.hidden && document.hasFocus()) keypadPending.push(command);
+    return;
+  }
   if (!['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Escape', 'KeyE', 'KeyF', 'KeyR'].includes(event.code)) return;
   keyboardActivity = true;
   if (event.code === 'Escape') {
@@ -249,7 +274,7 @@ document.addEventListener('keyup', (event) => keys.delete(event.code));
 document.addEventListener('mousemove', (event) => {
   if (!event.movementX && !event.movementY) return;
   keyboardActivity = true;
-  if (session.paused || document.pointerLockElement !== renderer.domElement) return;
+  if (session.paused || chapter.ui.mode==='keypad' || document.pointerLockElement !== renderer.domElement) return;
   dYaw -= event.movementX * MOUSE_SENSITIVITY;
   dPitch -= event.movementY * MOUSE_SENSITIVITY;
 });
@@ -339,7 +364,7 @@ function readActions(time) {
   const before = session;
   if (pad?.actions.pausePressed || (!session.hasStarted && pad?.actions.confirmPressed)) {
     applySession(pad.actions);
-    releasePointerForGamepad();
+    releasePointer('gamepad');
     lockMessage.textContent = '';
   }
   let x = Number(keys.has('KeyD')) - Number(keys.has('KeyA'));
@@ -348,9 +373,10 @@ function readActions(time) {
   x /= length;
   y /= length;
   // 暫停已在 session 處理；交給 movement 的動作不可再次觸發暫停。
-  const merged = mergeActions({ move: { x, y }, look: { dYaw, dPitch }, interactPressed: interactPending, ...equipmentPending }, pad?.actions);
+  const merged = mergeActions({ move: { x, y }, look: { dYaw, dPitch }, interactPressed: interactPending, ...equipmentPending, keypadCommands:keypadPending }, pad?.actions);
   const actions = gameplayActions(merged, before, session);
   interactPending = false;
+  keypadPending = [];
   equipmentPending = { flashlightPressed: false, uvPressed: false };
   actions.pausePressed = false;
   dYaw = 0;
@@ -369,7 +395,12 @@ function animate(time) {
   const dt = previousTime === undefined ? 0 : (time - previousTime) / 1000;
   previousTime = time;
   const actions = readActions(time);
+  const beforeMode=chapter.ui.mode;
   chapter = updateChapter(chapter, actions, dt);
+  if (beforeMode!==chapter.ui.mode) {
+    clearInput();
+    if (chapter.ui.mode==='keypad') releasePointer('keypad');
+  }
   worldView.sync(chapter);
   for (const id of chapter.inventory.itemIds) {
     const mesh = itemMeshes.get(id);
