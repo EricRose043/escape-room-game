@@ -73,8 +73,8 @@ test('未安裝保險絲時密碼鎖不可輸入或提交',()=>{
   const puzzle=POWER_ROOM.puzzles[0];
   assert.equal(logic.validatePuzzleCode(s,puzzle.id,puzzle.code),false);
   const powered=logic.updateChapter(atKeypad(install()),{interactPressed:true});
-  assert.equal(powered.ui.mode,'explore');
-  assert.equal(powered.ui.message,'控制器已通電');
+  assert.equal(powered.ui.mode,'keypad');
+  assert.equal(powered.ui.message,'');
   assert.equal(powered.puzzles[puzzle.id].restored,false);
 });
 test('正式隱藏碼只在紫外光有效照射時可見',()=>{
