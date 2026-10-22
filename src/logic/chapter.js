@@ -4,7 +4,8 @@ import { createFlashlight, updateEquipment } from './flashlight.js';
 import { selectInteractionTarget } from './interaction.js';
 import { getPuzzle } from './clues.js';
 import { createKeypad, updateKeypad, resolveKeypadCommand } from './keypad.js';
-import { createMonster, updateMonster, approachFraction } from './monster.js';
+import { createMonster, updateMonster, approachFraction, loseMonsterTarget } from './monster.js';
+import { isLockerFront, tryEnterHiding, tryLeaveHiding, updateHidingPlayer } from './hiding.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
@@ -17,9 +18,12 @@ export function validatePuzzleCode(state, puzzleId, code) {
   return Boolean(puzzle && state.puzzles[puzzleId]?.installedItemId && code === puzzle.code);
 }
 export function selectChapterTarget(state) {
-  return selectInteractionTarget(state.player,state.inventory,ITEMS,DEVICES.filter(d=>d.kind!=='locker'),getGeometry(state).occluderBoxes);
+  if(state.ui.mode!=='explore') return null;
+  return selectInteractionTarget(state.player,state.inventory,ITEMS,
+    DEVICES.filter(d=>d.kind!=='locker' || isLockerFront(state.player,d)),getGeometry(state).occluderBoxes);
 }
 export function deviceMessage(state, device) {
+  if(device.kind==='locker') return '躲進置物櫃';
   if (state.puzzles[device.puzzleId]?.restored) return '主電力已恢復';
   if (device.kind === 'keypad') return isDevicePowered(state,device) ? '控制器已通電' : '控制器未通電';
   if (isDevicePowered(state,device)) return '備援控制已接通';
@@ -77,6 +81,16 @@ function movePlayerWithMonsters(state,actions,dt,boxes) {
   }
   return player;
 }
+function monsterBodies(state) {
+  return MONSTERS.filter(d=>state.monsters[d.id].mode!=='inactive')
+    .map(d=>({...state.monsters[d.id],radius:d.radius}));
+}
+function advanceMonsters(state,player,dt,geometry,hidden=false) {
+  const monsters=Object.fromEntries(MONSTERS.map(definition=>[definition.id,
+    updateMonster(state.monsters[definition.id],definition,WORLD.areas.find(a=>a.id===definition.areaId),player,dt,geometry.collisionBoxes,
+      {occluderBoxes:geometry.occluderBoxes,hidden})]));
+  return {monsters,events:MONSTERS.flatMap(d=>monsters[d.id]===state.monsters[d.id]?[]:monsters[d.id].events)};
+}
 export function updateChapter(state,actions={},dt=0) {
   // 暫停優先於任何命令；回來保留面板內容，不重播這一幀輸入。
   if (actions.pausePressed || actions.focusLost || actions.forcePause) {
@@ -96,9 +110,22 @@ export function updateChapter(state,actions={},dt=0) {
     }
     return next;
   }
+  if(state.ui.mode==='hiding') {
+    const locker=DEVICES.find(d=>d.id===state.ui.lockerId && d.kind==='locker');
+    const geometry=getGeometry(state);
+    // 進出切換當幀完全消耗輸入；失敗也留在原位，不趁機做裝備動作。
+    if(actions.interactPressed) return tryLeaveHiding(state,locker,geometry.collisionBoxes,monsterBodies(state));
+    const player=updateHidingPlayer(state.player,actions,dt,locker);
+    return advancePower({...state,player,...advanceMonsters(state,player,dt,geometry,true)},dt);
+  }
   if(state.ui.mode!=='explore') return state;
   // 先處理開啟，避免同一個 A／✕ 輸入第一位，或開啟當幀移動／耗電。
   const initialTarget=selectChapterTarget(state);
+  if(actions.interactPressed && initialTarget?.kind==='locker') {
+    const next=tryEnterHiding(state,initialTarget,getGeometry(state).collisionBoxes,monsterBodies(state));
+    if(next.ui.mode!=='hiding') return next;
+    return {...next,monsters:Object.fromEntries(MONSTERS.map(d=>[d.id,loseMonsterTarget(state.monsters[d.id])]))};
+  }
   if (actions.interactPressed && initialTarget?.kind==='keypad' && isDevicePowered(state,initialTarget)
     && !state.puzzles[initialTarget.puzzleId].restored) {
     return {...state,ui:createKeypad(initialTarget.id)};
@@ -110,10 +137,7 @@ export function updateChapter(state,actions={},dt=0) {
   const isDevice = Boolean(target?.bounds);
   const next=updateEquipment(state,player,{...equipmentActions,interactPressed:actions.interactPressed && !isDevice},dt,ITEMS,geometry.occluderBoxes);
   const result = advancePower({...next,player},dt);
-  result.monsters=Object.fromEntries(MONSTERS.map(definition=>[definition.id,
-    updateMonster(state.monsters[definition.id],definition,WORLD.areas.find(a=>a.id===definition.areaId),player,dt,geometry.collisionBoxes,
-      {occluderBoxes:geometry.occluderBoxes})]));
-  result.events=MONSTERS.flatMap(d=>result.monsters[d.id]===state.monsters[d.id]?[]:result.monsters[d.id].events);
+  Object.assign(result,advanceMonsters(state,player,dt,geometry));
   if (!isDevice || !actions.interactPressed) return result;
   if (target.kind === 'fuseBox' && !isDevicePowered(result,target)
     && result.inventory.itemIds.includes(target.acceptsItemId)

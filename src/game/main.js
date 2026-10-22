@@ -118,6 +118,7 @@ const flashlightMode = document.querySelector('#flashlight-mode');
 const crosshair = document.querySelector('#crosshair');
 const interactionHint = document.querySelector('#interaction-hint');
 const contactHint = document.querySelector('#contact-hint');
+const hidingHint = document.querySelector('#hiding-hint');
 const previousPads = new Map();
 let prompt = createPrompt();
 let session = createSession();
@@ -146,13 +147,17 @@ function setText(element, text) {
 function syncUI() {
   pauseScreen.hidden = !session.paused;
   keypadView.sync(chapter.ui,session.paused,prompt.device);
-  crosshair.hidden = session.paused || chapter.ui.mode==='keypad';
-  const target = chapter.ui.mode==='keypad' ? null : selectChapterTarget(chapter);
+  crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
+  const target = selectChapterTarget(chapter);
   interactionHint.hidden = !target;
-  setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} ${target.bounds ? `${target.name}｜${deviceMessage(chapter,target)}` : `撿起 ${target.name}`}` : '');
+  const message=target && chapter.ui.messageTargetId===target.id?chapter.ui.message:null;
+  setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} ${target.bounds ? `${target.name}｜${message ?? deviceMessage(chapter,target)}` : `撿起 ${target.name}`}` : '');
   const contact=Object.values(chapter.monsters).some(m=>m.contactFeedbackRemaining>0);
   contactHint.hidden=session.paused || chapter.ui.mode!=='explore' || !contact;
   setText(contactHint,contact?'衣角被扯住了。':'');
+  const hiding=chapter.ui.mode==='hiding';
+  hidingHint.hidden=session.paused || !hiding;
+  setText(hidingHint,hiding?`${chapter.ui.message || '躲藏中'} · ${buttonLabel('interact',prompt.device)} 出櫃`:'');
   setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
   chargeRow.hidden = !hasFlashlight(chapter);
@@ -160,7 +165,9 @@ function syncUI() {
   setText(chargeText, `${Math.ceil(chapter.flashlight.charge)}%`);
   setText(flashlightMode, `${chapter.flashlight.mode === 'uv' ? '紫外光' : '一般光'} · ${chapter.flashlight.enabled ? '開啟' : '關閉'}`);
   const device = prompt.device;
-  setText(controlsHint, `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
+  setText(controlsHint, hiding
+    ? `${buttonLabel('look', device)} 窺視（左右 45°／上下 25°） · ${buttonLabel('pause',device)} 暫停`
+    : `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
   setText(pauseInstructions, device === 'keyboard'
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，或使用下方按鈕切換鍵盤滑鼠。`

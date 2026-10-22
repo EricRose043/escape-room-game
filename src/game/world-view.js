@@ -6,12 +6,14 @@ export function createWorldView(scene) {
   const palette = {wall:0x586367,table:0x66504c,floor:0x42434a,ceiling:0x343941,fuseBox:0x46525a,keypad:0x58626a,door:0x5d6964,
     machine:0x577b75,locker:0x4d646d,lockerDoor:0x6d8589,trim:0x273c42};
   const materials = Object.fromEntries(Object.entries(palette).map(([kind,color])=>[kind,new THREE.MeshLambertMaterial({color})]));
+  for(const kind of ['locker','lockerDoor','trim']) materials[kind].side=THREE.DoubleSide;
   const addBox = (b,kind=b.kind) => {
     const mesh=new THREE.Mesh(new THREE.BoxGeometry(b.maxX-b.minX,b.maxY-b.minY,b.maxZ-b.minZ),materials[kind]);
     mesh.position.set((b.minX+b.maxX)/2,(b.minY+b.maxY)/2,(b.minZ+b.maxZ)/2);
     scene.add(mesh);return mesh;
   };
-  for(const b of [...STATIC_BOXES,...SURFACES]) addBox(b);
+  // logic 保留完整櫃體遮擋，畫面改用有厚度的薄板，櫃內也看得到板面。
+  for(const b of [...STATIC_BOXES.filter(b=>b.kind!=='locker'),...SURFACES]) addBox(b);
   // 裝飾沿同一 AABB 建立，不新增碰撞規則或可操作的生產線謎題。
   for(const machine of STATIC_BOXES.filter(b=>b.kind==='machine')) {
     addBox({...machine,minX:machine.minX+0.1,maxX:machine.maxX-0.1,minY:1.05,maxY:1.2,
@@ -20,11 +22,18 @@ export function createWorldView(scene) {
       minZ:machine.minZ+0.1,maxZ:machine.maxZ-0.1},'trim');
   }
   for(const locker of DEVICES.filter(d=>d.kind==='locker')) {
-    const b=locker.bounds,width=b.maxX-b.minX,height=b.maxY-b.minY;
-    const panel=new THREE.Mesh(new THREE.PlaneGeometry(width-0.1,height-0.12),materials.lockerDoor);
-    panel.position.set((b.minX+b.maxX)/2,(b.minY+b.maxY)/2,b.maxZ+0.006);scene.add(panel);
-    const slot=new THREE.Mesh(new THREE.PlaneGeometry(width*0.6,0.09),materials.trim);
-    slot.position.set((b.minX+b.maxX)/2,b.minY+height*0.76,b.maxZ+0.008);scene.add(slot);
+    const b=locker.bounds,t=locker.panelThickness,peek=locker.peek,cx=(b.minX+b.maxX)/2;
+    const left=cx-peek.width/2,right=cx+peek.width/2;
+    // 正式兩座櫃門皆朝南。窺視縫是真正開口，不貼實心深色平面。
+    for(const panel of [
+      {...b,maxX:b.minX+t},{...b,minX:b.maxX-t},
+      {...b,maxZ:b.minZ+t},{...b,maxY:b.minY+t},{...b,minY:b.maxY-t},
+    ]) addBox(panel,'locker');
+    for(const panel of [
+      {...b,maxX:left},{...b,minX:right},
+      {...b,minX:left,maxX:right,maxY:peek.minY},
+      {...b,minX:left,maxX:right,minY:peek.maxY},
+    ]) addBox({...panel,minZ:b.maxZ-t},'lockerDoor');
     addBox({minX:b.maxX-0.18,maxX:b.maxX-0.12,minY:b.minY+0.92,maxY:b.minY+1.12,
       minZ:b.maxZ,maxZ:b.maxZ+0.025},'trim');
   }

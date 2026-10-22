@@ -34,6 +34,11 @@ export function approachFraction(start,end,center,radius) {
 function enterSearch(monster) {
   return {...monster,mode:'search',searchElapsed:0,waitRemaining:0};
 }
+// 進櫃當幀即可失去目標（包括 dt=0），記憶保留櫃外最後位置。
+export function loseMonsterTarget(monster) {
+  const next=monster.mode==='chase'?enterSearch(monster):{...monster};
+  return {...next,contactLatched:false,contactFeedbackRemaining:0,events:[],visionRaycasts:0};
+}
 function enterReturn(monster,definition,area) {
   const nearest=definition.patrol.map(id=>area.navigation.nodes.find(n=>n.id===id))
     .sort((a,b)=>distance(monster,a)-distance(monster,b))[0];
@@ -68,7 +73,7 @@ function move(monster,dt,speed,definition,area,boxes,player) {
   const followed=followPath(monster,monster.path,dt,{speed,turnSpeed:definition.turnSpeed,
     radius:definition.radius+definition.clearance},boxes,area.bounds);
   const {blocked,remainingSeconds,...moved}=followed;
-  const fraction=approachFraction(monster,moved,player,definition.contactDistance);
+  const fraction=player.hidden?1:approachFraction(monster,moved,player,definition.contactDistance);
   if(fraction<1) {
     moved.x=monster.x+(moved.x-monster.x)*fraction;moved.z=monster.z+(moved.z-monster.z)*fraction;
     moved.walkDistance=monster.walkDistance+distance(monster,moved);
@@ -132,6 +137,7 @@ function pursue(monster,time,definition,area,player,boxes,graph,key) {
 export function updateMonster(state,definition,area,player,dt,boxes,context={}) {
   const time=Number.isFinite(dt)?Math.max(0,Math.min(MAX_DT,dt)):0;
   if(time===0 || player.paused) return state;
+  player={...player,hidden:Boolean(context.hidden)};
   let next={...state,events:[],repathRemaining:Math.max(0,state.repathRemaining-time),
     contactFeedbackRemaining:Math.max(0,state.contactFeedbackRemaining-time)};
   if(next.mode==='inactive') {
@@ -160,8 +166,9 @@ export function updateMonster(state,definition,area,player,dt,boxes,context={}) 
   next=next.mode==='patrol' ? patrol(next,time,definition,area,player,boxes,cached.graph,key)
     : pursue(next,time,definition,area,player,boxes,cached.graph,key);
   // 使用更新前距離重置遲滯，避免同一幀先移回去便漏掉 1.0 m 的離開。
-  if(distance(state,player)>=definition.contactResetDistance-EPS) next.contactLatched=false;
-  if(inMonsterArea(player,area) && distance(next,player)<=definition.contactDistance+EPS && !next.contactLatched) {
+  if(context.hidden) {next.contactLatched=false;next.contactFeedbackRemaining=0;}
+  else if(distance(state,player)>=definition.contactResetDistance-EPS) next.contactLatched=false;
+  if(!context.hidden && inMonsterArea(player,area) && distance(next,player)<=definition.contactDistance+EPS && !next.contactLatched) {
     next.contactLatched=true;next.contactCount++;next.contactFeedbackRemaining=0.8;
     next.events=[{type:'contact',monsterId:next.id}];
   }
