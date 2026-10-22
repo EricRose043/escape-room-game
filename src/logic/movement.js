@@ -18,10 +18,10 @@ export function setPaused(state, paused) {
   return { ...state, paused };
 }
 
-function overlaps(x, z, box) {
+export function circleOverlapsBox(x, z, box, radius = PLAYER_RADIUS) {
   const dx = x - clamp(x, box.minX, box.maxX);
   const dz = z - clamp(z, box.minZ, box.maxZ);
-  return dx * dx + dz * dz < PLAYER_RADIUS ** 2 - 1e-12;
+  return dx * dx + dz * dz < radius ** 2 - 1e-12;
 }
 
 export function updatePlayer(state, actions = {}, dt = 0, boxes = LEVEL_BOXES) {
@@ -48,9 +48,9 @@ export function updatePlayer(state, actions = {}, dt = 0, boxes = LEVEL_BOXES) {
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dz) / (PLAYER_RADIUS / 4)));
   for (let step = 0; step < steps; step++) {
     const candidateX = next.x + dx / steps;
-    if (!boxes.some((box) => overlaps(candidateX, next.z, box))) next.x = candidateX;
+    if (!boxes.some((box) => circleOverlapsBox(candidateX, next.z, box))) next.x = candidateX;
     const candidateZ = next.z + dz / steps;
-    if (!boxes.some((box) => overlaps(next.x, candidateZ, box))) next.z = candidateZ;
+    if (!boxes.some((box) => circleOverlapsBox(next.x, candidateZ, box))) next.z = candidateZ;
   }
   return next;
 }

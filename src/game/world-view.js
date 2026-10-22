@@ -3,7 +3,8 @@ import { WORLD, STATIC_BOXES, SURFACES, DOORS, isDoorOpen, getActiveLights } fro
 import { DEVICES, isDevicePowered, powerProgress } from '../logic/chapter.js';
 
 export function createWorldView(scene) {
-  const palette = {wall:0x586367,table:0x66504c,floor:0x42434a,ceiling:0x343941,fuseBox:0x46525a,keypad:0x58626a,door:0x5d6964};
+  const palette = {wall:0x586367,table:0x66504c,floor:0x42434a,ceiling:0x343941,fuseBox:0x46525a,keypad:0x58626a,door:0x5d6964,
+    machine:0x577b75,locker:0x4d646d,lockerDoor:0x6d8589,trim:0x273c42};
   const materials = Object.fromEntries(Object.entries(palette).map(([kind,color])=>[kind,new THREE.MeshLambertMaterial({color})]));
   const addBox = (b,kind=b.kind) => {
     const mesh=new THREE.Mesh(new THREE.BoxGeometry(b.maxX-b.minX,b.maxY-b.minY,b.maxZ-b.minZ),materials[kind]);
@@ -11,6 +12,22 @@ export function createWorldView(scene) {
     scene.add(mesh);return mesh;
   };
   for(const b of [...STATIC_BOXES,...SURFACES]) addBox(b);
+  // 裝飾沿同一 AABB 建立，不新增碰撞規則或可操作的生產線謎題。
+  for(const machine of STATIC_BOXES.filter(b=>b.kind==='machine')) {
+    addBox({...machine,minX:machine.minX+0.1,maxX:machine.maxX-0.1,minY:1.05,maxY:1.2,
+      minZ:machine.maxZ,maxZ:machine.maxZ+0.012},'trim');
+    addBox({...machine,minX:machine.minX+0.1,maxX:machine.maxX-0.1,minY:machine.maxY-0.01,maxY:machine.maxY+0.006,
+      minZ:machine.minZ+0.1,maxZ:machine.maxZ-0.1},'trim');
+  }
+  for(const locker of DEVICES.filter(d=>d.kind==='locker')) {
+    const b=locker.bounds,width=b.maxX-b.minX,height=b.maxY-b.minY;
+    const panel=new THREE.Mesh(new THREE.PlaneGeometry(width-0.1,height-0.12),materials.lockerDoor);
+    panel.position.set((b.minX+b.maxX)/2,(b.minY+b.maxY)/2,b.maxZ+0.006);scene.add(panel);
+    const slot=new THREE.Mesh(new THREE.PlaneGeometry(width*0.6,0.09),materials.trim);
+    slot.position.set((b.minX+b.maxX)/2,b.minY+height*0.76,b.maxZ+0.008);scene.add(slot);
+    addBox({minX:b.maxX-0.18,maxX:b.maxX-0.12,minY:b.minY+0.92,maxY:b.minY+1.12,
+      minZ:b.maxZ,maxZ:b.maxZ+0.025},'trim');
+  }
   const doors=new Map(DOORS.map(d=>[d.id,addBox(d.bounds,'door')]));
   for(const area of WORLD.areas) {
     for(const sign of area.signs) {

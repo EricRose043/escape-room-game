@@ -8,6 +8,7 @@ import {
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
+import { createMonsterView } from './monster-view.js';
 import { createKeypadView } from './keypad-view.js';
 import { compensatedIntensity } from './lighting.js';
 
@@ -26,6 +27,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
 document.body.appendChild(renderer.domElement);
 
 const worldView = createWorldView(scene);
+const monsterView = createMonsterView(scene);
 function addBox(width, height, depth, x, y, z, material) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
   mesh.position.set(x, y, z);
@@ -402,6 +404,7 @@ function animate(time) {
     if (chapter.ui.mode==='keypad') releasePointer('keypad');
   }
   worldView.sync(chapter);
+  monsterView.sync(chapter);
   for (const id of chapter.inventory.itemIds) {
     const mesh = itemMeshes.get(id);
     if (!mesh) continue;

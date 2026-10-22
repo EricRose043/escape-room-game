@@ -4,8 +4,10 @@ import { createFlashlight, updateEquipment } from './flashlight.js';
 import { selectInteractionTarget } from './interaction.js';
 import { getPuzzle } from './clues.js';
 import { createKeypad, updateKeypad, resolveKeypadCommand } from './keypad.js';
+import { createMonster, updateMonster } from './monster.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
+export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
 export function isDevicePowered(state, device) {
   return Boolean(state.puzzles[device.puzzleId]?.installedItemId);
 }
@@ -15,7 +17,7 @@ export function validatePuzzleCode(state, puzzleId, code) {
   return Boolean(puzzle && state.puzzles[puzzleId]?.installedItemId && code === puzzle.code);
 }
 export function selectChapterTarget(state) {
-  return selectInteractionTarget(state.player,state.inventory,ITEMS,DEVICES,getGeometry(state).occluderBoxes);
+  return selectInteractionTarget(state.player,state.inventory,ITEMS,DEVICES.filter(d=>d.kind!=='locker'),getGeometry(state).occluderBoxes);
 }
 export function deviceMessage(state, device) {
   if (state.puzzles[device.puzzleId]?.restored) return '主電力已恢復';
@@ -27,6 +29,7 @@ export function deviceMessage(state, device) {
 export function createChapter() {
   return {player:createPlayer(WORLD.spawn),inventory:{itemIds:[]},flashlight:createFlashlight(),
     puzzles:Object.fromEntries(WORLD.areas.flatMap(a=>a.puzzles).map(p=>[p.id,{installedItemId:null,restored:false}])),
+    monsters:Object.fromEntries(MONSTERS.map(m=>[m.id,createMonster(m)])),
     ui:{mode:'explore'}};
 }
 export function hasFlashlight(state) {
@@ -73,6 +76,7 @@ export function updateChapter(state,actions={},dt=0) {
     }
     return next;
   }
+  if(state.ui.mode!=='explore') return state;
   // 先處理開啟，避免同一個 A／✕ 輸入第一位，或開啟當幀移動／耗電。
   const initialTarget=selectChapterTarget(state);
   if (actions.interactPressed && initialTarget?.kind==='keypad' && isDevicePowered(state,initialTarget)
@@ -86,6 +90,8 @@ export function updateChapter(state,actions={},dt=0) {
   const isDevice = Boolean(target?.bounds);
   const next=updateEquipment(state,player,{...equipmentActions,interactPressed:actions.interactPressed && !isDevice},dt,ITEMS,geometry.occluderBoxes);
   const result = advancePower({...next,player},dt);
+  result.monsters=Object.fromEntries(MONSTERS.map(definition=>[definition.id,
+    updateMonster(state.monsters[definition.id],definition,WORLD.areas.find(a=>a.id===definition.areaId),player,dt,geometry.collisionBoxes)]));
   if (!isDevice || !actions.interactPressed) return result;
   if (target.kind === 'fuseBox' && !isDevicePowered(result,target)
     && result.inventory.itemIds.includes(target.acceptsItemId)
