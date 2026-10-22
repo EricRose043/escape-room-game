@@ -3,7 +3,8 @@ import {
   createPlayer, updatePlayer, setPaused, EYE_HEIGHT, LEVEL_BOXES, ROOM_SURFACES,
   readGamepad, mergeActions, buttonLabel, createPrompt, updatePrompt, pauseOnDisconnect,
   createSession, updateSession, keyboardInteractPressed, gameplayActions,
-  ITEMS, selectItem, collectItem,
+  ITEMS, selectItem, createFlashlight, updateEquipment, keyboardEquipmentActions,
+  BEAM, CLUES, isClueVisible, viewRay,
 } from '../logic/index.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
@@ -41,17 +42,59 @@ for (const box of [...LEVEL_BOXES, ...ROOM_SURFACES]) {
 
 // 每個模型直接從唯一物品 AABB 建立，不另存座標或尺寸。
 let inventory = { itemIds: [] };
+let flashlight = createFlashlight();
 const itemMeshes = new Map(ITEMS.map(item => [item.id,
   addBox(item.maxX - item.minX, item.maxY - item.minY, item.maxZ - item.minZ,
     (item.minX + item.maxX) / 2, (item.minY + item.maxY) / 2, (item.minZ + item.maxZ) / 2,
     new THREE.MeshLambertMaterial({ color: item.color }))]));
 
-scene.add(new THREE.AmbientLight(0x8e9eae, 0.55));
-const lamp = new THREE.PointLight(0xffd7a0, 45, 18, 2);
+scene.add(new THREE.AmbientLight(0x8e9eae, 0.45));
+const lamp = new THREE.PointLight(0xffd7a0, 26, 18, 2);
 lamp.position.set(0, 3.1, -1);
 scene.add(lamp);
 addBox(0.7, 0.08, 0.4, 0, 3.4, -1,
   new THREE.MeshBasicMaterial({ color: 0xffd7a0 }));
+
+// 單盞手電筒，不開陰影或後製；照射範圍與 logic 共用設定。
+const torch = new THREE.SpotLight(0xffeed0, 35, BEAM.distance, BEAM.halfAngle, 0, 2);
+torch.castShadow = false;
+torch.visible = false;
+scene.add(torch);
+scene.add(torch.target);
+
+const clueMeshes = new Map(CLUES.map(clue => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 360;
+  const context = canvas.getContext('2d');
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = '#caff9e';
+  context.font = 'bold 180px system-ui, sans-serif';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(clue.text, canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(clue.width, clue.height),
+    new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false }));
+  const p = clue.position;
+  mesh.position.set(p.x, p.y, p.z);
+  mesh.lookAt(p.x + clue.normal.x, p.y + clue.normal.y, p.z + clue.normal.z);
+  mesh.visible = false;
+  scene.add(mesh);
+  return [clue.id, mesh];
+}));
+
+function syncLighting() {
+  const { origin, direction } = viewRay(player);
+  torch.position.set(origin.x, origin.y, origin.z);
+  torch.target.position.set(origin.x + direction.x, origin.y + direction.y, origin.z + direction.z);
+  torch.visible = flashlight.enabled && flashlight.charge > 0;
+  torch.color.setHex(flashlight.mode === 'uv' ? 0x9977ff : 0xffeed0);
+  for (const clue of CLUES) {
+    clueMeshes.get(clue.id).visible = isClueVisible(player, flashlight, clue);
+  }
+}
 
 function resize() {
   const width = window.innerWidth;
@@ -72,6 +115,9 @@ const controlsHint = document.querySelector('#controls-hint');
 const inputHint = document.querySelector('#input-hint');
 const pauseInstructions = document.querySelector('#pause-instructions');
 const gamepadStatus = document.querySelector('#gamepad-status');
+const chargeMeter = document.querySelector('#charge-meter');
+const chargeText = document.querySelector('#charge-text');
+const flashlightMode = document.querySelector('#flashlight-mode');
 const crosshair = document.querySelector('#crosshair');
 const interactionHint = document.querySelector('#interaction-hint');
 const previousPads = new Map();
@@ -80,6 +126,7 @@ let session = createSession();
 let selectedPadIndex = null;
 let keyboardActivity = false;
 let interactPending = false;
+let equipmentPending = { flashlightPressed: false, uvPressed: false };
 let disconnectedMessage = false;
 let dYaw = 0;
 let dPitch = 0;
@@ -99,8 +146,11 @@ function syncUI() {
   setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} 撿起 ${target.name}` : '');
   setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
+  chargeMeter.value = flashlight.charge;
+  setText(chargeText, `${Math.ceil(flashlight.charge)}%`);
+  setText(flashlightMode, `${flashlight.mode === 'uv' ? '紫外光' : '一般光'} · ${flashlight.enabled ? '開啟' : '關閉'}`);
   const device = prompt.device;
-  setText(controlsHint, `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停`);
+  setText(controlsHint, `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停 · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線`);
   setText(pauseInstructions, device === 'keyboard'
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，或使用下方按鈕切換鍵盤滑鼠。`
@@ -112,6 +162,7 @@ function syncUI() {
 function clearInput() {
   keys.clear();
   interactPending = false;
+  equipmentPending = { flashlightPressed: false, uvPressed: false };
   dYaw = 0;
   dPitch = 0;
   keyboardActivity = false;
@@ -188,6 +239,12 @@ document.addEventListener('keydown', (event) => {
   if (keyboardInteractPressed(event) && !session.paused && !document.hidden && document.hasFocus()) {
     event.preventDefault();
     interactPending = true;
+  }
+  if (!session.paused && !document.hidden && document.hasFocus()) {
+    const equipment = keyboardEquipmentActions(event);
+    if (equipment.flashlightPressed || equipment.uvPressed) event.preventDefault();
+    equipmentPending.flashlightPressed ||= equipment.flashlightPressed;
+    equipmentPending.uvPressed ||= equipment.uvPressed;
   }
   if (session.paused || !['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) return;
   event.preventDefault();
@@ -296,9 +353,10 @@ function readActions(time) {
   x /= length;
   y /= length;
   // 暫停已在 session 處理；交給 movement 的動作不可再次觸發暫停。
-  const merged = mergeActions({ move: { x, y }, look: { dYaw, dPitch }, interactPressed: interactPending }, pad?.actions);
+  const merged = mergeActions({ move: { x, y }, look: { dYaw, dPitch }, interactPressed: interactPending, ...equipmentPending }, pad?.actions);
   const actions = gameplayActions(merged, before, session);
   interactPending = false;
+  equipmentPending = { flashlightPressed: false, uvPressed: false };
   actions.pausePressed = false;
   dYaw = 0;
   dPitch = 0;
@@ -317,7 +375,9 @@ function animate(time) {
   previousTime = time;
   const actions = readActions(time);
   player = updatePlayer(player, actions, dt);
-  inventory = collectItem(inventory, player, actions);
+  const equipment = updateEquipment({ inventory, flashlight }, player, actions, dt);
+  inventory = equipment.inventory;
+  flashlight = equipment.flashlight;
   for (const id of inventory.itemIds) {
     const mesh = itemMeshes.get(id);
     if (!mesh) continue;
@@ -329,6 +389,7 @@ function animate(time) {
   syncUI();
   camera.position.set(player.x, EYE_HEIGHT, player.z);
   camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
+  syncLighting();
   renderer.render(scene, camera);
   frames += 1;
   const elapsed = time - sampleStart;

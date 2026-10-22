@@ -38,7 +38,7 @@ export function filterStick(rawX, rawY) {
 }
 
 function emptyActions() {
-  return { move: { x: 0, y: 0 }, look: { dYaw: 0, dPitch: 0, yawRate: 0, pitchRate: 0 }, pausePressed: false, confirmPressed: false, interactPressed: false };
+  return { move: { x: 0, y: 0 }, look: { dYaw: 0, dPitch: 0, yawRate: 0, pitchRate: 0 }, pausePressed: false, confirmPressed: false, interactPressed: false, flashlightPressed: false, uvPressed: false };
 }
 
 export function readGamepad(pad, previousButtons = []) {
@@ -55,6 +55,8 @@ export function readGamepad(pad, previousButtons = []) {
   result.actions.pausePressed = Boolean(result.buttons[9] && !previousButtons[9]);
   result.actions.confirmPressed = Boolean(result.buttons[0] && !previousButtons[0]);
   result.actions.interactPressed = result.actions.confirmPressed;
+  result.actions.flashlightPressed = Boolean(result.buttons[5] && !previousButtons[5]);
+  result.actions.uvPressed = Boolean(result.buttons[4] && !previousButtons[4]);
   result.active = Math.hypot(left.x, left.y, right.x, right.y) > 0 || result.buttons.some(Boolean);
   return result;
 }
@@ -70,6 +72,8 @@ export function mergeActions(keyboard = {}, gamepad = {}) {
     pausePressed: Boolean(keyboard.pausePressed || gamepad.pausePressed),
     confirmPressed: Boolean(keyboard.confirmPressed || gamepad.confirmPressed),
     interactPressed: Boolean(keyboard.interactPressed || gamepad.interactPressed),
+    flashlightPressed: Boolean(keyboard.flashlightPressed || gamepad.flashlightPressed),
+    uvPressed: Boolean(keyboard.uvPressed || gamepad.uvPressed),
   };
 }
 
@@ -104,9 +108,17 @@ export function keyboardInteractPressed(event) {
   return event.code === 'KeyE' && !event.repeat;
 }
 
-// 選單與遊戲共用 A／✕：開始、繼續與暫停當幀不可同時撿物。
+export function keyboardEquipmentActions(event) {
+  return { flashlightPressed: event.code === 'KeyF' && !event.repeat,
+    uvPressed: event.code === 'KeyR' && !event.repeat };
+}
+
+// 選單切換當幀不執行裝備動作，也不將該幀 dt 計入耗電。
 export function gameplayActions(actions, before, after) {
-  return { ...actions, interactPressed: Boolean(actions.interactPressed
-    && before.hasStarted && !before.paused && after.hasStarted && !after.paused
-    && !actions.pausePressed && !actions.focusLost && !actions.forcePause) };
+  const active = before.hasStarted && !before.paused && after.hasStarted && !after.paused
+    && !actions.pausePressed && !actions.focusLost && !actions.forcePause;
+  return { ...actions, gameplayActive: Boolean(active),
+    interactPressed: Boolean(active && actions.interactPressed),
+    flashlightPressed: Boolean(active && actions.flashlightPressed),
+    uvPressed: Boolean(active && actions.uvPressed) };
 }

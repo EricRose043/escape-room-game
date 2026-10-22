@@ -31,6 +31,7 @@
         font: 13px system-ui, sans-serif; pointer-events: none;
       }
       #input-hud p { margin: 4px 0; }
+      #charge-meter { width: 120px; vertical-align: middle; accent-color: #b6df8b; }
     </style>
     <script type="importmap">
       {
@@ -47,6 +48,7 @@
     <div id="input-hud">
       <p id="controls-hint">WASD 走路 · 滑鼠轉頭 · Esc 暫停</p>
       <p id="input-hint"></p>
+      <p><label for="charge-meter">手電筒電量</label> <meter id="charge-meter" min="0" max="100" value="100">100%</meter> <span id="charge-text">100%</span> · <span id="flashlight-mode">一般光 · 關閉</span></p>
       <p id="gamepad-status">按手把任一鍵喚醒。</p>
     </div>
     <div id="pause-screen">
