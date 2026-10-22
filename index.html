@@ -21,6 +21,12 @@
       #pause-screen section { max-width: 28rem; padding: 24px; background: #151b22e6; border: 1px solid #53606c; }
       #resume { pointer-events: auto; padding: 10px 32px; font: inherit; cursor: pointer; }
       #lock-message { min-height: 1.5em; }
+      #input-hud {
+        position: fixed; left: 8px; bottom: 8px; max-width: calc(100% - 32px);
+        padding: 8px; color: #dbe6de; background: #0009;
+        font: 13px system-ui, sans-serif; pointer-events: none;
+      }
+      #input-hud p { margin: 4px 0; }
     </style>
     <script type="importmap">
       {
@@ -32,11 +38,16 @@
   </head>
   <body>
     <div id="fps" aria-label="每秒畫格數">FPS: —</div>
+    <div id="input-hud">
+      <p id="controls-hint">WASD 走路 · 滑鼠轉頭 · Esc 暫停</p>
+      <p id="input-hint"></p>
+      <p id="gamepad-status">按手把任一鍵喚醒。</p>
+    </div>
     <div id="pause-screen">
       <section aria-labelledby="pause-title">
         <h1 id="pause-title">星星糖果樂園</h1>
-        <p>WASD 走路 · 滑鼠轉頭 · Esc 暫停</p>
-        <button id="resume" type="button">開始</button>
+        <p id="pause-instructions">按手把任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。</p>
+        <button id="resume" type="button">開始（鍵盤滑鼠）</button>
         <p id="lock-message" role="status">點房間畫面或按「開始」鎖定滑鼠。</p>
       </section>
     </div>

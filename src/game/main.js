@@ -1,5 +1,9 @@
 import * as THREE from 'three';
-import { createPlayer, updatePlayer, setPaused, EYE_HEIGHT, LEVEL_BOXES, ROOM_SURFACES } from '../logic/index.js';
+import {
+  createPlayer, updatePlayer, setPaused, EYE_HEIGHT, LEVEL_BOXES, ROOM_SURFACES,
+  readGamepad, mergeActions, buttonLabel, createPrompt, updatePrompt, pauseOnDisconnect,
+  createSession, updateSession,
+} from '../logic/index.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
 let player = createPlayer();
@@ -55,28 +59,71 @@ const pauseScreen = document.querySelector('#pause-screen');
 const pauseTitle = document.querySelector('#pause-title');
 const lockMessage = document.querySelector('#lock-message');
 const resumeButton = document.querySelector('#resume');
+const controlsHint = document.querySelector('#controls-hint');
+const inputHint = document.querySelector('#input-hint');
+const pauseInstructions = document.querySelector('#pause-instructions');
+const gamepadStatus = document.querySelector('#gamepad-status');
+const previousPads = new Map();
+let prompt = createPrompt();
+let session = createSession();
+let selectedPadIndex = null;
+let keyboardActivity = false;
 let dYaw = 0;
 let dPitch = 0;
 let previousTime;
-let hasStarted = false;
 let requestingLock = false;
+let unlockForGamepad = false;
+
+function setText(element, text) {
+  if (element.textContent !== text) element.textContent = text;
+}
+
+function syncUI() {
+  pauseScreen.hidden = !session.paused;
+  setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
+  setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
+  const device = prompt.device;
+  setText(controlsHint, `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停`);
+  setText(pauseInstructions, device === 'keyboard'
+    ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
+    : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，或使用下方按鈕切換鍵盤滑鼠。`
+      : `按 ${buttonLabel('confirm', device)} 開始（不需要鎖定滑鼠）。`);
+  setText(inputHint, !session.paused && device === 'keyboard' && document.pointerLockElement !== renderer.domElement
+    ? '點一下畫面以啟用滑鼠轉頭' : '');
+}
 
 function clearInput() {
   keys.clear();
   dYaw = 0;
   dPitch = 0;
+  keyboardActivity = false;
   previousTime = undefined;
 }
 
+function applySession(actions) {
+  const next = updateSession(session, actions);
+  if (next.paused !== session.paused || next.hasStarted !== session.hasStarted) clearInput();
+  session = next;
+  player = setPaused(player, session.paused);
+  syncUI();
+}
+
+function releasePointerForGamepad() {
+  if (document.pointerLockElement === renderer.domElement) {
+    // 這次解鎖是切換操作方式，不是玩家按 Esc；不可再把遊戲暫停。
+    unlockForGamepad = true;
+    document.exitPointerLock();
+  }
+}
+
 function lockFailed() {
-  lockMessage.textContent = '無法鎖定滑鼠，請再點一次「繼續」。';
+  lockMessage.textContent = '無法鎖定滑鼠，請再點一次鍵盤滑鼠的開始／繼續按鈕。';
 }
 
 async function requestLock() {
   if (requestingLock || document.pointerLockElement === renderer.domElement) return;
   requestingLock = true;
   try {
-    // 相容回傳 Promise 或 undefined 的瀏覽器，包含 Esc 後短暫拒絕重新鎖定。
     await renderer.domElement.requestPointerLock();
   } catch {
     lockFailed();
@@ -87,60 +134,144 @@ async function requestLock() {
 
 resumeButton.addEventListener('click', requestLock);
 renderer.domElement.addEventListener('click', () => {
-  if (!hasStarted) requestLock();
+  keyboardActivity = true;
+  if (!session.hasStarted || !session.paused) requestLock();
 });
 document.addEventListener('pointerlockerror', lockFailed);
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === renderer.domElement;
-  clearInput();
   if (locked) {
-    hasStarted = true;
-    player = setPaused(player, false);
-    pauseScreen.hidden = true;
+    unlockForGamepad = false;
+    clearInput();
+    keyboardActivity = true;
+    applySession(session.hasStarted ? { pausePressed: session.paused } : { confirmPressed: true });
     lockMessage.textContent = '';
+  } else if (unlockForGamepad) {
+    unlockForGamepad = false;
+    dYaw = 0;
+    dPitch = 0;
+    syncUI();
   } else {
-    // Esc 可能不產生 keydown；以瀏覽器實際解鎖事件作為暫停依據。
-    player = updatePlayer(player, { pausePressed: true }, 0);
-    pauseTitle.textContent = '已暫停';
-    resumeButton.textContent = '繼續';
-    pauseScreen.hidden = false;
-    lockMessage.textContent = '按「繼續」重新鎖定滑鼠。';
+    // Esc 解鎖以 pointerlockchange 為準，不依賴 keydown。
+    clearInput();
+    applySession({ forcePause: true });
+    lockMessage.textContent = '可用 Start／Options 繼續，或按鍵盤滑鼠的繼續按鈕。';
   }
 });
 
 document.addEventListener('keydown', (event) => {
-  if (player.paused || !['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) return;
+  if (!['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Escape', 'KeyE', 'KeyF', 'KeyR'].includes(event.code)) return;
+  keyboardActivity = true;
+  if (event.code === 'Escape') {
+    if (!event.repeat && document.pointerLockElement !== renderer.domElement) applySession({ forcePause: true });
+    return;
+  }
+  if (session.paused || !['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) return;
   event.preventDefault();
   keys.add(event.code);
 });
 document.addEventListener('keyup', (event) => keys.delete(event.code));
 document.addEventListener('mousemove', (event) => {
-  if (player.paused || document.pointerLockElement !== renderer.domElement) return;
+  if (!event.movementX && !event.movementY) return;
+  keyboardActivity = true;
+  if (session.paused || document.pointerLockElement !== renderer.domElement) return;
   dYaw -= event.movementX * MOUSE_SENSITIVITY;
   dPitch -= event.movementY * MOUSE_SENSITIVITY;
 });
 
 function pauseForFocusLoss() {
   clearInput();
-  player = updatePlayer(player, { pausePressed: true }, 0);
-  pauseTitle.textContent = '已暫停';
-  resumeButton.textContent = '繼續';
-  pauseScreen.hidden = false;
+  applySession({ focusLost: true });
   if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
 }
 window.addEventListener('blur', pauseForFocusLoss);
 
-function readActions() {
+function disconnectPad(index) {
+  previousPads.delete(index);
+  if (selectedPadIndex === index) selectedPadIndex = null;
+  if (pauseOnDisconnect(prompt, index)) {
+    clearInput();
+    applySession({ forcePause: true });
+    if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
+    prompt = createPrompt();
+    lockMessage.textContent = '使用中的手把已拔除；重新連接後按 Start／Options 繼續，或改用鍵盤滑鼠。';
+  }
+}
+window.addEventListener('gamepaddisconnected', (event) => disconnectPad(event.gamepad.index));
+window.addEventListener('gamepadconnected', () => {
+  // 實際數值仍在下一幀輪詢，再交給 logic 判斷。
+  gamepadStatus.textContent = '已偵測到手把，請按 A／✕ 開始。';
+});
+
+function pollGamepads() {
+  let pads;
+  try {
+    if (!navigator.getGamepads) {
+      setText(gamepadStatus, '此瀏覽器無法讀取手把，請使用鍵盤滑鼠。');
+      return null;
+    }
+    pads = Array.from(navigator.getGamepads());
+  } catch {
+    setText(gamepadStatus, '瀏覽器未開放手把存取，請使用鍵盤滑鼠。');
+    return null;
+  }
+  const seen = new Set();
+  const supported = [];
+  let unsupported = false;
+  for (const raw of pads) {
+    if (!raw || raw.connected === false) continue;
+    seen.add(raw.index);
+    const previous = previousPads.get(raw.index);
+    const result = readGamepad(raw, previous?.id === raw.id ? previous.buttons : []);
+    previousPads.set(raw.index, { id: raw.id, buttons: result.buttons });
+    if (result.supported) supported.push(result);
+    else unsupported = true;
+  }
+  for (const index of previousPads.keys()) {
+    if (!seen.has(index)) disconnectPad(index);
+  }
+  const active = supported.filter((result) => result.active);
+  const selected = active.find((result) => result.index === selectedPadIndex) ?? active[0]
+    ?? supported.find((result) => result.index === selectedPadIndex) ?? supported[0];
+  selectedPadIndex = selected?.index ?? null;
+  const name = selected?.device === 'ps' ? 'PS' : selected?.device === 'xbox' ? 'Xbox' : '未知種類（使用 Xbox 按鍵名稱）';
+  setText(gamepadStatus, [selected ? `${name} 手把已連線。` : '按手把任一鍵喚醒。',
+    unsupported ? '有手把不是 standard 映射：目前不支援，請改用標準模式或鍵盤滑鼠。' : ''].filter(Boolean).join(' '));
+  return selected;
+}
+
+function readActions(time) {
+  const pad = pollGamepads();
+  // 背景時仍更新前幀按鈕狀態，避免回到前景時把長按當成新按下。
+  if (document.hidden || !document.hasFocus()) {
+    clearInput();
+    applySession({ focusLost: true });
+    return mergeActions();
+  }
+  const candidate = keyboardActivity ? { device: 'keyboard' }
+    : pad?.active ? { device: pad.device, gamepadIndex: pad.index } : null;
+  prompt = updatePrompt(prompt, candidate, time);
+  keyboardActivity = false;
+
+  if (pad?.actions.pausePressed || (!session.hasStarted && pad?.actions.confirmPressed)) {
+    applySession(pad.actions);
+    releasePointerForGamepad();
+    lockMessage.textContent = '';
+  }
   let x = Number(keys.has('KeyD')) - Number(keys.has('KeyA'));
   let y = Number(keys.has('KeyW')) - Number(keys.has('KeyS'));
   const length = Math.max(1, Math.hypot(x, y));
   x /= length;
   y /= length;
-  const actions = { move: { x, y }, look: { dYaw, dPitch, yawRate: 0, pitchRate: 0 }, pausePressed: false };
+  // 暫停已在 session 處理；交給 movement 的動作不可再次觸發暫停。
+  const actions = mergeActions({ move: { x, y }, look: { dYaw, dPitch } }, pad?.actions);
+  actions.pausePressed = false;
   dYaw = 0;
   dPitch = 0;
+  syncUI();
   return actions;
 }
+syncUI();
 
 const fpsDisplay = document.querySelector('#fps');
 let frames = 0;
@@ -150,7 +281,8 @@ function animate(time) {
   if (sampleStart === undefined) sampleStart = time;
   const dt = previousTime === undefined ? 0 : (time - previousTime) / 1000;
   previousTime = time;
-  player = updatePlayer(player, readActions(), dt);
+  const actions = readActions(time);
+  player = updatePlayer(player, actions, dt);
   camera.position.set(player.x, EYE_HEIGHT, player.z);
   camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
   renderer.render(scene, camera);
