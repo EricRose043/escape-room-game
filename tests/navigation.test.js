@@ -1,0 +1,74 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as logic from '../src/logic/index.js';
+const load=()=>import('../src/logic/navigation.js');
+const obstacle={minX:1,maxX:3,minY:0,maxY:2,minZ:-1,maxZ:1};
+const nodes=[{id:'L',x:0,z:2},{id:'R',x:4,z:2},{id:'F',x:4,z:-2}];
+const navigation={nodes,edges:[{from:'L',to:'R'},{from:'R',to:'F'}]};
+const distance=path=>path.slice(1).reduce((n,p,i)=>n+Math.hypot(p.x-path[i].x,p.z-path[i].z),0);
+
+test('路點與連線保留怪物半徑及安全間距', async () => {
+  const {buildNavigation,segmentClear}=await load();
+  const p=logic.WORLD.areas.find(a=>a.id==='production'),m=p.monsters[0];
+  assert.equal(m.radius,0.35); assert.equal(m.clearance,0.05);
+  const radius=m.radius+m.clearance,boxes=logic.getGeometry(logic.createChapter()).collisionBoxes;
+  const graph=buildNavigation(p.navigation,boxes,radius,p.bounds);
+  for(const node of p.navigation.nodes) assert.ok(segmentClear(node,node,boxes,radius,p.bounds),node.id);
+  assert.equal(graph.edges.length,p.navigation.edges.length,'正式圖所有邊都必須可用');
+  for(const edge of graph.edges) assert.ok(segmentClear(p.navigation.nodes.find(n=>n.id===edge.from),p.navigation.nodes.find(n=>n.id===edge.to),boxes,radius,p.bounds));
+  const a={x:0,z:1.39},b={x:4,z:1.39};
+  assert.equal(segmentClear(a,b,[obstacle],0),true,'中心線可通過');
+  assert.equal(segmentClear(a,b,[obstacle],radius),false,'角色邊緣仍不可擦撞');
+  assert.equal(segmentClear({x:0,z:2},{x:4,z:2},[obstacle],radius),true);
+});
+test('圖路徑能繞過機台，無路徑時不穿牆', async () => {
+  const {buildNavigation,findPath,segmentClear}=await load();
+  const graph=buildNavigation(navigation,[obstacle],0.4),start={x:0,z:0},goal={x:4,z:0};
+  const path=findPath(graph,start,goal);
+  assert.deepEqual(path[0],start); assert.deepEqual(path.at(-1),goal); assert.ok(path.length>2);
+  for(let i=1;i<path.length;i++) assert.ok(segmentClear(path[i-1],path[i],[obstacle],0.4));
+  assert.deepEqual(findPath(buildNavigation({nodes:[],edges:[]},[obstacle],0.4),start,goal),[]);
+  assert.deepEqual(findPath(graph,start,{x:2,z:0}),[],'障礙物內的目標不可達');
+  const p=logic.WORLD.areas.find(a=>a.id==='production'),boxes=logic.getGeometry(logic.createChapter()).collisionBoxes;
+  const formal=buildNavigation(p.navigation,boxes,0.4,p.bounds);
+  const routed=findPath(formal,{x:10,z:-6.5},{x:18.5,z:-6.5});
+  assert.ok(routed.length>2);
+  for(let i=1;i<routed.length;i++) assert.ok(segmentClear(routed[i-1],routed[i],boxes,0.4,p.bounds));
+  assert.deepEqual(findPath(formal,{x:10,z:-6.5},{x:6.5,z:-6.5}),[],'怪物不能走進平台');
+});
+test('Dijkstra 選擇最短加權路線且相同輸入結果固定', async () => {
+  const {buildNavigation,findPath}=await load();
+  const box={minX:1,maxX:3,minY:0,maxY:2,minZ:-1,maxZ:1};
+  const ns=[{id:'a',x:0,z:2},{id:'b',x:4,z:2},{id:'c',x:0,z:-4},{id:'d',x:4,z:-4}];
+  const graph=buildNavigation({nodes:ns,edges:[{from:'a',to:'b'},{from:'c',to:'d'}]},[box],0.4);
+  const start={x:0,z:0},goal={x:4,z:0},path=findPath(graph,start,goal);
+  assert.ok(Math.abs(distance(path)-8)<1e-9,'上路 8 m 應優先於下路 12 m');
+  for(let i=0;i<10;i++) assert.deepEqual(findPath(graph,start,goal),path);
+  assert.deepEqual(findPath(graph,{x:0,z:3},{x:4,z:3}),[{x:0,z:3},{x:4,z:3}]);
+});
+test('路徑跟隨限速轉向，無路徑與動態阻擋都停止', async () => {
+  const {followPath}=await load();
+  const options={speed:1,turnSpeed:Math.PI,radius:0.4};
+  const actor={x:0,z:0,yaw:0,pathIndex:1,walkDistance:0};
+  const path=[{x:0,z:0},{x:4,z:0}];
+  const turn=followPath(actor,path,0.1,options,[]);
+  assert.ok(Math.abs(turn.yaw)<=Math.PI*0.1+1e-9);
+  assert.equal(turn.x,0,'先轉向才行走');
+  const forward=followPath({...actor,yaw:-Math.PI/2},path,0.1,options,[]);
+  assert.ok(Math.abs(forward.x-0.1)<1e-9);
+  for(const dt of [NaN,-1,Infinity,0]) assert.deepEqual(followPath(actor,path,dt,options,[]),actor);
+  const capped=followPath({...actor,yaw:-Math.PI/2},path,50,options,[]);
+  assert.ok(capped.x<=0.1+1e-9);
+  const empty=followPath(actor,[],0.1,options,[]);
+  assert.equal(empty.x,actor.x); assert.equal(empty.z,actor.z);
+  const blocked=followPath({...actor,yaw:-Math.PI/2},path,0.1,options,[{...obstacle,minX:0.45,maxX:0.5}]);
+  assert.equal(blocked.x,0,'整段受阻不可穿越、滑牆或瞬移');
+});
+test('圖只保留安全邊，重建反映門狀態且不污染先前圖', async () => {
+  const {buildNavigation,findPath}=await load();
+  const nav={nodes:[{id:'a',x:0,z:0},{id:'b',x:4,z:0}],edges:[{from:'a',to:'b'}]};
+  const open=buildNavigation(nav,[],0.4),closed=buildNavigation(nav,[obstacle],0.4);
+  assert.equal(open.edges.length,1); assert.equal(closed.edges.length,0);
+  assert.deepEqual(findPath(closed,{x:0,z:0},{x:4,z:0}),[]);
+  assert.equal(findPath(open,{x:0,z:0},{x:4,z:0}).length,2);
+});
