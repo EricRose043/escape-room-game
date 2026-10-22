@@ -24,6 +24,24 @@
 - 不自己擴大範圍，不修改本檔的規則
 - 指令不清楚或覺得有問題時，先問，不要自己猜
 
+### Claude 與 Codex 怎麼協作（參考 YUJIN-Workspaces，精簡版；D005）
+1. **直接送件**：Claude 用 `supervisor/send-codex.sh` 把指令送給 Codex，EricRose043 不用手動轉貼。指令與回覆存在 `supervisor/rounds/`（`rNNN-plan-dN.md` 是計畫討論第 N 次，`rNNN-build.md` 是施工；回覆檔加 `-resp`）。
+2. **每輪先討論計畫**：開工前 Codex 先提計畫，寫清楚：
+   - 目標（對到 PLANS.md 哪一步、VERIFY.md 哪幾條）
+   - 會新增或修改哪些檔案（白名單）
+   - 驗收：哪些測試要先紅後綠、哪些要自己玩一遍確認
+   - 停止條件：遇到什麼情況要停下來問
+   - 預估要幾回
+   Claude 審查後回覆。雙方來回 1～5 次；**同意就開工，第 5 次還沒共識就不開工，交給 EricRose043 決定**。
+3. **回覆第一行**：Codex 收到含「共識確認」的指令時，同意就第一行寫 `CONSENSUS`，然後直接施工；不同意就第一行寫 `NEED_DISCUSSION`，只回理由和替代做法，不施工。
+4. **Claude 只給目標和邊界**，不寫逐步施工圖；怎麼做由 Codex 規劃。新的技術設計，先請 Codex 提 2～3 個選項，Claude 比較後選定。
+5. **施工輪不得改 BRIEF.md、VERIFY.md**（送件腳本會比對，改到就視為越界退回）。
+6. **施工回報**（短）：改了哪些檔案、新測試先紅後綠的證據、`npm test` 結果、commit 編號、沒做到的事。
+7. **Claude 審查**：看 diff、自己跑 `npm test`、需要時開瀏覽器玩一遍，然後決定通過或退回。通過才在 PLANS.md 打勾（由 Codex 在施工中打勾，Claude 核對）。
+8. **repo 就是記憶**：新的決定當輪寫進 `DECISIONS.md`；Claude 每輪收尾覆寫 `supervisor/LATEST.md`（現況、下一步），換 session 先讀它。
+9. **不空等**：等 EricRose043 回答時，先做不依賴答案的部分。
+10. **模型**：計畫討論用 `gpt-6-luna`、施工用 `gpt-6.1-sol`；思考度 medium，難題才用 high（由 Claude 在請求檔寫明）。
+
 ## 開發流程（所有人都適用）
 - 需求看 `BRIEF.md`，測試清單看 `VERIFY.md`，步驟看 `PLANS.md`
 - AI 不要修改 `BRIEF.md`、`VERIFY.md`；要改先問人

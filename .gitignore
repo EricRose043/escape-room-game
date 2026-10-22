@@ -1,2 +1,4 @@
 node_modules/
 .DS_Store
+supervisor/rounds/*.log
+supervisor/.codex-session-id
