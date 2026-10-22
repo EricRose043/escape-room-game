@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>星星糖果樂園 — 密室逃脫</title>
+    <style>
+      html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0c1015; }
+      canvas { display: block; width: 100%; height: 100%; }
+      #fps {
+        position: fixed; top: 8px; left: 8px; padding: 4px 6px;
+        color: #dbe6de; background: #0009; font: 12px monospace;
+        pointer-events: none;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="fps" aria-label="每秒畫格數">FPS: —</div>
+    <script type="module" src="./src/game/main.js"></script>
+  </body>
+</html>

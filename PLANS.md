@@ -10,7 +10,7 @@
 
 ## 步驟
 
-- [ ] **STEP 0　專案環境**（VERIFY STEP 0）
+- [x] **STEP 0　專案環境**（VERIFY STEP 0）
   package.json、`npm test`、index.html 載入 three.js、一個空房間、本機伺服器啟動說明（README）
 - [ ] **STEP 1　第一人稱移動**（VERIFY STEP 1）
   logic：碰撞（玩家當圓柱、牆和家具當方塊）、視角上下限制；game：Pointer Lock、WASD、暫停畫面
