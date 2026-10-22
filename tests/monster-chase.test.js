@@ -78,20 +78,24 @@ test('接觸只發一次事件且不重疊，離開後可再次接觸', () => {
   assert.equal(events.length,2);assert.equal(m.contactCount,2);
   assert.equal(d.contactDistance,0.8);assert.equal(d.contactResetDistance,1);
 });
-test('玩家不能穿過怪物身體，接觸不推人不扣物品不暫停不重生', () => {
+test('玩家不能穿過怪物身體，接觸觸發被抓並保留進度', () => {
   let s=chapter(active(),player(18.5,-9)),events=[];
   const inventory=structuredClone(s.inventory),puzzles=structuredClone(s.puzzles);
   for(let i=0;i<25;i++) {
     s=logic.updateChapter(s,{move:{y:1}},0.1);events.push(...s.events);
     assert.ok(distance(s.player,s.monsters[id])>=logic.PLAYER_RADIUS+d.radius-1e-8);
-    assert.equal(s.player.paused,false);assert.equal(s.ui.mode,'explore');
+    assert.equal(s.player.paused,false);
+    if(s.events.some(event=>event.type==='contact')) {assert.equal(s.ui.mode,'caught');break;}
+    assert.equal(s.ui.mode,'explore');
   }
   assert.equal(events.length,1);assert.deepEqual(s.inventory,inventory);
   assert.equal(s.puzzles['power.main'].restored,puzzles['power.main'].restored);
-  assert.ok(s.player.x>18 && s.player.z<-8,'沒有送回出生點');
+  for(let i=0;i<12;i++) s=logic.updateChapter(s,{},0.1);
+  assert.equal(s.ui.mode,'explore');
+  assert.equal(s.player.x,6.5);assert.equal(s.player.z,-6.5);assert.equal(s.player.yaw,-Math.PI/2);
   const before=structuredClone(s.player);
   s=logic.updateChapter(s,{},0.1);assert.deepEqual(s.player,before,'怪物不能推動玩家');
-  s=logic.updateChapter(s,{move:{y:-1}},0.1);assert.ok(s.player.z>before.z,'仍能自行離開');
+  s=logic.updateChapter(s,{move:{y:-1}},0.1);assert.ok(s.player.x<before.x,'仍能自行離開');
 });
 test('接觸 0.8 m 含邊界，未到 1.0 m 不重置', () => {
   let m=step(active(),player(18.5,-9.5));assert.equal(m.events.length,1);
