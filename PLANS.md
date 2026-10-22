@@ -12,7 +12,7 @@
 
 - [x] **STEP 0　專案環境**（VERIFY STEP 0）
   package.json、`npm test`、index.html 載入 three.js、一個空房間、本機伺服器啟動說明（README）
-- [ ] **STEP 1　第一人稱移動**（VERIFY STEP 1）
+- [x] **STEP 1　第一人稱移動**（VERIFY STEP 1）
   logic：碰撞（玩家當圓柱、牆和家具當方塊）、視角上下限制；game：Pointer Lock、WASD、暫停畫面
 - [ ] **STEP 1b　手把**（VERIFY STEP 1b）
   logic：把鍵盤、滑鼠、手把都轉成同一組「動作」（走、看、互動、手電筒…）、搖桿死區、從手把名稱與廠商編號辨識 Xbox／PS、依最後使用的裝置決定提示文字；game：Gamepad API 每幀讀取、接上／拔掉事件

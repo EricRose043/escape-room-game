@@ -12,6 +12,15 @@
         color: #dbe6de; background: #0009; font: 12px monospace;
         pointer-events: none;
       }
+      #pause-screen {
+        position: fixed; inset: 0; display: grid; place-items: center;
+        background: #080b1099; color: #e1e7e7; text-align: center;
+        font-family: system-ui, sans-serif; pointer-events: none;
+      }
+      #pause-screen[hidden] { display: none; }
+      #pause-screen section { max-width: 28rem; padding: 24px; background: #151b22e6; border: 1px solid #53606c; }
+      #resume { pointer-events: auto; padding: 10px 32px; font: inherit; cursor: pointer; }
+      #lock-message { min-height: 1.5em; }
     </style>
     <script type="importmap">
       {
@@ -23,6 +32,14 @@
   </head>
   <body>
     <div id="fps" aria-label="每秒畫格數">FPS: —</div>
+    <div id="pause-screen">
+      <section aria-labelledby="pause-title">
+        <h1 id="pause-title">星星糖果樂園</h1>
+        <p>WASD 走路 · 滑鼠轉頭 · Esc 暫停</p>
+        <button id="resume" type="button">開始</button>
+        <p id="lock-message" role="status">點房間畫面或按「開始」鎖定滑鼠。</p>
+      </section>
+    </div>
     <script type="module" src="./src/game/main.js"></script>
   </body>
 </html>
