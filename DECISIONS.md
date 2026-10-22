@@ -8,6 +8,7 @@
 | D002 | 2026-10-22 | RyanDing1010、shuoen88 用單 AI，不受雙 AI 限制 | EricRose043 | 同上 |
 | D003 | 2026-10-22 | 恐怖元素參考 Poppy Playtime 的氣氛，但角色、場景、道具全部原創 | EricRose043 提需求，Claude 規劃 | BRIEF.md |
 | D004 | 2026-10-22 | 技術：three.js 靜態網站、第一人稱、規則放 src/logic 用 npm test 測 | Claude 規劃 | BRIEF.md「限制」、PLANS.md |
+| D012 | 2026-10-22 | STEP 5 拆 5a（生產線場地與巡邏）／5b（發現與追逐）／5c（置物櫃）。先建第三區 `areas/production.js` 空間，STEP 7 再加謎題；怪物走路用路點圖＋最短路徑；視覺 8 m、120°、牆擋、背後不新發現；速度巡邏 1.0、追逐 2.3 m/s（玩家 2.5）；成功進櫃一律失去目標；接觸 0.8 m 只發事件（被抓是 STEP 6）；外觀原創、無尖牙無血。待檢討：怪物限生產線活動，退回平台即可脫離 | Claude 從 Codex 提案採認 | supervisor/rounds/r007-plan-d1-resp.md、r007-build-5a.md |
 | D011 | 2026-10-22 | STEP 5、6（棉花糖先生、被抓與存檔點）也由 EricRose043 這邊（Claude 監督、Codex 執行）繼續做 | EricRose043（「繼續做」） | 本對話 2026-10-22 |
 | D010 | 2026-10-22 | STEP 4 拆成 4a（正式場景與大廳門禁）、4b（保險絲與電箱）、4c（密碼鎖與恢復供電）；關卡資料每區一份 `src/logic/areas/*.js`，由 `world.js` 彙整，**之後新增區域照這個格式**；門擋移動與視線；密碼 4726；密碼鎖 3×4、手把十字鍵操作；光源上限 1 SpotLight＋2 PointLight＋Ambient；7 個舊測試可遷移到 fixture，但遷移須單獨 commit 且不改任何期望值；門楣只擋視線不擋移動（4a 補充） | Claude 從 Codex 提案採認 | supervisor/rounds/r006-plan-d1-resp.md、r006-build-4a.md |
 | D009 | 2026-10-22 | STEP 4（入口大廳與電力室）先由 EricRose043 這邊（Claude 監督、Codex 執行）做，當作之後關卡的範本；其餘分工仍照 PLANS.md 建議，待三人討論 | EricRose043（選「先做」） | 本對話 2026-10-22 |
