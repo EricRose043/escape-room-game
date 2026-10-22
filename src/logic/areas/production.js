@@ -3,6 +3,8 @@ const node = (name,x,z) => ({id:`production.nav.${name}`,x,z});
 const edge = (from,to) => ({from:`production.nav.${from}`,to:`production.nav.${to}`});
 export const PRODUCTION = {
   id:'production',name:'糖果生產線',bounds:{minX:7.2,maxX:21.2,minZ:-12.5,maxZ:-0.5},height:3.5,
+  checkpoint: {id:'production.checkpoint',order:2,spawn:{x:6.5,z:-6.5,yaw:-Math.PI/2,pitch:0},
+    floorId:'power.landing-floor',requires:{itemIds:['lobby.flashlight'],puzzleIds:['power.main']}},
   boxes:[
     box('production.west-north','wall',7,7.2,0,3.5,-12.5,-7.4),
     box('production.west-south','wall',7,7.2,0,3.5,-5.6,-0.5),

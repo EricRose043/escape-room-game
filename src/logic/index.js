@@ -13,3 +13,4 @@ export * from './navigation.js';
 export * from './monster.js';
 export * from './monster-vision.js';
 export * from './hiding.js';
+export * from './checkpoints.js';

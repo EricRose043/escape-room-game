@@ -6,6 +6,7 @@ import { getPuzzle } from './clues.js';
 import { createKeypad, updateKeypad, resolveKeypadCommand } from './keypad.js';
 import { createMonster, updateMonster, approachFraction, loseMonsterTarget } from './monster.js';
 import { isLockerFront, tryEnterHiding, tryLeaveHiding, updateHidingPlayer } from './hiding.js';
+import { CHECKPOINTS, advanceCheckpoint, checkpointReady } from './checkpoints.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
@@ -32,6 +33,7 @@ export function deviceMessage(state, device) {
 
 export function createChapter() {
   return {player:createPlayer(WORLD.spawn),inventory:{itemIds:[]},flashlight:createFlashlight(),
+    checkpointId:CHECKPOINTS[0].id,
     puzzles:Object.fromEntries(WORLD.areas.flatMap(a=>a.puzzles).map(p=>[p.id,{installedItemId:null,restored:false}])),
     monsters:Object.fromEntries(MONSTERS.map(m=>[m.id,createMonster(m)])),
     events:[],
@@ -41,6 +43,26 @@ export function hasFlashlight(state) {
   return ITEMS.some(i=>i.kind==='flashlight' && state.inventory.itemIds.includes(i.id));
 }
 export const POWER_TRANSITION_SECONDS = 0.6;
+// 死亡回復及日後讀檔共用；呼叫者負責流程與暫停，不還原危險座標或介面。
+export function restoreCheckpoint(state) {
+  const checkpoint=CHECKPOINTS.find(c=>c.id===state.checkpointId);
+  if(!checkpoint || !checkpointReady(state,checkpoint)) throw new Error('無效存檔點或進度前置條件不足');
+  const monsters=Object.fromEntries(MONSTERS.map(definition=>{
+    const initial=createMonster(definition);
+    const activation=CHECKPOINTS.find(c=>c.areaId===definition.areaId);
+    return [definition.id,{...initial,mode:activation && checkpoint.order>=activation.order?'patrol':'inactive'}];
+  }));
+  return {
+    player:createPlayer({...checkpoint.spawn,paused:state.player.paused}),
+    checkpointId:checkpoint.id,
+    inventory:{itemIds:[...state.inventory.itemIds]},
+    flashlight:{charge:state.flashlight.charge,mode:state.flashlight.mode,enabled:false},
+    puzzles:Object.fromEntries(Object.entries(state.puzzles).map(([id,puzzle])=>[id,{
+      ...puzzle,restoreElapsed:puzzle.restored?POWER_TRANSITION_SECONDS:0,
+    }])),
+    monsters,events:[],ui:{mode:'explore'},
+  };
+}
 export function powerProgress(state, puzzleId) {
   const puzzle=state.puzzles[puzzleId];
   return puzzle?.restored ? Math.min(1,(puzzle.restoreElapsed ?? 0)/POWER_TRANSITION_SECONDS) : 0;
@@ -136,7 +158,7 @@ export function updateChapter(state,actions={},dt=0) {
   const target = selectChapterTarget({...state,player});
   const isDevice = Boolean(target?.bounds);
   const next=updateEquipment(state,player,{...equipmentActions,interactPressed:actions.interactPressed && !isDevice},dt,ITEMS,geometry.occluderBoxes);
-  const result = advancePower({...next,player},dt);
+  const result = advanceCheckpoint(advancePower({...next,player},dt));
   Object.assign(result,advanceMonsters(state,player,dt,geometry));
   if (!isDevice || !actions.interactPressed) return result;
   if (target.kind === 'fuseBox' && !isDevicePowered(result,target)

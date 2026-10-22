@@ -1,6 +1,8 @@
 const box = (id, kind, minX, maxX, minY, maxY, minZ, maxZ, extra = {}) => ({ id, kind, minX, maxX, minY, maxY, minZ, maxZ, ...extra });
 export const POWER_ROOM = {
   id: 'power-room', name: '電力室', bounds: { minX:-5,maxX:5,minZ:-8.2,maxZ:-0.2 }, height:3.5,
+  checkpoint: {id:'power.checkpoint',order:1,spawn:{x:0,z:-1.2,yaw:0,pitch:0},
+    floorId:'power-room.floor',requires:{itemIds:['lobby.flashlight'],puzzleIds:[]}},
   boxes: [
     box('power.west','wall',-5.2,-5,0,3.5,-8.2,-0.2),
     box('power.north','wall',-5.2,5.2,0,3.5,-8.4,-8.2),

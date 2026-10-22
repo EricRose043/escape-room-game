@@ -44,7 +44,11 @@ export function getActiveLights(player) {
 
 export function validateWorld(world = WORLD) {
   const errors=[]; const ids=new Set();
+  const checkpointOrders=new Set();
   const items=world.areas.flatMap(a=>a.items); const puzzles=world.areas.flatMap(a=>a.puzzles);
+  const floors=world.areas.flatMap(a=>[
+    {id:`${a.id}.floor`,kind:'floor',...a.bounds,maxY:0},...(a.extraSurfaces??[]),
+  ]);
   const hasItem=id=>items.some(i=>i.id===id),hasPuzzle=id=>puzzles.some(p=>p.id===id);
   const record=o=>{if(!o.id || ids.has(o.id)) errors.push(`重複或缺少 ID：${o.id}`);ids.add(o.id);};
   const bounds=(b,id)=>{for(const axis of ['X','Y','Z']) if(!Number.isFinite(b?.[`min${axis}`]) || !Number.isFinite(b?.[`max${axis}`]) || b[`min${axis}`]>=b[`max${axis}`]) errors.push(`無效 AABB：${id} ${axis}`);};
@@ -57,6 +61,29 @@ export function validateWorld(world = WORLD) {
     for(const o of [...a.boxes,...(a.extraSurfaces??[]),...a.items]) {record(o);bounds(o,o.id);}
     for(const i of a.items) for(const axis of ['X','Y','Z']) if(i[`max${axis}`]-i[`min${axis}`]<0.25) errors.push(`物品小於 0.25 m：${i.id}`);
     for(const p of a.puzzles) record(p);
+    if(a.checkpoint) {
+      const c=a.checkpoint;record(c);
+      if(!Number.isInteger(c.order) || c.order<0 || checkpointOrders.has(c.order)) errors.push(`存檔點順序無效：${c.id}`);
+      checkpointOrders.add(c.order);
+      const required=c.requires;
+      if(!Array.isArray(required?.itemIds) || !Array.isArray(required?.puzzleIds)
+        || required.itemIds.some(id=>!hasItem(id)) || required.puzzleIds.some(id=>!hasPuzzle(id))) {
+        errors.push(`存檔點條件引用無效：${c.id}`);
+      } else {
+        // 與既有櫃子位置驗證相同，使用玩家 0.3 m 淨空；不引入 movement→level→world 循環。
+        const radius=0.3,p=c.spawn,floor=floors.find(f=>f.id===c.floorId && f.kind==='floor' && f.maxY===0);
+        const progress={inventory:{itemIds:required.itemIds},puzzles:Object.fromEntries(required.puzzleIds.map(id=>[id,{restored:true}]))};
+        const obstacles=world.areas.flatMap(area=>[
+          ...area.boxes,...area.devices.map(d=>d.bounds),...area.doors.filter(d=>!isDoorOpen(d,progress)).map(d=>d.bounds),
+        ]).filter(b=>b.blocksMovement!==false);
+        const blocked=p && obstacles.some(b=>{
+          const dx=p.x-Math.max(b.minX,Math.min(b.maxX,p.x)),dz=p.z-Math.max(b.minZ,Math.min(b.maxZ,p.z));
+          return dx*dx+dz*dz<radius*radius-1e-12;
+        });
+        if(!p || ![p.x,p.z,p.yaw,p.pitch].every(Number.isFinite) || !floor
+          || !inArea(p,{bounds:floor},radius) || blocked) errors.push(`存檔點回復位置無效：${c.id}`);
+      }
+    }
     for(const d of a.doors) {
       record(d);bounds(d.bounds,d.id);
       const r=d.openWhen;

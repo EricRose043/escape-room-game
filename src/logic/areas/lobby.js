@@ -3,6 +3,8 @@ const box = (id, kind, minX, maxX, minY, maxY, minZ, maxZ, extra = {}) => ({ id,
 export const LOBBY = {
   id: 'lobby', name: '入口大廳', bounds: { minX: -5, maxX: 5, minZ: 0, maxZ: 8 }, height: 3.5,
   spawn: { x: 0, z: 6, yaw: 0, pitch: 0 },
+  checkpoint: {id:'lobby.checkpoint',order:0,spawn:{x:0,z:6,yaw:0,pitch:0},
+    floorId:'lobby.floor',requires:{itemIds:[],puzzleIds:[]}},
   boxes: [
     box('lobby.west', 'wall', -5.2,-5,0,3.5,0,8),
     box('lobby.east', 'wall', 5,5.2,0,3.5,0,8),
