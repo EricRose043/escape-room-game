@@ -6,17 +6,27 @@ import {
   ITEMS, selectChapterTarget, deviceMessage, keyboardEquipmentActions,
   BEAM, CLUES, isClueVisible, viewRay, rayBoxDistance,
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
+  createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
+  keyboardStartMenuCommand, startMenuGamepadCommand,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
 import { createKeypadView } from './keypad-view.js';
 import { createCaptureView } from './capture-view.js';
+import { createStartMenuView } from './start-menu-view.js';
 import { compensatedIntensity } from './lighting.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
 // 僅供監督者驗收開啟分支；待 S2 設定接上後移除。
 const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'};
 let chapter = createChapter(chapterOptions);
+// 將存取包在函式內，連 localStorage getter 拋錯也交由儲存層處理。
+const saveStorage=createSaveStorage({
+  getItem:key=>window.localStorage.getItem(key),
+  setItem:(key,value)=>window.localStorage.setItem(key,value),
+  removeItem:key=>window.localStorage.removeItem(key),
+});
+let startMenu=createStartMenu(saveStorage.load());
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0c1015);
@@ -122,6 +132,8 @@ const crosshair = document.querySelector('#crosshair');
 const interactionHint = document.querySelector('#interaction-hint');
 const contactHint = document.querySelector('#contact-hint');
 const hidingHint = document.querySelector('#hiding-hint');
+const saveStatus = document.querySelector('#save-status');
+const startOpen = document.querySelector('#start-open');
 const captureView = createCaptureView(document.querySelector('#capture-screen'));
 const previousPads = new Map();
 let prompt = createPrompt();
@@ -143,13 +155,20 @@ const keypadView = createKeypadView(document.querySelector('#keypad-screen'),com
   keyboardActivity = true;
   keypadPending.push(command);
 });
+const startMenuView=createStartMenuView(document.querySelector('#start-menu'),command=>{
+  keyboardActivity=true;handleStartCommand(command,'keyboard');
+});
 
 function setText(element, text) {
   if (element.textContent !== text) element.textContent = text;
 }
 
 function syncUI() {
-  pauseScreen.hidden = !session.paused;
+  pauseScreen.hidden = !session.paused || startMenu.mode!=='closed';
+  startMenuView.sync(startMenu,prompt.device);
+  startOpen.hidden=!session.hasStarted;
+  setText(saveStatus,saveStorage.status().message);
+  setText(document.querySelector('#start-save-status'),saveStorage.status().message);
   keypadView.sync(chapter.ui,session.paused,prompt.device);
   captureView.sync(chapter.ui,{...chapterOptions,paused:session.paused});
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
@@ -175,7 +194,7 @@ function syncUI() {
     : `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
   setText(pauseInstructions, device === 'keyboard'
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
-    : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，或使用下方按鈕切換鍵盤滑鼠。`
+    : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，${buttonLabel('cancel',device)} 返回開始選單，或使用下方按鈕切換鍵盤滑鼠。`
       : `按 ${buttonLabel('confirm', device)} 開始（不需要鎖定滑鼠）。`);
   setText(inputHint, !session.paused && !['keypad','caught'].includes(chapter.ui.mode) && device === 'keyboard' && document.pointerLockElement !== renderer.domElement
     ? (pointerLockFailed ? lockMessage.textContent : '點一下畫面以啟用滑鼠轉頭') : '');
@@ -194,12 +213,37 @@ function clearInput() {
 
 function applySession(actions) {
   const next = updateSession(session, actions);
+  if(next.paused && !session.paused) saveStorage.flush('pause');
   if (next.paused !== session.paused || next.hasStarted !== session.hasStarted) clearInput();
   if (!next.paused && disconnectedMessage) clearDisconnectMessage();
   session = next;
   chapter = { ...chapter, player: setPaused(chapter.player, session.paused) };
   syncUI();
 }
+
+function handleStartCommand(command,source='keyboard') {
+  if(document.hidden || !document.hasFocus() || startMenu.mode==='closed') return;
+  startMenu=updateStartMenu(startMenu,command);
+  if(startMenu.effect==='new' || startMenu.effect==='continue') {
+    let next;
+    if(startMenu.effect==='continue') {
+      const result=saveStorage.load();next=result.status==='valid'?restoreChapterSave(result.data,chapterOptions):null;
+      if(!next) {startMenu=createStartMenu(result,{hasCurrent:session.hasStarted});syncUI();return;}
+    } else {next=createChapter(chapterOptions);saveStorage.restart(next);}
+    chapter=next;session=createSession();clearInput();
+    if(source==='keyboard') requestLock();
+    else {applySession({confirmPressed:true});releasePointer('gamepad');}
+  }
+  syncUI();
+}
+
+function openStartMenu() {
+  if(!session.hasStarted || !session.paused) return;
+  saveStorage.flush('pause');
+  startMenu=createStartMenu(saveStorage.load(),{hasCurrent:true});
+  clearInput();releasePointer('menu');syncUI();
+}
+startOpen.addEventListener('click',openStartMenu);
 
 function releasePointer(reason) {
   if (document.pointerLockElement === renderer.domElement) {
@@ -216,7 +260,7 @@ function lockFailed() {
 }
 
 async function requestLock() {
-  if (['keypad','caught'].includes(chapter.ui.mode) || requestingLock || document.pointerLockElement === renderer.domElement) return;
+  if (startMenu.mode!=='closed' || ['keypad','caught'].includes(chapter.ui.mode) || requestingLock || document.pointerLockElement === renderer.domElement) return;
   requestingLock = true;
   try {
     await renderer.domElement.requestPointerLock();
@@ -228,7 +272,8 @@ async function requestLock() {
 }
 
 resumeButton.addEventListener('click', () => {
-  if (session.paused && ['keypad','caught'].includes(chapter.ui.mode)) applySession({pausePressed:true});
+  if(startMenu.mode!=='closed') handleStartCommand({type:'activate'},'keyboard');
+  else if (session.paused && ['keypad','caught'].includes(chapter.ui.mode)) applySession({pausePressed:true});
   else requestLock();
 });
 renderer.domElement.addEventListener('click', () => {
@@ -239,6 +284,7 @@ document.addEventListener('pointerlockerror', lockFailed);
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === renderer.domElement;
   if (locked) {
+    if(startMenu.mode!=='closed') {releasePointer('menu');return;}
     if (['keypad','caught'].includes(chapter.ui.mode)) { releasePointer(chapter.ui.mode); return; }
     unlockReason = null;
     pointerLockFailed = false;
@@ -260,6 +306,12 @@ document.addEventListener('pointerlockchange', () => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if(startMenu.mode!=='closed') {
+    const command=keyboardStartMenuCommand(event);
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Space','Escape'].includes(event.code)) event.preventDefault();
+    if(command) {keyboardActivity=true;handleStartCommand(command,'keyboard');}
+    return;
+  }
   if(chapter.ui.mode==='caught') {
     if(event.code==='Escape' && !event.repeat) applySession({forcePause:true});
     if(['KeyW','KeyA','KeyS','KeyD','KeyE','KeyF','KeyR','Escape','Enter','Space'].includes(event.code)) event.preventDefault();
@@ -303,6 +355,7 @@ document.addEventListener('mousemove', (event) => {
 });
 
 function pauseForFocusLoss() {
+  saveStorage.flush('visibilitychange');
   clearInput();
   applySession({ focusLost: true });
   if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
@@ -385,6 +438,14 @@ function readActions(time) {
   keyboardActivity = false;
 
   const before = session;
+  if(startMenu.mode!=='closed') {
+    const command=startMenuGamepadCommand(pad?.actions);
+    if(command) handleStartCommand(command,'gamepad');
+    syncUI();return {...mergeActions(),gameplayActive:false};
+  }
+  if(session.paused && pad?.actions.cancelPressed) {
+    openStartMenu();return {...mergeActions(),gameplayActive:false};
+  }
   if (pad?.actions.pausePressed || (!session.hasStarted && pad?.actions.confirmPressed)) {
     applySession(pad.actions);
     releasePointer('gamepad');
@@ -418,22 +479,17 @@ function animate(time) {
   const dt = previousTime === undefined ? 0 : (time - previousTime) / 1000;
   previousTime = time;
   const actions = readActions(time);
+  const beforeChapter=chapter;
   const beforeMode=chapter.ui.mode;
   chapter = updateChapter(chapter, actions, dt, chapterOptions);
+  if(session.hasStarted && startMenu.mode==='closed') saveStorage.observe(beforeChapter,chapter,actions.gameplayActive?dt:0);
   if (beforeMode!==chapter.ui.mode) {
     clearInput();
     if (['keypad','caught'].includes(chapter.ui.mode)) releasePointer(chapter.ui.mode);
   }
   worldView.sync(chapter);
   monsterView.sync(chapter);
-  for (const id of chapter.inventory.itemIds) {
-    const mesh = itemMeshes.get(id);
-    if (!mesh) continue;
-    scene.remove(mesh);
-    mesh.geometry.dispose();
-    mesh.material.dispose();
-    itemMeshes.delete(id);
-  }
+  for (const [id,mesh] of itemMeshes) mesh.visible=!chapter.inventory.itemIds.includes(id);
   syncUI();
   camera.position.set(chapter.player.x, EYE_HEIGHT, chapter.player.z);
   camera.rotation.set(chapter.player.pitch, chapter.player.yaw, 0, 'YXZ');
@@ -456,3 +512,4 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) pauseForFocusLoss();
 });
 requestAnimationFrame(animate);
+window.addEventListener('pagehide',()=>{saveStorage.flush('pagehide');syncUI();});

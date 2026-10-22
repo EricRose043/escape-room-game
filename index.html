@@ -52,6 +52,16 @@
       #capture-screen { position: fixed; inset: 0; z-index: 3; display: grid; place-items: center; background: #000; pointer-events: none; overflow: hidden; }
       #capture-screen canvas { width: min(86vw, 86vh); height: min(86vw, 86vh); }
       #capture-screen[hidden], #capture-screen canvas[hidden] { display: none; }
+      #start-menu { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: #080b10ee; color: #e1e7e7; font: 16px system-ui, sans-serif; }
+      #start-menu[hidden] { display: none; }
+      #start-menu section { width: min(380px, calc(100vw - 64px)); padding: 24px; background: #151b22; border: 1px solid #71827d; text-align: center; }
+      #start-menu button, #start-open { margin: 6px; padding: 10px 24px; color: #e1e7e7; background: #29363c; border: 2px solid #53606c; font: inherit; cursor: pointer; }
+      #start-menu button { width: calc(100% - 12px); }
+      #start-menu button.selected { border-color: #c4ed9b; background: #405442; }
+      #start-menu button:disabled { opacity: 0.5; cursor: default; }
+      #start-menu button[hidden], #start-open[hidden] { display: none; }
+      #start-open { pointer-events: auto; }
+      #save-status { color: #f4cf94; }
     </style>
     <script type="importmap">
       {
@@ -72,12 +82,14 @@
       <p id="hiding-hint" hidden role="status" aria-live="polite"></p>
       <p id="charge-row" hidden><label for="charge-meter">手電筒電量</label> <meter id="charge-meter" min="0" max="100" value="100" aria-describedby="flashlight-mode"></meter> <span id="charge-text" aria-hidden="true">100%</span> · <span id="flashlight-mode">一般光 · 關閉</span></p>
       <p id="gamepad-status">按手把任一鍵喚醒。</p>
+      <p id="save-status" role="status" aria-live="polite"></p>
     </div>
     <div id="pause-screen">
       <section aria-labelledby="pause-title">
         <h1 id="pause-title">星星糖果樂園</h1>
         <p id="pause-instructions">按手把任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。</p>
         <button id="resume" type="button">開始（鍵盤滑鼠）</button>
+        <button id="start-open" type="button" hidden>返回開始選單</button>
         <p id="lock-message" role="status">點房間畫面或按「開始」鎖定滑鼠。</p>
       </section>
     </div>
@@ -105,6 +117,19 @@
       </section>
     </div>
     <div id="capture-screen" hidden aria-hidden="true"><canvas id="capture-canvas" hidden></canvas></div>
+    <div id="start-menu" hidden>
+      <section role="dialog" aria-modal="true" aria-labelledby="start-title" aria-describedby="start-message start-hint">
+        <h1 id="start-title">星星糖果樂園</h1>
+        <p id="start-message" role="status"></p>
+        <p id="start-save-status" role="status" aria-live="polite"></p>
+        <button id="start-continue" type="button">繼續</button>
+        <button id="start-new" type="button">重新開始</button>
+        <button id="start-return" type="button" hidden>返回暫停畫面</button>
+        <button id="start-cancel" type="button" hidden>取消，保留進度</button>
+        <button id="start-confirm" type="button" hidden>確認重新開始</button>
+        <p id="start-hint">手把先按任一鍵喚醒，十字鍵選擇，A／✕ 確認。</p>
+      </section>
+    </div>
     <script type="module" src="./src/game/main.js"></script>
   </body>
 </html>
