@@ -8,12 +8,12 @@ function state(power = true) {
   return {...s, player:{...s.player,paused:false}, inventory:{itemIds:['lobby.flashlight']},
     puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:power}}};
 }
-function walk(s, x, z) {
+function walk(s, x, z, update = logic.updateChapter) {
   for (let i=0;i<500;i++) {
     const dx=x-s.player.x,dz=z-s.player.z,distance=Math.hypot(dx,dz);
     if (distance<1e-7) return s;
     const yaw=Math.atan2(-dx,-dz);
-    const next=logic.updateChapter(s,{look:{dYaw:yaw-s.player.yaw},move:{y:1}},Math.min(0.1,distance/logic.WALK_SPEED));
+    const next=update(s,{look:{dYaw:yaw-s.player.yaw},move:{y:1}},Math.min(0.1,distance/logic.WALK_SPEED));
     if (Math.hypot(next.player.x-s.player.x,next.player.z-s.player.z)<1e-9) return next;
     s=next;
   }
@@ -72,7 +72,7 @@ test('新區牆機台與櫃體阻擋移動，必要通道可通行', () => {
   }
   let s=state(); s.player={...s.player,x:8.2,z:-6.5};
   for (const [x,z] of [[10,-6.5],[10,-10.3],[18.5,-10.3],[18.5,-2],[14.2,-2],[14.2,-10.3],[10,-10.3],[10,-1.2],[8.5,-1.2]]) {
-    s=walk(s,x,z); assert.ok(Math.hypot(s.player.x-x,s.player.z-z)<1e-7,`${x},${z}`);
+    s=walk(s,x,z,(state,actions,dt)=>({...state,player:logic.updatePlayer(state.player,actions,dt,logic.getGeometry(state).collisionBoxes)})); assert.ok(Math.hypot(s.player.x-x,s.player.z-z)<1e-7,`${x},${z}`);
     assert.ok(!boxes.some(b=>logic.circleOverlapsBox(s.player.x,s.player.z,b,logic.PLAYER_RADIUS)));
   }
 });
