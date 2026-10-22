@@ -31,6 +31,7 @@
         font: 13px system-ui, sans-serif; pointer-events: none;
       }
       #input-hud p { margin: 4px 0; }
+      #contact-hint { color: #c7c8b8; }
       #keypad-screen {
         position: fixed; inset: 0; z-index: 2; display: grid; place-items: center;
         background: #080b10bb; color: #e1e7e7; font: 16px system-ui, sans-serif;
@@ -63,6 +64,7 @@
     <div id="input-hud">
       <p id="controls-hint">WASD 走路 · 滑鼠轉頭 · Esc 暫停</p>
       <p id="input-hint"></p>
+      <p id="contact-hint" hidden role="status" aria-live="polite"></p>
       <p id="charge-row" hidden><label for="charge-meter">手電筒電量</label> <meter id="charge-meter" min="0" max="100" value="100" aria-describedby="flashlight-mode"></meter> <span id="charge-text" aria-hidden="true">100%</span> · <span id="flashlight-mode">一般光 · 關閉</span></p>
       <p id="gamepad-status">按手把任一鍵喚醒。</p>
     </div>

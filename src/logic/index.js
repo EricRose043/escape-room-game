@@ -11,3 +11,4 @@ export * from './chapter.js';
 export * from './keypad.js';
 export * from './navigation.js';
 export * from './monster.js';
+export * from './monster-vision.js';

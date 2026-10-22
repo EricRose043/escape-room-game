@@ -1,10 +1,10 @@
 import { WORLD, ITEMS, getGeometry } from './world.js';
-import { createPlayer, updatePlayer } from './movement.js';
+import { createPlayer, updatePlayer, MAX_DT, WALK_SPEED, PLAYER_RADIUS, circleOverlapsBox } from './movement.js';
 import { createFlashlight, updateEquipment } from './flashlight.js';
 import { selectInteractionTarget } from './interaction.js';
 import { getPuzzle } from './clues.js';
 import { createKeypad, updateKeypad, resolveKeypadCommand } from './keypad.js';
-import { createMonster, updateMonster } from './monster.js';
+import { createMonster, updateMonster, approachFraction } from './monster.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
@@ -30,6 +30,7 @@ export function createChapter() {
   return {player:createPlayer(WORLD.spawn),inventory:{itemIds:[]},flashlight:createFlashlight(),
     puzzles:Object.fromEntries(WORLD.areas.flatMap(a=>a.puzzles).map(p=>[p.id,{installedItemId:null,restored:false}])),
     monsters:Object.fromEntries(MONSTERS.map(m=>[m.id,createMonster(m)])),
+    events:[],
     ui:{mode:'explore'}};
 }
 export function hasFlashlight(state) {
@@ -56,6 +57,25 @@ export function submitPuzzleCode(state, deviceId, code) {
   return {...state,puzzles:{...state.puzzles,[device.puzzleId]:{
     ...state.puzzles[device.puzzleId],restored:true,restoreElapsed:0,
   }},ui:{mode:'explore',message:'主電力已恢復'}};
+}
+function movePlayerWithMonsters(state,actions,dt,boxes) {
+  const time=Number.isFinite(dt)?Math.max(0,Math.min(MAX_DT,dt)):0;
+  const bodies=MONSTERS.filter(d=>{
+    const m=state.monsters[d.id];
+    return m.mode!=='inactive' && Math.hypot(m.x-state.player.x,m.z-state.player.z)<=PLAYER_RADIUS+d.radius+WALK_SPEED*time;
+  });
+  if(!bodies.length) return updatePlayer(state.player,actions,dt,boxes);
+  let player=updatePlayer(state.player,{...actions,move:{}},dt,boxes);
+  const steps=Math.max(1,Math.ceil(WALK_SPEED*time/(PLAYER_RADIUS/4)));
+  for(let i=0;i<steps;i++) {
+    const candidate=updatePlayer(player,{move:actions.move},time/steps,boxes);
+    let fraction=1;
+    for(const d of bodies) fraction=Math.min(fraction,approachFraction(player,candidate,state.monsters[d.id],PLAYER_RADIUS+d.radius));
+    const safe={...candidate,x:player.x+(candidate.x-player.x)*fraction,z:player.z+(candidate.z-player.z)*fraction};
+    if(!boxes.some(b=>circleOverlapsBox(safe.x,safe.z,b))) player=safe;
+    if(fraction<1) break;
+  }
+  return player;
 }
 export function updateChapter(state,actions={},dt=0) {
   // 暫停優先於任何命令；回來保留面板內容，不重播這一幀輸入。
@@ -84,14 +104,16 @@ export function updateChapter(state,actions={},dt=0) {
     return {...state,ui:createKeypad(initialTarget.id)};
   }
   const geometry=getGeometry(state);
-  const player=updatePlayer(state.player,actions,dt,geometry.collisionBoxes);
+  const player=movePlayerWithMonsters(state,actions,dt,geometry.collisionBoxes);
   const equipmentActions=hasFlashlight(state)?actions:{...actions,flashlightPressed:false,uvPressed:false};
   const target = selectChapterTarget({...state,player});
   const isDevice = Boolean(target?.bounds);
   const next=updateEquipment(state,player,{...equipmentActions,interactPressed:actions.interactPressed && !isDevice},dt,ITEMS,geometry.occluderBoxes);
   const result = advancePower({...next,player},dt);
   result.monsters=Object.fromEntries(MONSTERS.map(definition=>[definition.id,
-    updateMonster(state.monsters[definition.id],definition,WORLD.areas.find(a=>a.id===definition.areaId),player,dt,geometry.collisionBoxes)]));
+    updateMonster(state.monsters[definition.id],definition,WORLD.areas.find(a=>a.id===definition.areaId),player,dt,geometry.collisionBoxes,
+      {occluderBoxes:geometry.occluderBoxes})]));
+  result.events=MONSTERS.flatMap(d=>result.monsters[d.id]===state.monsters[d.id]?[]:result.monsters[d.id].events);
   if (!isDevice || !actions.interactPressed) return result;
   if (target.kind === 'fuseBox' && !isDevicePowered(result,target)
     && result.inventory.itemIds.includes(target.acceptsItemId)

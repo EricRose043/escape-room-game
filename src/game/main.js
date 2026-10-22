@@ -117,6 +117,7 @@ const chargeText = document.querySelector('#charge-text');
 const flashlightMode = document.querySelector('#flashlight-mode');
 const crosshair = document.querySelector('#crosshair');
 const interactionHint = document.querySelector('#interaction-hint');
+const contactHint = document.querySelector('#contact-hint');
 const previousPads = new Map();
 let prompt = createPrompt();
 let session = createSession();
@@ -149,6 +150,9 @@ function syncUI() {
   const target = chapter.ui.mode==='keypad' ? null : selectChapterTarget(chapter);
   interactionHint.hidden = !target;
   setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} ${target.bounds ? `${target.name}｜${deviceMessage(chapter,target)}` : `撿起 ${target.name}`}` : '');
+  const contact=Object.values(chapter.monsters).some(m=>m.contactFeedbackRemaining>0);
+  contactHint.hidden=session.paused || chapter.ui.mode!=='explore' || !contact;
+  setText(contactHint,contact?'衣角被扯住了。':'');
   setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
   chargeRow.hidden = !hasFlashlight(chapter);

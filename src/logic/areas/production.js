@@ -37,5 +37,9 @@ export const PRODUCTION = {
   monsters:[{id:'production.marshmallow',areaId:'production',name:'棉花糖先生',
     spawn:{x:18.5,z:-10.3,yaw:Math.PI},height:2.1,radius:0.35,clearance:0.05,
     patrol:['production.nav.B','production.nav.C','production.nav.D','production.nav.A'],
-    patrolSpeed:1,turnSpeed:Math.PI,dwellSeconds:1}],
+    patrolSpeed:1,turnSpeed:Math.PI,dwellSeconds:1,
+    vision:{distance:8,halfAngle:Math.PI/3,eyeHeight:1.5},
+    chaseSpeed:2.3,searchSpeed:1,returnSpeed:1.2,
+    repathSeconds:0.25,lostSightSeconds:0.75,searchSeconds:4,
+    contactDistance:0.8,contactResetDistance:1}],
 };

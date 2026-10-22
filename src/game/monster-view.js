@@ -23,15 +23,20 @@ export function createMonsterView(scene) {
   sugarGeometry.translate(0,0,-0.14);
   const models=new Map(MONSTERS.map(definition=>{
     const group=new THREE.Group();
+    const head=new THREE.Group();head.position.y=1.18;group.add(head);
     const mesh=(geometry,material,x,y,z)=>{
       const part=new THREE.Mesh(geometry,material);part.position.set(x,y,z);group.add(part);return part;
     };
+    const top=(geometry,material,x,y,z)=>{
+      const part=mesh(geometry,material,x,y,z);group.remove(part);head.add(part);
+      part.position.y-=1.18;return part;
+    };
     mesh(bodyGeometry,cream,0,0.735,0);
-    mesh(sugarGeometry,cream,0.025,1.36,0);
-    mesh(sugarGeometry,cream,-0.025,1.73,0).scale.y=1.5;
-    mesh(hatGeometry,mint,-0.025,2.035,0);
-    for(const side of [-1,1]) mesh(eyeGeometry,dark,-0.025+side*0.08,1.77,-0.197);
-    mesh(mouthGeometry,dark,-0.025,1.63,-0.187);
+    top(sugarGeometry,cream,0.025,1.36,0);
+    top(sugarGeometry,cream,-0.025,1.73,0).scale.y=1.5;
+    top(hatGeometry,mint,-0.025,2.035,0);
+    for(const side of [-1,1]) top(eyeGeometry,dark,-0.025+side*0.08,1.77,-0.197);
+    top(mouthGeometry,dark,-0.025,1.63,-0.187);
     const emblem=mesh(badgeGeometry,badge,0,0.94,-0.257);emblem.rotation.x=Math.PI/2;
     const arms=[-1,1].map(side=>mesh(armGeometry,cream,side*0.265,0.89,0));
     const shoes=[-1,1].map(side=>{
@@ -39,18 +44,23 @@ export function createMonsterView(scene) {
       shoe.rotation.x=Math.PI/2;return shoe;
     });
     group.visible=false;scene.add(group);
-    return [definition.id,{group,arms,shoes,scale:definition.height/2.1}];
+    return [definition.id,{group,head,arms,shoes,scale:definition.height/2.1}];
   }));
   return {
     sync(state) {
       for(const [id,model] of models) {
         const monster=state.monsters[id];
         model.group.visible=monster.mode!=='inactive';
-        const phase=monster.walkDistance*5,swing=Math.sin(phase)*0.14;
+        const chasing=monster.mode==='chase',searching=monster.mode==='search';
+        const phase=monster.walkDistance*5,swing=Math.sin(phase)*(chasing?0.22:0.14);
         model.group.position.set(monster.x,0.008*(1-Math.cos(phase*2)),monster.z);
         // 正面朝 -Z，與 logic 的 yaw=0 完全相同。
         model.group.rotation.y=monster.yaw;model.group.scale.setScalar(model.scale);
-        model.arms[0].rotation.x=swing;model.arms[1].rotation.x=-swing;
+        // 追逐稍低頭、抬短臂；搜尋隨 logic 轉向並緩慢側頭，沒有突現或閃光。
+        model.head.rotation.x=chasing?-0.12:0;
+        model.head.rotation.z=searching?Math.sin(monster.searchElapsed*Math.PI)*0.06:0;
+        model.arms[0].rotation.x=(chasing?-0.3:0)+swing;
+        model.arms[1].rotation.x=(chasing?-0.3:0)-swing;
         model.shoes[0].position.z=-0.035+swing*0.08;
         model.shoes[1].position.z=-0.035-swing*0.08;
       }
