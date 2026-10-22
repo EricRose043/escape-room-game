@@ -44,10 +44,10 @@
 - [ ] **STEP 10　聲音與氣氛**
   腳步聲、環境聲、靠近怪物時的心跳聲、設定（音量、jump scare 開關）
 
-## 分工建議（還沒確定，三個人討論後再改）
-- STEP 0～3 是大家都會用到的基礎，先由 EricRose043（Claude 監督、Codex 執行）做完
-- 基礎完成後可以平行：
-  - RyanDing1010：區域與謎題（STEP 4、7、9）
-  - shuoen88：棉花糖先生與追逐（STEP 5、6、8）
-  - EricRose043：聲音與氣氛（STEP 10）、整合與審查
-- 每個人在自己的分支開發，合併到 main 前要 `npm test` 全部通過
+## 分工（D013，取代原本的建議）
+- EricRose043（Claude 監督、Codex 執行）：STEP 0～4 已完成；STEP 5～6 進行中；之後負責把組員的成果接進主程式、審查合併。
+- RyanDing1010、shuoen88：做 **`TEAM_TASKS.md`** 裡列的工作，都可以和 EricRose043 並行、不改共用檔案：
+  - RyanDing1010：R1 生產線顏色謎題規則（STEP 7 logic）、R2 出口大門與結局（STEP 9）
+  - shuoen88：S1 聲音與氣氛（STEP 10）、S2 設定、S3 追逐走廊場地（STEP 8 場地）
+  - 兩人：實機測試（舊電腦 FPS、Xbox／PS 手把、Chrome 滑鼠鎖定）
+- 每個人在自己的分支開發、開 Pull Request，合併到 main 前要 `npm test` 全部通過。
