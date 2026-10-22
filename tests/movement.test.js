@@ -52,8 +52,9 @@ test('視角仰俯限制在正負 85 度，不會翻轉', async () => {
 
 test('玩家不會穿過房間牆壁，包含長時間持續前進', async () => {
   const { createPlayer, updatePlayer, PLAYER_RADIUS } = await load();
+  const { LEVEL_BOXES } = await import('./fixtures/demo-room.js');
   let state = createPlayer({ x: 0, z: 0, paused: false });
-  for (let i = 0; i < 100; i++) state = updatePlayer(state, action({ y: 1 }), 0.1);
+  for (let i = 0; i < 100; i++) state = updatePlayer(state, action({ y: 1 }), 0.1, LEVEL_BOXES);
   assert.ok(state.z >= -6 + PLAYER_RADIUS - 1e-9);
   assert.ok(state.z < -5);
 });
@@ -121,7 +122,7 @@ test('搖桿轉頭量照 dt 與轉頭速度換算，並與滑鼠位移相加', a
 
 test('level 清單裡的每個牆壁與家具方塊都能擋住玩家', async () => {
   const { createPlayer, updatePlayer, PLAYER_RADIUS } = await load();
-  const { LEVEL_BOXES } = await import('../src/logic/level.js');
+  const { LEVEL_BOXES } = await import('./fixtures/demo-room.js');
   assert.ok(LEVEL_BOXES.filter((box) => box.kind === 'table').length >= 1);
   assert.equal(LEVEL_BOXES.filter((box) => box.kind === 'wall').length, 4);
   for (const box of LEVEL_BOXES) {

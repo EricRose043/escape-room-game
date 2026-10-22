@@ -89,7 +89,7 @@ test('普通物品不補電，超距或隔牆撿取不補電', async () => {
   }
 });
 test('兩顆示範電池保留唯一 ID，所有物品三邊至少 0.25 公尺', async () => {
-  const { ITEMS } = await import('../src/logic/items.js');
+  const { ITEMS } = await import('./fixtures/demo-room.js');
   assert.equal(ITEMS.length, 3);
   assert.equal(new Set(ITEMS.map(i => i.id)).size, 3);
   assert.deepEqual(ITEMS.filter(i => i.kind === 'battery').map(i => i.id).sort(), ['demo-open-token', 'demo-table-token']);

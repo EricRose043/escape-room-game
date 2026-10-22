@@ -81,9 +81,10 @@ test('超距、遮擋、無目標或暫停時互動不改變背包', async () =>
   ]) assert.deepEqual(collectItem(inventory, p, actions, items, blockers), inventory);
 });
 test('示範資料具唯一 ID，隔板後物品可被擋住且繞行後可取得', async () => {
-  const { ITEMS } = await import('../src/logic/items.js');
-  const { LEVEL_BOXES } = await import('../src/logic/level.js');
-  const { selectItem } = await load();
+  const { ITEMS } = await import('./fixtures/demo-room.js');
+  const { LEVEL_BOXES } = await import('./fixtures/demo-room.js');
+  const { selectItem: select } = await load();
+  const selectItem = (p, inv) => select(p, inv, ITEMS, LEVEL_BOXES);
   assert.equal(ITEMS.length, 3); assert.equal(new Set(ITEMS.map(i => i.id)).size, 3);
   assert.ok(LEVEL_BOXES.some(b => b.kind === 'partition'));
   const item = ITEMS.find(i => i.id === 'demo-hidden-token');

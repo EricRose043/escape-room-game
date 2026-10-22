@@ -45,9 +45,10 @@ test('同距離障礙物阻擋，文字後方障礙物不阻擋', async () => {
   assert.equal(isClueVisible(player(), light, clue(), [blocker('wall', { minZ: -3.2, maxZ: -3 })]), true);
 });
 test('附著牆不誤擋外移文字，從牆另一側仍不可見', async () => {
-  const { CLUES } = await import('../src/logic/clues.js');
-  const { isClueVisible } = await load();
-  const { LEVEL_BOXES } = await import('../src/logic/level.js');
+  const { CLUES } = await import('./fixtures/demo-room.js');
+  const { isClueVisible: visible } = await load();
+  const isClueVisible = (p, f, c) => visible(p, f, c, LEVEL_BOXES);
+  const { LEVEL_BOXES } = await import('./fixtures/demo-room.js');
   assert.equal(CLUES.length, 1);
   const c = CLUES[0]; const wall = LEVEL_BOXES.find(b => b.kind === 'partition');
   assert.equal(c.position.z, wall.minZ - 0.02);
