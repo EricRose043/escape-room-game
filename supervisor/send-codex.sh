@@ -36,16 +36,38 @@ snap() { (cd "$REPO" && shasum -a 256 BRIEF.md VERIFY.md 2>/dev/null); }
 BEFORE=$(snap)
 
 [ -f "$LEDGER" ] || printf '時間\t請求\t模式\t模型\t思考度\t對話\n' > "$LEDGER"
-cd "$REPO"
-if [ "$NEW" = "new" ] || [ ! -s "$SIDF" ]; then
-  codex exec "${SANDBOX[@]}" -c model="$MODEL" -c model_reasoning_effort="$EFFORT" -o "$RESP" - < "$REQ" > "$LOG" 2>&1
-  rc=$?
-  SID=$(grep -m1 '^session id: ' "$LOG" | sed 's/^session id: //')
-  [ -n "$SID" ] && echo "$SID" > "$SIDF"
-else
-  SID=$(cat "$SIDF")
-  codex exec resume "$SID" "${SANDBOX[@]}" -c model="$MODEL" -c model_reasoning_effort="$EFFORT" -o "$RESP" - < "$REQ" > "$LOG" 2>&1
-  rc=$?
+
+# Codex 對話太長（最近一步讀入 > 20 萬 token）就自動開新對話；背景都在 repo 檔案裡，新對話照請求先讀（參考 YUJIN send-codex.sh）
+LIMIT=${CODEX_CTX_LIMIT:-200000}
+if [ "$NEW" != "new" ] && [ -s "$SIDF" ]; then
+  ROLL=$(ls -t ~/.codex/sessions/*/*/*/rollout-*"$(cat "$SIDF")".jsonl 2>/dev/null | head -1)
+  CTX=$( [ -n "$ROLL" ] && grep -o '"last_token_usage":{"input_tokens":[0-9]*' "$ROLL" | tail -1 | grep -o '[0-9]*$' )
+  if [ "${CTX:-0}" -gt "$LIMIT" ]; then
+    echo "Codex 對話讀入 $CTX token，超過 $LIMIT，改開新對話" >&2
+    NEW=new
+  fi
+fi
+
+run_codex() {  # $1 = 模型
+  cd "$REPO"
+  if [ "$NEW" = "new" ] || [ ! -s "$SIDF" ]; then
+    codex exec "${SANDBOX[@]}" -c model="$1" -c model_reasoning_effort="$EFFORT" -o "$RESP" - < "$REQ" > "$LOG" 2>&1
+    rc=$?
+    SID=$(grep -m1 '^session id: ' "$LOG" | sed 's/^session id: //')
+    [ -n "$SID" ] && echo "$SID" > "$SIDF"
+  else
+    SID=$(cat "$SIDF")
+    codex exec resume "$SID" "${SANDBOX[@]}" -c model="$1" -c model_reasoning_effort="$EFFORT" -o "$RESP" - < "$REQ" > "$LOG" 2>&1
+    rc=$?
+  fi
+}
+run_codex "$MODEL"
+# 模型容量已滿：只在計畫討論時改用另一個模型重送一次（施工中途重送可能重做一半的工作，交給監督者判斷）
+if [ "$rc" != 0 ] && grep -q 'at capacity' "$LOG" && [ "$MODE" = plan ]; then
+  OTHER=$([ "$MODEL" = gpt-6-luna ] && echo gpt-6.1-sol || echo gpt-6-luna)
+  echo "$MODEL 容量已滿，改用 $OTHER 重送一次" >&2
+  mv "$LOG" "${LOG%.log}.capacity.log"
+  MODEL="$OTHER"; run_codex "$MODEL"
 fi
 printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$(date '+%F %T')" "$(basename "$REQ")" "$MODE" "$MODEL" "$EFFORT" "${SID:-?}" >> "$LEDGER"
 

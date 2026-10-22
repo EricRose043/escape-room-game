@@ -1,5 +1,7 @@
-模型：gpt-6-luna
+模型：gpt-6.1-sol
 思考度：medium
+
+（監督者註：第一次送出時 gpt-6-luna 容量已滿而失敗；舊 Codex 對話已累積約 31 萬 token，改開新對話。這是新對話的第一則，所有背景請從 repo 檔案讀。）
 
 # R004｜計畫討論第 1 次：PLANS.md STEP 2「互動」
 
