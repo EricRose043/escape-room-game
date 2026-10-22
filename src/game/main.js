@@ -1,14 +1,17 @@
 import * as THREE from 'three';
 import {
-  createPlayer, updatePlayer, setPaused, EYE_HEIGHT, LEVEL_BOXES, ROOM_SURFACES,
+  setPaused, EYE_HEIGHT,
   readGamepad, mergeActions, buttonLabel, createPrompt, updatePrompt, pauseOnDisconnect,
   createSession, updateSession, keyboardInteractPressed, gameplayActions,
-  ITEMS, selectItem, createFlashlight, updateEquipment, keyboardEquipmentActions,
-  BEAM, CLUES, isClueVisible, viewRay,
+  ITEMS, selectItem, keyboardEquipmentActions,
+  BEAM, CLUES, isClueVisible, viewRay, rayBoxDistance,
+  createChapter, updateChapter, hasFlashlight, getGeometry,
 } from '../logic/index.js';
+import { createWorldView } from './world-view.js';
+import { compensatedIntensity } from './lighting.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
-let player = createPlayer();
+let chapter = createChapter();
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0c1015);
@@ -21,11 +24,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
 document.body.appendChild(renderer.domElement);
 
-const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x42434a });
-const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x586367 });
-const ceilingMaterial = new THREE.MeshLambertMaterial({ color: 0x343941 });
-const tableMaterial = new THREE.MeshLambertMaterial({ color: 0x66504c });
-
+const worldView = createWorldView(scene);
 function addBox(width, height, depth, x, y, z, material) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
   mesh.position.set(x, y, z);
@@ -33,27 +32,13 @@ function addBox(width, height, depth, x, y, z, material) {
   return mesh;
 }
 
-const materials = { partition: wallMaterial, wall: wallMaterial, table: tableMaterial, floor: floorMaterial, ceiling: ceilingMaterial };
-for (const box of [...LEVEL_BOXES, ...ROOM_SURFACES]) {
-  addBox(box.maxX - box.minX, box.maxY - box.minY, box.maxZ - box.minZ,
-    (box.minX + box.maxX) / 2, (box.minY + box.maxY) / 2, (box.minZ + box.maxZ) / 2,
-    materials[box.kind]);
-}
-
 // 每個模型直接從唯一物品 AABB 建立，不另存座標或尺寸。
-let inventory = { itemIds: [] };
-let flashlight = createFlashlight();
 const itemMeshes = new Map(ITEMS.map(item => [item.id,
   addBox(item.maxX - item.minX, item.maxY - item.minY, item.maxZ - item.minZ,
     (item.minX + item.maxX) / 2, (item.minY + item.maxY) / 2, (item.minZ + item.maxZ) / 2,
     new THREE.MeshLambertMaterial({ color: item.color }))]));
 
 scene.add(new THREE.AmbientLight(0x8e9eae, 0.45));
-const lamp = new THREE.PointLight(0xffd7a0, 26, 18, 2);
-lamp.position.set(0, 3.1, -1);
-scene.add(lamp);
-addBox(0.7, 0.08, 0.4, 0, 3.4, -1,
-  new THREE.MeshBasicMaterial({ color: 0xffd7a0 }));
 
 // 單盞手電筒，不開陰影或後製；照射範圍與 logic 共用設定。
 const torch = new THREE.SpotLight(0xffeed0, 35, BEAM.distance, BEAM.halfAngle, 0, 2);
@@ -86,13 +71,21 @@ const clueMeshes = new Map(CLUES.map(clue => {
 }));
 
 function syncLighting() {
-  const { origin, direction } = viewRay(player);
+  const ray = viewRay(chapter.player);
+  const { origin, direction } = ray;
+  const geometry = getGeometry(chapter);
+  let nearest = Infinity;
+  for (const box of [...geometry.occluderBoxes, ...ITEMS.filter(item => !chapter.inventory.itemIds.includes(item.id))]) {
+    const hit = rayBoxDistance(ray, box);
+    if (hit !== null) nearest = Math.min(nearest, hit);
+  }
+  torch.intensity = compensatedIntensity(nearest);
   torch.position.set(origin.x, origin.y, origin.z);
   torch.target.position.set(origin.x + direction.x, origin.y + direction.y, origin.z + direction.z);
-  torch.visible = flashlight.enabled && flashlight.charge > 0;
-  torch.color.setHex(flashlight.mode === 'uv' ? 0x9977ff : 0xffeed0);
+  torch.visible = hasFlashlight(chapter) && chapter.flashlight.enabled && chapter.flashlight.charge > 0;
+  torch.color.setHex(chapter.flashlight.mode === 'uv' ? 0x9977ff : 0xffeed0);
   for (const clue of CLUES) {
-    clueMeshes.get(clue.id).visible = isClueVisible(player, flashlight, clue);
+    clueMeshes.get(clue.id).visible = isClueVisible(chapter.player, chapter.flashlight, clue, geometry.occluderBoxes);
   }
 }
 
@@ -115,6 +108,7 @@ const controlsHint = document.querySelector('#controls-hint');
 const inputHint = document.querySelector('#input-hint');
 const pauseInstructions = document.querySelector('#pause-instructions');
 const gamepadStatus = document.querySelector('#gamepad-status');
+const chargeRow = document.querySelector('#charge-row');
 const chargeMeter = document.querySelector('#charge-meter');
 const chargeText = document.querySelector('#charge-text');
 const flashlightMode = document.querySelector('#flashlight-mode');
@@ -141,16 +135,17 @@ function setText(element, text) {
 function syncUI() {
   pauseScreen.hidden = !session.paused;
   crosshair.hidden = session.paused;
-  const target = selectItem(player, inventory);
+  const target = selectItem(chapter.player, chapter.inventory, ITEMS, getGeometry(chapter).occluderBoxes);
   interactionHint.hidden = !target;
   setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} 撿起 ${target.name}` : '');
   setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
-  chargeMeter.value = flashlight.charge;
-  setText(chargeText, `${Math.ceil(flashlight.charge)}%`);
-  setText(flashlightMode, `${flashlight.mode === 'uv' ? '紫外光' : '一般光'} · ${flashlight.enabled ? '開啟' : '關閉'}`);
+  chargeRow.hidden = !hasFlashlight(chapter);
+  chargeMeter.value = chapter.flashlight.charge;
+  setText(chargeText, `${Math.ceil(chapter.flashlight.charge)}%`);
+  setText(flashlightMode, `${chapter.flashlight.mode === 'uv' ? '紫外光' : '一般光'} · ${chapter.flashlight.enabled ? '開啟' : '關閉'}`);
   const device = prompt.device;
-  setText(controlsHint, `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停 · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線`);
+  setText(controlsHint, `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
   setText(pauseInstructions, device === 'keyboard'
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，或使用下方按鈕切換鍵盤滑鼠。`
@@ -174,7 +169,7 @@ function applySession(actions) {
   if (next.paused !== session.paused || next.hasStarted !== session.hasStarted) clearInput();
   if (!next.paused && disconnectedMessage) clearDisconnectMessage();
   session = next;
-  player = setPaused(player, session.paused);
+  chapter = { ...chapter, player: setPaused(chapter.player, session.paused) };
   syncUI();
 }
 
@@ -374,11 +369,9 @@ function animate(time) {
   const dt = previousTime === undefined ? 0 : (time - previousTime) / 1000;
   previousTime = time;
   const actions = readActions(time);
-  player = updatePlayer(player, actions, dt);
-  const equipment = updateEquipment({ inventory, flashlight }, player, actions, dt);
-  inventory = equipment.inventory;
-  flashlight = equipment.flashlight;
-  for (const id of inventory.itemIds) {
+  chapter = updateChapter(chapter, actions, dt);
+  worldView.sync(chapter);
+  for (const id of chapter.inventory.itemIds) {
     const mesh = itemMeshes.get(id);
     if (!mesh) continue;
     scene.remove(mesh);
@@ -387,8 +380,8 @@ function animate(time) {
     itemMeshes.delete(id);
   }
   syncUI();
-  camera.position.set(player.x, EYE_HEIGHT, player.z);
-  camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
+  camera.position.set(chapter.player.x, EYE_HEIGHT, chapter.player.z);
+  camera.rotation.set(chapter.player.pitch, chapter.player.yaw, 0, 'YXZ');
   syncLighting();
   renderer.render(scene, camera);
   frames += 1;
