@@ -8,7 +8,7 @@
 | D002 | 2026-10-22 | RyanDing1010、shuoen88 用單 AI，不受雙 AI 限制 | EricRose043 | 同上 |
 | D003 | 2026-10-22 | 恐怖元素參考 Poppy Playtime 的氣氛，但角色、場景、道具全部原創 | EricRose043 提需求，Claude 規劃 | BRIEF.md |
 | D004 | 2026-10-22 | 技術：three.js 靜態網站、第一人稱、規則放 src/logic 用 npm test 測 | Claude 規劃 | BRIEF.md「限制」、PLANS.md |
-| D010 | 2026-10-22 | STEP 4 拆成 4a（正式場景與大廳門禁）、4b（保險絲與電箱）、4c（密碼鎖與恢復供電）；關卡資料每區一份 `src/logic/areas/*.js`，由 `world.js` 彙整，**之後新增區域照這個格式**；門擋移動與視線；密碼 4726；密碼鎖 3×4、手把十字鍵操作；光源上限 1 SpotLight＋2 PointLight＋Ambient；7 個舊測試可遷移到 fixture，但遷移須單獨 commit 且不改任何期望值 | Claude 從 Codex 提案採認 | supervisor/rounds/r006-plan-d1-resp.md、r006-build-4a.md |
+| D010 | 2026-10-22 | STEP 4 拆成 4a（正式場景與大廳門禁）、4b（保險絲與電箱）、4c（密碼鎖與恢復供電）；關卡資料每區一份 `src/logic/areas/*.js`，由 `world.js` 彙整，**之後新增區域照這個格式**；門擋移動與視線；密碼 4726；密碼鎖 3×4、手把十字鍵操作；光源上限 1 SpotLight＋2 PointLight＋Ambient；7 個舊測試可遷移到 fixture，但遷移須單獨 commit 且不改任何期望值；門楣只擋視線不擋移動（4a 補充） | Claude 從 Codex 提案採認 | supervisor/rounds/r006-plan-d1-resp.md、r006-build-4a.md |
 | D009 | 2026-10-22 | STEP 4（入口大廳與電力室）先由 EricRose043 這邊（Claude 監督、Codex 執行）做，當作之後關卡的範本；其餘分工仍照 PLANS.md 建議，待三人討論 | EricRose043（選「先做」） | 本對話 2026-10-22 |
 | D008 | 2026-10-22 | 手電筒：起始 100%、每秒耗 0.2 個百分點（滿電約 8 分 20 秒）、電池 +25 上限 100；關閉／暫停不耗電；紫外光照到＝隱藏字中心在光錐（半角 25°、8 m）內、在正面、無遮擋；不開陰影（光可能穿過隔板，但隱藏字仍照 logic 判斷）。數值是初始建議，關卡完成後實玩再調 | Claude 從 Codex 提案採認 | supervisor/rounds/r005-plan-d1-resp.md 第 2、3 節 |
 | D007 | 2026-10-22 | 互動「看著」＝畫面中央射線打到物品的判定方塊；「2 公尺」＝眼睛到首次打到表面的距離（含 2 公尺）；隔牆、隔板、桌子擋住就撿不到；每個物品判定方塊三邊至少 0.25 m，模型與判定一致 | Claude 從 Codex 提的 3 個選項選定 | supervisor/rounds/r004-plan-d1-resp.md 第 2、3 節、r004-build-d2.md |
