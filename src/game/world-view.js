@@ -4,7 +4,7 @@ import { DEVICES, isDevicePowered, powerProgress } from '../logic/chapter.js';
 
 export function createWorldView(scene) {
   const palette = {wall:0x586367,table:0x66504c,floor:0x42434a,ceiling:0x343941,fuseBox:0x46525a,keypad:0x58626a,door:0x5d6964,
-    machine:0x577b75,locker:0x4d646d,lockerDoor:0x6d8589,trim:0x273c42};
+    machine:0x577b75,locker:0x4d646d,lockerDoor:0x6d8589,trim:0x273c42,train:0x45525a,trainConsole:0xb08c49};
   const materials = Object.fromEntries(Object.entries(palette).map(([kind,color])=>[kind,new THREE.MeshLambertMaterial({color})]));
   for(const kind of ['locker','lockerDoor','trim']) materials[kind].side=THREE.DoubleSide;
   const addBox = (b,kind=b.kind) => {
@@ -14,6 +14,13 @@ export function createWorldView(scene) {
   };
   // logic 保留完整櫃體遮擋，畫面改用有厚度的薄板，櫃內也看得到板面。
   for(const b of [...STATIC_BOXES.filter(b=>b.kind!=='locker'),...SURFACES]) addBox(b);
+  const trainGroup=new THREE.Group();
+  const trainParts=(w,h,d,x,y,z,color)=>{const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color}));mesh.position.set(x,y,z);trainGroup.add(mesh);};
+  trainParts(3.8,0.8,2.4,0,0.85,0,0xc34e39);trainParts(1.5,1.05,2.2,0.9,1.55,0,0xd9ad4e);
+  trainParts(1.35,1.2,1.35,-1.35,1.5,0,0x355f77);trainParts(4.1,0.18,2.55,0,0.4,0,0x26353b);
+  trainParts(1.55,0.14,1.45,0.9,2.2,0,0xe5d29b);
+  for(const x of [-1.35,1.35]) for(const z of [-0.9,0.9]) {const wheel=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.34,0.18,10),new THREE.MeshLambertMaterial({color:0x20272a}));wheel.rotation.z=Math.PI/2;wheel.position.set(x,0.38,z);trainGroup.add(wheel);}
+  trainGroup.position.set(32.5,0,-6.5);scene.add(trainGroup);
   // 裝飾沿同一 AABB 建立，不新增碰撞規則或可操作的生產線謎題。
   for(const machine of STATIC_BOXES.filter(b=>b.kind==='machine')) {
     addBox({...machine,minX:machine.minX+0.1,maxX:machine.maxX-0.1,minY:1.05,maxY:1.2,
@@ -77,6 +84,7 @@ export function createWorldView(scene) {
   const lights=Array.from({length:2},()=>{const light=new THREE.PointLight();light.castShadow=false;light.visible=false;scene.add(light);return light;});
   return {
     sync(state) {
+      trainGroup.position.x=32.5+(state.ui.mode==='ending'?(state.ui.elapsed??0)*1.2:0);
       for(const door of DOORS) doors.get(door.id).visible=!isDoorOpen(door,state);
       for(const device of DEVICES) {
         const material=indicators.get(device.id);
