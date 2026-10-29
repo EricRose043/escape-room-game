@@ -39,7 +39,7 @@ export const POWER_ROOM = {
     {id:'power.uv-note',text:'檢修墨跡在普通照明下不可見',position:{x:4.98,y:2.3,z:-4.5},normal:{x:-1,y:0,z:0},width:2.2,height:0.3},
     {id:'power.exit-sign',text:'玩具裝配線',position:{x:4.98,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
     {id:'power.incident-log',text:'異常紀錄：展示玩偶位置與監視器不符',position:{x:0,y:2.1,z:-8.18},normal:{x:0,y:0,z:1},width:3.8,height:0.5},
+    {id:'power.night-report',text:'停工前夜：停止展示區供電，夜班禁止單獨巡查',position:{x:0,y:1.45,z:-8.18},normal:{x:0,y:0,z:1},width:4.2,height:0.38},
     {id:'power.train-log',text:'貨運區保留一列大型玩具展示列車',position:{x:-2.9,y:1.8,z:-5.38},normal:{x:0,y:0,z:-1},width:2.2,height:0.4},
   ],
 };
-
