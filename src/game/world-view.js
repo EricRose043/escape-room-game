@@ -4,7 +4,7 @@ import { DEVICES, isDevicePowered, powerProgress } from '../logic/chapter.js';
 
 export function createWorldView(scene) {
   const palette = {wall:0x586367,table:0x66504c,floor:0x42434a,ceiling:0x343941,fuseBox:0x46525a,keypad:0x58626a,door:0x5d6964,
-    machine:0x577b75,locker:0x4d646d,lockerDoor:0x6d8589,trim:0x273c42,train:0x45525a,trainConsole:0xb08c49};
+    machine:0x577b75,locker:0x4d646d,lockerDoor:0x6d8589,trim:0x273c42,hazard:0xc79a48,train:0x45525a,trainConsole:0xb08c49};
   const materials = Object.fromEntries(Object.entries(palette).map(([kind,color])=>[kind,new THREE.MeshLambertMaterial({color})]));
   for(const kind of ['locker','lockerDoor','trim']) materials[kind].side=THREE.DoubleSide;
   const addBox = (b,kind=b.kind) => {
@@ -31,6 +31,12 @@ export function createWorldView(scene) {
       minZ:machine.maxZ,maxZ:machine.maxZ+0.012},'trim');
     addBox({...machine,minX:machine.minX+0.1,maxX:machine.maxX-0.1,minY:machine.maxY-0.01,maxY:machine.maxY+0.006,
       minZ:machine.minZ+0.1,maxZ:machine.maxZ-0.1},'trim');
+    const count=Math.max(4,Math.floor((machine.maxX-machine.minX)/0.34));
+    for(let i=0;i<count;i++) {
+      const x=machine.minX+0.08+i*0.34;
+      addBox({minX:x,maxX:Math.min(x+0.18,machine.maxX-0.04),minY:0.06,maxY:0.2,
+        minZ:machine.maxZ+0.012,maxZ:machine.maxZ+0.03},i%2?'trim':'hazard');
+    }
   }
   for(const locker of DEVICES.filter(d=>d.kind==='locker')) {
     const b=locker.bounds,t=locker.panelThickness,peek=locker.peek,cx=(b.minX+b.maxX)/2;
