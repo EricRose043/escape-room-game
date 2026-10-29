@@ -22,7 +22,7 @@ const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移�
 const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'};
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
-const introSlides=['曾經，這座玩具工廠讓整座城市都亮了起來。最受歡迎的，是那隻張開雙臂迎接孩子的藍色玩偶。','直到封廠前一夜，整條生產線突然停擺。公司沒有公告原因，員工也在同一晚被緊急撤離。','封存的監視畫面留下最後一段紀錄：展示區已斷電，藍色玩偶卻離開了展示台。鏡頭隨即中斷。','一張維修單被撕掉大半，只剩一句紅字：「不要替展示玩偶接上電源。」多年來，沒有人說明那晚發生了什麼。','你為了查明工廠封閉的真相，循著封廠前的舊新聞線索來到辦公室。身後的大門突然鎖上——黑暗裡，某個沉重的東西落了地。'];
+const introSlides=['這間玩具工廠曾風靡全城。藍色迎賓玩偶是招牌，每個孩子都認得它咧嘴的笑容。','封廠那夜，生產線全停，員工被緊急撤出。公司只留下「設備故障」四個字，沒有事故報告。','多年後，你收到匿名訊息：「真正的夜班維修紀錄還在辦公室。無論如何，別重啟主電源。」','為查明真相，你依訊息來到工廠。身後大門鎖上的瞬間，黑暗深處傳來沉重的墜地聲。','手電筒亮起。桌上有地圖和員工卡；走廊盡頭的控制室還有電。你必須找到出口，也查明那一夜發生了什麼。'];
 let introStarted=performance.now(),introStage=-1;
 let introTimer;
 function finishIntro(){intro.hidden=true;clearInterval(introTimer);try{audio.start();}catch{}}
