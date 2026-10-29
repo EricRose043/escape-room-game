@@ -15,10 +15,10 @@
 | 成員 | 主責 | 可核對的紀錄 | 狀態 |
 |---|---|---|---|
 | EricRose043 | 網站與機關 | 本輪起點 `0fab5ef6758b25234c523d6a5a05e5f059ab7cee`；截至該版本 main 可讀的 65 筆 commit，其 GitHub author 皆為 EricRose043 | 既有 main 紀錄保留；不改寫 |
-| RyanDing1010 | 劇情與素材 | 待本人 PR／原始 commit | main 尚未核對到 Ryan 的作者紀錄；不推定其他分支是否已有成果 |
+| RyanDing1010 | 劇情與素材 | story/toy-factory-draft 的 45 筆提交，最後鎖定 8bf3e2f | 最後快照已核對 45 筆作者均為 RyanDing1010；尚未合併 main、沒有對應 PR |
 | shuoen88 | 測試與整合 | 本次 `shuoen/team-roles-and-test-plan` 文件提交與後續 PR；原始 SHA 見該分支歷史 | 本次提交使用 shuoen88 真實帳號；main 合併後再核對 |
 
-目前不能宣稱三人都已在 main 留下 commit。此文件建立保留及核對流程；Ryan 必須由本人完成實際工作後提交，本輪不替他製造紀錄。
+目前不能宣稱三人都已在 main 留下 commit。Ryan 的本人工作已在新分支核對，後續由本人開 PR、owner 審查合併後再核對 main；本輪不替他製造或重寫任何紀錄。
 
 ## 後續貢獻填寫
 
@@ -36,3 +36,9 @@
 - `9056b86`：S1 獨立模組與瀏覽器訊號驗證，180/180 通過。
 - 隨後文件提交：整理 S1 接入說明、缺陷與換行；以本分支歷史核對 SHA。
 - 以上均由 shuoen88 身分提交；尚待 Eric 使用 merge commit 合併。Ryan 的貢獻仍待本人提交，未冒用其身分。
+
+## 最新補查（2026-10-29）
+
+Ryan 分支 aace2e6 相對 main=0fab5ef 有 34 筆提交，git author 均為 RyanDing1010；不再以舊的 main-only 查核推定他沒有貢獻。提交已存在與程式驗收通過分開判定；目前列車回歸有失敗，詳 PROGRESS／LOG-05。main、PR #1／#2 的舊 SHA 與作者均未改寫。
+
+最新補查補充：測試期間 Ryan 又新增 11 筆，最後鎖定 8bf3e2f，共 45 筆作者均為 RyanDing1010。34 筆是本輪第一快照 aace2e6，不是最終數字；原始提交皆保留。兩套音效各自有作者證據，整合衝突不能以刪除任一方貢獻解決。

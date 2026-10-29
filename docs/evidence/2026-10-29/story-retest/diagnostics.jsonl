@@ -1,0 +1,5 @@
+{"name":"factory-ending original horizontal fixture","pass":false,"actual":{"target":null,"trainStarted":false}}
+{"name":"looking down can start train","pass":true,"actual":{"target":"bay.train-console","trainStarted":true}}
+{"name":"new progress survives serialization and restore","pass":false,"actual":{"before":{"production":true,"train":true},"after":{"production":false,"train":false},"raw":"{\"version\":1,\"chapterId\":\"chapter-1\",\"checkpointId\":\"production.checkpoint\",\"itemIds\":[\"lobby.flashlight\",\"lobby.employee-card\",\"lobby.factory-map\",\"power.fuse\"],\"puzzles\":{\"power.main\":{\"installedItemId\":\"power.fuse\",\"restored\":true}},\"flashlight\":{\"charge\":100,\"mode\":\"normal\"}}"}}
+{"name":"ending finishes after ten simulated seconds","pass":false,"actual":{"target":"bay.train","paused":true,"before":{"mode":"ending","elapsed":0},"after":{"mode":"ending","elapsed":0}}}
+{"summary":{"checks":4,"passed":1,"failed":3},"note":"Fixture diagnostics; not a browser playthrough or an additional full-suite test count"}

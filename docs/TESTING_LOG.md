@@ -100,3 +100,44 @@
 - 證據：[原始音訊測量紀錄](evidence/2026-10-29/audio-browser-log.txt)、[瀏覽器畫面](evidence/2026-10-29/audio-browser.jpg)、[Node 紅綠結果摘要](evidence/2026-10-29/audio-node-summary.txt)。
 - 未檢查：真人耳機／喇叭音色與舒適度、各瀏覽器差異、遊戲實際腳步／警報／門事件同步、暫停與背景在正式主程式的整合。獨立頁量到訊號不等於已聽到或喜歡音色。
 - 整合交付：見 `docs/AUDIO_INTEGRATION.md`；未修改共用 main／logic index／章節／怪物，也未將 STEP 10 整體勾完成。npm 本機仍未安裝，執行的是 package.json 對應的 Node 測試指令。
+
+## LOG-20261029-05：第一快照 aace2e6 的獨立回歸與整合預覽（歷史）
+
+- 本筆是第一快照，測試中又收到新提交；最後鎖定結果見 LOG-06，不能將本筆失敗套用到最新版本。
+- 日期／操作者：2026-10-29，shuoen88 授權的 Codex；Windows、Node v24.22.1。GitHub 查核 main=0fab5ef、S1=dafd948，PR #1／#2 仍開啟，Ryan story 分支=aace2e664a19da2559185ea8592a30f6f5d7e7e3（領先 main 34 commits）。
+- Ryan 原始內容在獨立 detached worktree 執行，未把它合併到 shuoen 分支，沒有修改其程式與既有測試。此 worktree 採原始 LF，沒有以改斷言掩蓋失敗。
+- 命令一：在 Ryan checkout 執行 `node --test --test-reporter=tap` → **174 項，173 通過、1 失敗**。失敗是 factory-ending.test.js 的「啟動列車後登車完成逃脫，沒啟動前不能通關」，第一個 trainStarted 斷言就失敗，還沒驗到完整 ending。
+- 命令二：在原 S1 checkout 執行相同命令 → **180/180 通過**。這個結果不能替代 Ryan 新程式的回歸。
+- 命令三：`git merge-tree --write-tree dafd948 origin/story/toy-factory-draft` 得到預覽 tree 23862146975a857ae0de26361f03a95d22fd0177，退出碼 0（無文字衝突）。只將 tree archive 解到獨立暫存目錄跑 Node 套件，**185 項，184 通過、1 失敗**，同一列車測試。沒有建立／推送 merge commit，也沒有改 main 或兩人的遊戲程式。
+- 額外診斷命令：`node tools/review-factory-branch.mjs <Ryan-checkout目錄> --include-legacy-fixture` → 4 項 probe 中 1 通過、3 失敗，退出碼 1 是預期的問題證據；不是完整套件又新增 4 個正式測試。已重現水平視線選不到低控制台、低頭可啟動、序列化遺失新進度、登車後 elapsed 永遠 0。
+
+### 真實瀏覽器操作（不使用 seed 或模擬手把）
+
+- 環境：內建 Chromium，`http://127.0.0.1:8789/index.html`，單獨 origin，未碰舊 8788 試聽頁或其存檔。
+- 開啟新分支 → 按跳過劇情 → 重新開始／確認 → 初次仍顯示 Pointer Lock 限制 → 點開始按鈕：新的備援能進遊戲，沒有偽造 Pointer Lock。
+- 原地按方向鍵下七次，真實畫面出現「E 撿起 工廠平面圖」→ 按 E → 出現地圖按鈕 → 按 M → 顯示員工手繪平面圖及四區文字；收起地圖後回到暫停畫面，行為清楚。
+- 真正關閉分頁再新開同網址 → 跳過開場 → 繼續 → 地圖按鈕仍出現 → 點按可查看原地圖。此處是本輪真正拾到的地圖，不是預製存檔。
+- console error／warn 清單為空。未測完整 60 秒、卡片與修電全路線、列車全章、實體手把、音色舒適度或舊電腦 FPS。結局與列車保存的問題是實際 logic fixture 重現，沒有宣稱瀏覽器已通關。
+
+### 證據與後續
+
+- [Ryan 完整 TAP](evidence/2026-10-29/story-retest/story-suite.tap)、[S1 完整 TAP](evidence/2026-10-29/story-retest/audio-suite.tap)、[整合預覽 TAP](evidence/2026-10-29/story-retest/combined-preview-suite.tap)、[診斷 JSON](evidence/2026-10-29/story-retest/diagnostics.jsonl)。
+- [首次開圖畫面](evidence/2026-10-29/story-retest/map-open.jpg)、[首次開圖 DOM](evidence/2026-10-29/story-retest/map-open-dom.txt)、[關頁讀回畫面](evidence/2026-10-29/story-retest/map-after-reopen.jpg)、[讀回 DOM](evidence/2026-10-29/story-retest/reopen-dom.txt)。
+- 發現記為 DEF-003（測試 fixture）、DEF-004（結局卡住）、DEF-005（新進度丟失）；文件編號與驗收落差另列 INT-001／Q-004。未順手修改共用主程式或他人測試，等待負責人修正後複測。
+
+## LOG-20261029-06：最後鎖定 8bf3e2f 複測與新增音效衝突
+
+- 日期／操作者、環境同 LOG-05；本輪測試期間 Ryan 又有 11 筆提交，從 aace2e6 到 **8bf3e2ff8fa27c0c24b64cbf4475efded268129d**。相對 main 共 45 筆，作者均為 RyanDing1010。本輪鎖定此 SHA，不把後續提交自動算成已測。
+- 在乾淨的 detached checkout 切到此精確 SHA，`node --test --test-reporter=tap` → **176 項全通過**。原列車 fixture 已改為低頭，結局不再自動設 paused，8 秒邊界亦有容差；DEF-003／004 在此版的套件／logic 複測通過，不代表 main 或真人全章已驗。
+- 額外 `node tools/review-factory-branch.mjs <Ryan-checkout>` → **3 項檢查，2 通過、1 失敗**：低頭啟動列車成功；登車更新 10 秒達 complete；序列化往返仍丟 production.sequence 與 trainStarted（DEF-005）。舊水平 fixture 現在列為不計分控制組，完整舊快照可用 --include-legacy-fixture 重播，未放寬任何遊戲斷言或修改他人測試。
+- 最新 `git merge-tree --write-tree dafd948 8bf3e2f` → **退出 1**：兩邊各新增 `src/game/audio.js` 與 `tests/audio.test.js`，add/add 衝突。你這邊公開 createAudio，Ryan 這邊公開 createFactoryAudio／audioCueFor 且 main 已使用它，不能用任一方檔案直接蓋過另一方。沒有解衝突或執行帶衝突標記的套件，也沒有合併遠端分支（INT-002）。LOG-05 的無衝突預覽不再適用。
+
+### 8bf3e2f 真實瀏覽器重新載入
+
+1. 服務 root 已切到精確 8bf3e2f，對原 8789 分頁執行 reload，確認新版「音效：開啟」按鈕存在。
+2. 跳過劇情 → 繼續 → 原先親自拾取的地圖仍可用；點開始，M 開地圖，顯示暫停；按收起後暫停畫面消失、返回探索。沒有使用模擬手把或 seed。
+3. 音效按鈕由開啟切成靜音；此處只驗證真實 UI 切換及無未處理錯誤，未量測 Ryan 這套音效波形或代替真人聽感。
+4. 再開圖保存畫面；console error／warn 清單為空。原生 Pointer Lock 仍受環境限制，但現在有方向鍵備援；未把列車的 logic 結果記成真瀏覽器全章通關。
+
+- 證據：[最新完整 TAP](evidence/2026-10-29/story-retest-8bf/story-suite.tap)、[最新診斷](evidence/2026-10-29/story-retest-8bf/diagnostics.jsonl)、[衝突預覽](evidence/2026-10-29/story-retest-8bf/merge-preview.txt)、[新版地圖／靜音畫面](evidence/2026-10-29/story-retest-8bf/map-muted.jpg)、[DOM](evidence/2026-10-29/story-retest-8bf/browser-dom.txt)、[瀏覽器錯誤清單](evidence/2026-10-29/story-retest-8bf/browser-errors.json)。TAP 為完整文字，僅移除行尾空白以供 diff 檢查，未改數值、案例或錯誤內容。
+- 未檢查：後續新 SHA、一般 Chrome 滑鼠鎖定、真人完整列車路線、實體手把、音色／音量舒適度、舊電腦 FPS。最新已知阻擋是 DEF-005 與 INT-002；不再將已修正的 DEF-003／004 列為該 SHA 的現存邏輯故障。
