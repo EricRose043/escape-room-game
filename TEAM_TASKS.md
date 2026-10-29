@@ -1,18 +1,30 @@
 # 組員工作清單（可以和 EricRose043 並行）
 
-更新：2026-10-22（D013）
+更新：2026-10-29（D015；此分支為 shuoen88 提案，經 EricRose043 審查合併後生效）
 
-EricRose043 這邊（Claude 監督、Codex 執行）正在做 **STEP 5～6（棉花糖先生、被抓與存檔點）**。下面的工作都設計成**不用等那邊、也不會改到同一批檔案**，可以馬上開始。
+## 三人主責與交付
+
+| 成員 | 課程主責 | 具體交付 | 合作與驗收 |
+|---|---|---|---|
+| RyanDing1010 | 劇情與素材 | R1 顏色謎題、R2 出口與結局；新增 `docs/STORY.md` 統整開場、五區故事、三條線索與密碼推導；整理場景文字與素材來源 | 檢查線索可理解且互相一致；素材來源加在 `assets/CREDITS.md`；提供可實玩的驗收步驟 |
+| EricRose043 | 網站與機關 | 核心程式、怪物與關卡機關、組員模組接入主程式、部署說明與 PR 最終審查合併 | 處理共用程式與測試修改；接入後交 shuoen88 做跨功能驗收 |
+| shuoen88 | 測試與整合 | 維護 `TESTS.md`、統整 `docs/TESTING_LOG.md`、`docs/DEFECTS.md` 與 `docs/CONTRIBUTIONS.md`；保留 S1 聲音、S2 設定、S3 走廊場地 | 安排實機與跨功能測試、追蹤缺陷修正後複測、核對真實作者紀錄；不取代各人自測或 Eric 的合併權責 |
+
+每人負責自己功能的測試與修正；shuoen88 統整整體證據，協調整合驗收。原本 R1／R2／S1／S2／S3 的檔案與介面分配保留，S3 不因本次文件更新自動轉交；如時間不足由三人再協調並記錄。上述新增交付目前只是任務，不代表已完成。
+
+依 `supervisor/LATEST.md`（2026-10-23），STEP 0～6 已審查，但 6b／6c 仍有瀏覽器補驗、實體手把及舊電腦效能缺口。保留既有歷史紀錄；最新驗收結果統整到 `docs/TESTING_LOG.md`。組員工作仍可並行，避免改到同一批共用檔案。
 
 ## 開工前一定要讀
 `AGENTS.md`、`BRIEF.md`、`VERIFY.md`、`PLANS.md`、`DECISIONS.md`，以及 `src/logic/areas/power-room.js`（區域資料的範本，D010）。
 
-## 最重要的規則：只新增自己的檔案
+## 檔案範圍：功能模組分開，驗收文件共同留下證據
 
 | 誰的檔案 | 檔案 | 組員可以改嗎 |
 |---|---|---|
 | EricRose043 | `src/logic/chapter.js`、`world.js`、`index.js`、`monster*.js`、`navigation.js`、`movement.js`、`gamepad.js`、`interaction.js`、`flashlight.js`、`areas/lobby.js`、`areas/power-room.js`、`areas/production.js`、`src/game/main.js`、`world-view.js`、`monster-view.js`、`index.html`、所有現有 `tests/*.test.js` | **不要改**。需要接上時，在 PR 說明裡寫「需要 EricRose043 那邊在 X 加一行 Y」，由那邊整合。 |
 | 組員 | 下面每個任務列出的**新檔案** | 可以，只改自己任務的檔案 |
+
+新增職責的文件範圍：Ryan 可新增／維護 `docs/STORY.md`；shuoen88 可維護 `TESTS.md`、上述三份追蹤文件，並新增 `tests/integration-*.test.js`。實測者可追加自己的實測與貢獻紀錄，不刪別人的紀錄；共同文件以 PR 協調。此範圍不授權組員直接改既有測試或共用主程式。
 
 其他規則照 `AGENTS.md`：先寫測試再寫程式（TDD）、不改既有測試、規則放 `src/logic/`（不碰 three.js）、畫面放 `src/game/`、素材來源寫 `assets/CREDITS.md`（這個檔可以加自己的段落）。
 
@@ -20,11 +32,13 @@ EricRose043 這邊（Claude 監督、Codex 執行）正在做 **STEP 5～6（棉
 1. 開自己的分支：`git checkout -b ryan/color-puzzle`（名字照任務改）。
 2. 做完 `npm test` 全部通過（包含別人的測試）。
 3. push 分支、在 GitHub 開 Pull Request，說明寫：做了什麼、測試結果、**需要主程式怎麼接**（例如「在 chapter.js 呼叫 `pressButton`」）。
-4. 不要直接推到 `main`。EricRose043 那邊審查後合併，並負責接進主程式。
+4. 不要直接推到 `main`。EricRose043 那邊審查後合併，並負責接進主程式；shuoen88 核對接入後的驗收結果與未解缺陷。
+5. commit 使用實際工作者自己的 GitHub 身分。合併使用 **Create a merge commit**，保留分支上每筆原始 commit 與作者；不使用 squash／rebase 合併，不 force push、不改寫既有作者。
+6. PR 加上對應 `TESTS.md` 案例、實測／缺陷紀錄及原始 commit，依 `docs/CONTRIBUTIONS.md` 核對。不能替別人補造 commit；共同工作只有真正參與且本人確認時才加共同作者。
 
 ---
 
-## RyanDing1010：謎題與結局
+## RyanDing1010：劇情與素材（保留謎題與結局）
 
 ### R1　生產線顏色謎題的規則（STEP 7 的 logic 部分）
 - **新檔案**：`src/logic/puzzles/color-sequence.js`、`tests/color-sequence.test.js`
@@ -50,7 +64,15 @@ EricRose043 這邊（Claude 監督、Codex 執行）正在做 **STEP 5～6（棉
 
 ---
 
-## shuoen88：聲音、設定、追逐走廊場地
+## shuoen88：測試與整合（保留聲音、設定、追逐走廊場地）
+
+### S0　整體驗收與缺陷追蹤（優先統整）
+- `TESTS.md`：由 `VERIFY.md` 展開案例，保留來源編號；AI 維護細節，人審驗收依據，不反向改寫需求。
+- `docs/TESTING_LOG.md`：安排鍵鼠、Xbox、PS、存檔、被抓、效能與整章實玩；記錄版本、設備、操作者、實際結果。假手把與 Node 替身不算實體手把驗收。
+- `docs/DEFECTS.md`：登錄重現步驟、預期／實際、修復負責人、修復 commit 與複測；只有重現確定才標為缺陷。未實作功能、需求問題及未檢查項目分開記錄。
+- `docs/CONTRIBUTIONS.md`：核對各人原始 commit 與 PR，合併後確認原始 SHA 仍可由 main 追溯。
+- 突變測試只在乾淨的獨立分支／工作副本進行；先 commit、每次改壞一條規則、確認測試會失敗、還原並跑綠。漏網才補測試，不把故意改壞的程式合進 main。
+- 各人先自測；shuoen88 驗跨功能結果；Eric 處理主程式串接並審查合併。尚未實玩不得填通過。
 
 ### S1　聲音與氣氛（STEP 10）
 - **新檔案**：`src/game/audio.js`、`src/logic/audio-mix.js`、`tests/audio-mix.test.js`
@@ -80,14 +102,14 @@ EricRose043 這邊（Claude 監督、Codex 執行）正在做 **STEP 5～6（棉
 
 ---
 
-## 兩人都可以做：實機測試
-EricRose043 那邊的 AI 只能在模擬環境測，下面這些需要真的電腦和手把。結果寫進 `docs/TESTING_LOG.md`（新檔案，誰測誰寫一段）。
+## 三人共同實測，由 shuoen88 統整
+下面這些需要真的電腦和手把，不能只靠模擬環境。三人都可實測，結果追加到 `docs/TESTING_LOG.md`，由 shuoen88 核對缺漏並登錄缺陷，不代填未做的測試。
 - 學校舊電腦：全螢幕玩一遍，記下左上角 FPS（要 30 以上）、電腦型號、瀏覽器
 - Xbox 手把、PS 手把：照 `README.md` 的手把測試清單各玩一遍，記下畫面顯示的手把名稱
 - Chrome 的滑鼠鎖定：點畫面會鎖、Esc 會暫停、「繼續」能回來
 
-## 之後才會開放（依賴 STEP 5～6）
+## 後續整合（STEP 6 核心已完成，仍需串接與驗收）
 - STEP 7 的按鈕放進生產線、按錯引怪物
 - STEP 8 的怪物追逐
 - 把出口、走廊接上地圖
-這些等 EricRose043 那邊 STEP 6 完成後，由那邊整合或再分派。
+由 EricRose043 隨組員 PR 合併逐項串接，再由 shuoen88 統整整段驗收；未接入的功能不標為完成。

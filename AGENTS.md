@@ -43,7 +43,8 @@
 10. **模型**：計畫討論用 `gpt-6-luna`、施工用 `gpt-6.1-sol`；思考度 medium，難題才用 high（由 Claude 在請求檔寫明）。
 
 ## 開發流程（所有人都適用）
-- 需求看 `BRIEF.md`，測試清單看 `VERIFY.md`，步驟看 `PLANS.md`
+- 需求看 `BRIEF.md`，人類驗收看 `VERIFY.md`，AI 展開的細部案例看 `TESTS.md`，步驟看 `PLANS.md`
+- `TESTS.md` 每條要可追溯到 VERIFY／BRIEF；AI 可維護細節，但人審過才開始對應功能實作，不自行改驗收需求
 - AI 不要修改 `BRIEF.md`、`VERIFY.md`；要改先問人
 - `PLANS.md` 可以調整，回報時說改了什麼；不能做 BRIEF 沒要的功能
 - 一次只做一步，做完停下來回報
@@ -57,3 +58,10 @@
 - 可以只用一個 AI 工具，由同一個 AI 規劃、實作、檢查
 - 不需要經過 Claude 監督或交給 Codex 執行
 - 其他專案規則（例如測試、commit 說明）仍然適用
+
+## 分工、驗收與作者紀錄（D015）
+- 三人主責與允許修改範圍依 `TEAM_TASKS.md`。shuoen88 統整實測與缺陷追蹤；每位開發者仍須自測及修正自己的功能。
+- 實測記在 `docs/TESTING_LOG.md`，問題記在 `docs/DEFECTS.md`；自動測試、歷史轉錄、瀏覽器實測及實體設備結果分開，不補造通過紀錄。
+- 突變測試先 commit、一次只改壞一條、測完還原；未抓到就補測試並記回 TESTS。故意改壞的版本不得合入 main。
+- 各人以真實身分提交；使用保留原始 commit 的 merge commit 合併，避免 squash／rebase 合併與 force push。貢獻證據依 `docs/CONTRIBUTIONS.md`，不冒用他人作者。
+- 文件整理不改遊戲行為時，核對文件、來源追溯並跑既有回歸；不為文件更新捏造失敗測試或新增沒有行為意義的測試。
