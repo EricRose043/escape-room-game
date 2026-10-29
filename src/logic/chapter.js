@@ -126,11 +126,12 @@ export function updateChapter(state,actions={},dt=0,{jumpScare=state.jumpScare??
   if (actions.pausePressed || actions.focusLost || actions.forcePause) {
     return {...state,player:{...state.player,paused:true}};
   }
-  if (state.player.paused || actions.gameplayActive===false) return state;
   if(state.ui.mode==='ending') {
+    if(state.player.paused || actions.gameplayActive===false) return state;
     const elapsed=Math.min(ENDING_SECONDS,(state.ui.elapsed??0)+(Number.isFinite(dt)?Math.max(0,dt):0));
-    return {...state,ui:elapsed>=ENDING_SECONDS?{mode:'complete'}:{...state.ui,elapsed}};
+    return {...state,ui:elapsed>=ENDING_SECONDS-1e-9?{mode:'complete'}:{...state.ui,elapsed}};
   }
+  if (state.player.paused || actions.gameplayActive===false) return state;
   if(state.ui.mode==='caught') {
     const ui=updateCapture(state.ui,dt,{jumpScare:allowed});
     if(ui.elapsed>=CAPTURE_SECONDS-1e-9) return {...restoreCheckpoint(state),jumpScare:allowed};
@@ -165,7 +166,7 @@ export function updateChapter(state,actions={},dt=0,{jumpScare=state.jumpScare??
     return ready?{...state,trainStarted:true,ui:{mode:'explore',message:'列車已啟動，快上車！'}}:{...state,ui:{...state.ui,message:'需要完成裝配線檢修並刷員工卡'}};
   }
   if(actions.interactPressed && initialTarget?.kind==='train') {
-    return state.trainStarted?{...state,player:{...state.player,paused:true},ui:{mode:'ending',elapsed:0}}:{...state,ui:{...state.ui,message:'列車尚未啟動'}};
+    return state.trainStarted?{...state,ui:{mode:'ending',elapsed:0}}:{...state,ui:{...state.ui,message:'列車尚未啟動'}};
   }
   if(actions.interactPressed && initialTarget?.kind==='locker') {
     const next=tryEnterHiding(state,initialTarget,getGeometry(state).collisionBoxes,monsterBodies(state));
