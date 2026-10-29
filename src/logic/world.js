@@ -1,8 +1,9 @@
 import { LOBBY } from './areas/lobby.js';
 import { POWER_ROOM } from './areas/power-room.js';
 import { PRODUCTION } from './areas/production.js';
+import { LOADING_BAY } from './areas/loading-bay.js';
 
-export const WORLD = { spawn: LOBBY.spawn, areas: [LOBBY, POWER_ROOM, PRODUCTION] };
+export const WORLD = { spawn: LOBBY.spawn, areas: [LOBBY, POWER_ROOM, PRODUCTION, LOADING_BAY] };
 export const ITEMS = WORLD.areas.flatMap(a => a.items);
 export const CLUES = WORLD.areas.flatMap(a => a.clues);
 export const DOORS = WORLD.areas.flatMap(a => a.doors);
