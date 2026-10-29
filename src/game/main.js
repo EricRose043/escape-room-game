@@ -3,7 +3,7 @@ import {
   setPaused, EYE_HEIGHT,
   readGamepad, mergeActions, buttonLabel, createPrompt, updatePrompt, pauseOnDisconnect,
   createSession, updateSession, keyboardInteractPressed, gameplayActions,
-  ITEMS, selectChapterTarget, deviceMessage, keyboardEquipmentActions,
+  ITEMS, WORLD, storyBeat, STORY_BEAT_TEXT, selectChapterTarget, deviceMessage, keyboardEquipmentActions,
   BEAM, CLUES, isClueVisible, viewRay, rayBoxDistance,
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
@@ -144,6 +144,8 @@ const chargeText = document.querySelector('#charge-text');
 const flashlightMode = document.querySelector('#flashlight-mode');
 const crosshair = document.querySelector('#crosshair');
 const interactionHint = document.querySelector('#interaction-hint');
+const storyCaption=document.querySelector('#story-caption');
+let storyCaptionRemaining=0;
 const contactHint = document.querySelector('#contact-hint');
 const hidingHint = document.querySelector('#hiding-hint');
 const saveStatus = document.querySelector('#save-status');
@@ -176,6 +178,10 @@ const startMenuView=createStartMenuView(document.querySelector('#start-menu'),co
 
 function setText(element, text) {
   if (element.textContent !== text) element.textContent = text;
+}
+function showStoryBeat(beat) {
+  const message=STORY_BEAT_TEXT[beat];if(!message)return;
+  storyCaption.textContent=message;storyCaption.hidden=false;storyCaptionRemaining=6.5;
 }
 
 function syncUI() {
@@ -523,6 +529,11 @@ function animate(time) {
   const beforeMode=chapter.ui.mode;
   chapter = updateChapter(chapter, actions, dt, chapterOptions);
   audio.sync(beforeChapter,chapter,session.hasStarted&&!session.paused,dt);
+  showStoryBeat(storyBeat(beforeChapter,chapter,WORLD));
+  if(storyCaptionRemaining>0&&actions.gameplayActive!==false&&!session.paused&&!document.hidden) {
+    storyCaptionRemaining=Math.max(0,storyCaptionRemaining-dt);
+    if(storyCaptionRemaining===0)storyCaption.hidden=true;
+  }
   if(beforeMode!=='complete' && chapter.ui.mode==='complete') {
     try { localStorage.setItem('toy-factory-complete','true'); } catch {}
     document.querySelector('#map-title').textContent='完整工廠地圖｜通關解鎖';
