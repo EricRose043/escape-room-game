@@ -31,3 +31,12 @@ test('Xbox Y／PS三角形開設定採按下邊緣，長按不重複',()=>{
     assert.equal(readGamepad(pad,first.buttons).actions.settingsPressed,false);
   }
 });
+test('正式滑鼠輸入套用儲存的倍率，設定開啟時凍結轉頭',async()=>{
+  const storage=memory(),store=createSettingsStorage(storage,createSettings(false));store.load();store.update('mouseSensitivity',2);
+  const app=await runtime(storage);
+  app.get('#start-new').emit('click');app.document.emit('keydown',{code:'ArrowRight'});app.document.emit('keydown',{code:'Enter'});
+  await Promise.resolve();assert.equal(app.session().paused,false);
+  app.document.emit('mousemove',{movementX:10,movementY:5});assert.deepEqual(app.look(),{dYaw:-.04,dPitch:-.02});
+  app.window.emit('factory-settings-open');app.document.emit('mousemove',{movementX:10,movementY:5});
+  assert.deepEqual(app.look(),{dYaw:0,dPitch:0});
+});
