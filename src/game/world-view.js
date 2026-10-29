@@ -21,6 +21,10 @@ export function createWorldView(scene) {
   trainParts(1.55,0.14,1.45,0.9,2.2,0,0xe5d29b);
   for(const x of [-1.35,1.35]) for(const z of [-0.9,0.9]) {const wheel=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.34,0.18,10),new THREE.MeshLambertMaterial({color:0x20272a}));wheel.rotation.z=Math.PI/2;wheel.position.set(x,0.38,z);trainGroup.add(wheel);}
   trainGroup.position.set(32.5,0,-6.5);scene.add(trainGroup);
+  const railMaterial=new THREE.MeshLambertMaterial({color:0x89909a});
+  const sleeperMaterial=new THREE.MeshLambertMaterial({color:0x4b3b32});
+  for(const z of [-7.38,-5.62]) {const rail=new THREE.Mesh(new THREE.BoxGeometry(14,0.09,0.09),railMaterial);rail.position.set(28.25,0.045,z);scene.add(rail);}
+  for(let x=22;x<=34.6;x+=0.8) {const tie=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.07,2.05),sleeperMaterial);tie.position.set(x,0.025,-6.5);scene.add(tie);}
   // 裝飾沿同一 AABB 建立，不新增碰撞規則或可操作的生產線謎題。
   for(const machine of STATIC_BOXES.filter(b=>b.kind==='machine')) {
     addBox({...machine,minX:machine.minX+0.1,maxX:machine.maxX-0.1,minY:1.05,maxY:1.2,
