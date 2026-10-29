@@ -33,3 +33,16 @@ test('啟動列車後登車完成逃脫，沒啟動前不能通關',()=>{
   for(let i=0;i<logic.ENDING_SECONDS*10;i++) s=logic.updateChapter(s,{},0.1);
   assert.equal(s.ui.mode,'complete');
 });
+
+test('中段密碼鎖、列車控制台與列車提示各自顯示正確進度',()=>{
+  const bay=logic.WORLD.areas.find(area=>area.id==='loading-bay');
+  const console=bay.devices.find(device=>device.kind==='trainConsole');
+  const train=bay.devices.find(device=>device.kind==='train');
+  const keypad=logic.DEVICES.find(device=>device.id==='production.sequence-keypad');
+  const state=logic.createChapter();
+  const solved={...state,puzzles:{...state.puzzles,'production.sequence':{installedItemId:null,restored:true}}};
+  assert.equal(logic.deviceMessage(solved,keypad),'貨運月台門已解鎖');
+  assert.equal(logic.deviceMessage(solved,console),'月台檢修碼已確認，刷員工卡啟動列車');
+  assert.equal(logic.deviceMessage({...solved,trainStarted:true},console),'列車已啟動，快登車');
+  assert.equal(logic.deviceMessage(solved,train),'列車尚未啟動');
+});
