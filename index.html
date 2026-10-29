@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>星星糖果樂園 — 密室逃脫</title>
+    <title>失落玩具工廠 — 恐怖密室逃脫</title>
     <style>
       html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0c1015; }
       canvas { display: block; width: 100%; height: 100%; }
@@ -62,6 +62,15 @@
       #start-menu button[hidden], #start-open[hidden] { display: none; }
       #start-open { pointer-events: auto; }
       #save-status { color: #f4cf94; }
+      #factory-map-button { position:fixed;right:16px;top:16px;z-index:3;padding:9px 15px;background:#1b2529ef;color:#eee0bc;border:1px solid #b08c49;font:inherit;cursor:pointer; }
+      #factory-map-button[hidden], #factory-map[hidden], #ending-screen[hidden], #story-intro[hidden] { display:none; }
+      #factory-map, #ending-screen, #story-intro { position:fixed;inset:0;z-index:8;display:grid;place-items:center;background:#080b10ee;color:#eee8d7;font:16px system-ui,sans-serif; }
+      #factory-map section,#ending-screen section,#story-intro section { width:min(620px,calc(100vw - 48px));padding:26px;background:#172025;border:1px solid #b08c49;text-align:center; }
+      #factory-map pre { text-align:left;display:inline-block;padding:14px;background:#111719;color:#e8d8a8;font:16px/1.7 monospace; }
+      #factory-map button,#story-intro button,#ending-screen button { padding:10px 24px;color:#eee;background:#29363c;border:1px solid #b08c49;font:inherit;cursor:pointer; }
+      #story-intro { z-index:10;background:radial-gradient(ellipse,#293339,#030506 75%); }
+      #story-intro h1 { letter-spacing:.18em;color:#e2b65c; }
+      #intro-copy { min-height:5em;font-size:1.2rem;line-height:1.8; }
     </style>
     <script type="importmap">
       {
@@ -72,6 +81,7 @@
     </script>
   </head>
   <body>
+    <div id="story-intro"><section><p>舊檔案｜60 秒</p><h1>失落玩具工廠</h1><p id="intro-copy">曾經，這裡製作的玩具風靡全城。每個孩子都想帶一個回家。</p><button id="intro-skip" type="button">跳過劇情</button></section></div>
     <div id="crosshair" hidden aria-hidden="true">+</div>
     <div id="interaction-hint" hidden role="status"></div>
     <div id="fps" aria-label="每秒畫格數">FPS: —</div>
@@ -86,7 +96,7 @@
     </div>
     <div id="pause-screen">
       <section aria-labelledby="pause-title">
-        <h1 id="pause-title">星星糖果樂園</h1>
+        <h1 id="pause-title">失落玩具工廠</h1>
         <p id="pause-instructions">按手把任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。</p>
         <button id="resume" type="button">開始（鍵盤滑鼠）</button>
         <button id="start-open" type="button" hidden>返回開始選單</button>
@@ -119,7 +129,7 @@
     <div id="capture-screen" hidden aria-hidden="true"><canvas id="capture-canvas" hidden></canvas></div>
     <div id="start-menu" hidden>
       <section role="dialog" aria-modal="true" aria-labelledby="start-title" aria-describedby="start-message start-hint">
-        <h1 id="start-title">星星糖果樂園</h1>
+        <h1 id="start-title">失落玩具工廠</h1>
         <p id="start-message" role="status"></p>
         <p id="start-save-status" role="status" aria-live="polite"></p>
         <button id="start-continue" type="button">繼續</button>
@@ -130,6 +140,12 @@
         <p id="start-hint">手把先按任一鍵喚醒，十字鍵選擇，A／✕ 確認。</p>
       </section>
     </div>
+    <button id="factory-map-button" type="button" hidden>查看工廠地圖（M）</button>
+    <div id="factory-map" hidden><section role="dialog" aria-modal="true"><h2 id="map-title">員工手繪平面圖</h2><pre id="map-content">辦公室 ─ 控制室 ─ 裝配線 ─ 貨運月台
+ 入口      電力紀錄   置物櫃     玩具列車
+
+※ 圖上未標記的區域仍可能有危險。</pre><button id="map-close" type="button">收起地圖</button></section></div>
+    <div id="ending-screen" hidden><section role="status"><h1>你逃出了玩具工廠</h1><p>列車載著你穿過封鎖的大門，天色終於亮了。</p><p id="ending-reward">已解鎖完整工廠地圖。</p><button id="ending-close" type="button">查看完整地圖</button></section></div>
     <script type="module" src="./src/game/main.js"></script>
   </body>
 </html>
