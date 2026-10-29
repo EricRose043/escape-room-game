@@ -34,9 +34,10 @@ export function createSaveStorage(storage) {
     },
     observe(before,after,dt=0) {
       if(protectedSave) return;
-      const a=before.puzzles['power.main'],b=after.puzzles['power.main'];
+      const puzzleChanged=Object.keys(after.puzzles).some(id=>before.puzzles[id]?.installedItemId!==after.puzzles[id]?.installedItemId
+        || before.puzzles[id]?.restored!==after.puzzles[id]?.restored);
       const immediate=before.checkpointId!==after.checkpointId || !sameItems(before.inventory.itemIds,after.inventory.itemIds)
-        || a.installedItemId!==b.installedItemId || a.restored!==b.restored
+        || puzzleChanged || before.trainStarted!==after.trainStarted
         || before.flashlight.mode!==after.flashlight.mode || (before.ui.mode==='caught' && after.ui.mode==='explore');
       const changed=immediate || before.flashlight.charge!==after.flashlight.charge;
       if(!before.player.paused && before.ui.mode==='explore' && Number.isFinite(dt) && dt>0) elapsed+=dt;

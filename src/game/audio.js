@@ -1,3 +1,8 @@
+import { createAudio } from './procedural-audio.js';
+import { heartbeatIntensity, footstepInterval } from '../logic/audio-mix.js';
+import { WORLD } from '../logic/world.js';
+export { createAudio };
+
 export function audioCueFor(previous,next) {
   if(!previous?.trainStarted&&next?.trainStarted) return 'train';
   if(next?.ui?.mode==='ending' && previous?.ui?.mode!=='ending') return 'escape';
@@ -11,70 +16,50 @@ export function audioCueFor(previous,next) {
   return chased&&!wasChased?'chase':null;
 }
 
-export function createFactoryAudio({contextFactory}={}) {
-  let context=null,master=null,bedGain=null,humA=null,humB=null,muted=false,stepElapsed=0;
-  const getContext=contextFactory??(()=>{
-    if(typeof window==='undefined') return null;
-    const AudioContextType=window.AudioContext??window.webkitAudioContext;
-    return AudioContextType?new AudioContextType():null;
-  });
-  function ensure() {
-    if(context) return true;
-    try {context=getContext();} catch {return false;}
-    if(!context) return false;
-    master=context.createGain();master.gain.value=muted?0:0.32;master.connect(context.destination);
-    bedGain=context.createGain();bedGain.gain.value=0.0001;bedGain.connect(master);
-    humA=context.createOscillator();humA.type='triangle';humA.frequency.value=47;humA.connect(bedGain);humA.start();
-    humB=context.createOscillator();humB.type='sine';humB.frequency.value=71;humB.connect(bedGain);humB.start();
-    return true;
-  }
-  function tone(frequency,duration,wave='sine',volume=0.045,delay=0) {
-    if(!context || muted) return;
-    const start=context.currentTime+delay,osc=context.createOscillator(),gain=context.createGain();
-    osc.type=wave;osc.frequency.setValueAtTime(frequency,start);gain.gain.setValueAtTime(0.0001,start);
-    gain.gain.exponentialRampToValueAtTime(volume,start+0.025);gain.gain.exponentialRampToValueAtTime(0.0001,start+duration);
-    osc.connect(gain);gain.connect(master);osc.start(start);osc.stop(start+duration+0.04);
-  }
-  function noiseStep() {
-    if(!context || muted) return;
-    const length=Math.floor(context.sampleRate*0.11),buffer=context.createBuffer(1,length,context.sampleRate),data=buffer.getChannelData(0);
-    for(let i=0;i<length;i++) data[i]=(Math.random()*2-1)*(1-i/length);
-    const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain();
-    source.buffer=buffer;filter.type='lowpass';filter.frequency.value=260;gain.gain.value=0.12;
-    source.connect(filter);filter.connect(gain);gain.connect(master);source.start();
-  }
-  function start() {
-    if(!ensure()) return false;
-    try {const resumed=context.resume();resumed?.catch?.(()=>{});} catch {}
-    return true;
-  }
-  function toggle() {
-    muted=!muted;
-    if(ensure()) {
-      try {const resumed=context.resume();resumed?.catch?.(()=>{});} catch {}
-      master.gain.setTargetAtTime(muted?0:0.32,context.currentTime,0.04);
+// 保留已接入 main 的工廠 API；所有播放交給唯一 S1 引擎。
+export function createFactoryAudio({contextFactory,audioFactory=createAudio}={}) {
+  const options=contextFactory?{AudioContext:class {
+    constructor(){const context=contextFactory();if(!context)throw new Error('Audio unavailable');return context;}
+  }}:{};
+  const engine=audioFactory(options);
+  let muted=false,started=false,disposed=false,untilStep=0,pendingCue=null;
+  engine.setMasterVolume(.32);
+  const supported=()=>engine.getStatus().supported;
+  function stop(){untilStep=0;pendingCue=null;engine.stop();}
+  function flushCue(){
+    if(pendingCue && !muted && !disposed && engine.getStatus().contextState==='running') {
+      const cue=pendingCue;pendingCue=null;engine.playCue(cue);
     }
-    return muted;
   }
-  function sync(previous,next,active,dt) {
-    if(!context) return;
-    const chasing=Object.values(next?.monsters??{}).some(monster=>monster.mode==='chase');
-    bedGain.gain.setTargetAtTime(active?(chasing?0.035:0.012):0.002,context.currentTime,0.5);
-    const cue=audioCueFor(previous,next);
-    if(cue==='power') {tone(82,0.32,'sine',0.06);tone(123,0.32,'triangle',0.045,0.12);tone(165,0.4,'sine',0.035,0.24);}
-    if(cue==='chase') {tone(145,0.36,'sawtooth',0.05);tone(119,0.42,'triangle',0.04,0.13);}
-    if(cue==='caught') {tone(76,0.52,'sawtooth',0.08);tone(52,0.7,'sine',0.06,0.08);}
-    if(cue==='hide') {tone(88,0.16,'triangle',0.035);tone(62,0.2,'sine',0.03,0.1);}
-    if(cue==='unhide') tone(105,0.18,'triangle',0.03);
-    if(cue==='escape') {tone(220,0.34,'triangle',0.045);tone(330,0.42,'sine',0.04,0.18);tone(440,0.7,'sine',0.035,0.38);}
-    if(cue==='door') {tone(92,0.3,'square',0.045);tone(68,0.38,'sawtooth',0.035,0.16);}
-    if(cue==='train') {tone(55,0.5,'sawtooth',0.04);tone(82,0.5,'triangle',0.04,0.22);tone(110,0.7,'sine',0.035,0.42);}
-    const moving=active && next?.ui?.mode==='explore' && Math.hypot(next.player.x-previous.player.x,next.player.z-previous.player.z)>0.001;
-    if(!moving) stepElapsed=0;
-    else {stepElapsed-=(Number.isFinite(dt)?Math.max(0,dt):0);if(stepElapsed<=0){noiseStep();stepElapsed=0.48;}}
+  function start(){
+    if(disposed || !supported()) return false;
+    started=true;engine.setMasterVolume(muted?0:.32);
+    engine.setAmbience(muted?null:'lobby');
+    Promise.resolve(engine.unlock()).then(ok=>{if(ok)flushCue();}).catch(()=>{});
+    return true;
   }
-  return {start,toggle,sync,supported:()=>Boolean((typeof window!=='undefined'&&(window.AudioContext||window.webkitAudioContext))||contextFactory),muted:()=>muted};
+  function toggle(){
+    muted=!muted;engine.setMasterVolume(muted?0:.32);
+    if(muted)stop();start();return muted;
+  }
+  function sync(previous,next,active,dt){
+    if(!started || disposed) return;
+    if(!active || muted){stop();return;}
+    const exploring=next?.ui?.mode==='explore';
+    const area=WORLD.areas.find(a=>next?.player?.x>=a.bounds.minX && next.player.x<=a.bounds.maxX
+      &&next.player.z>=a.bounds.minZ&&next.player.z<=a.bounds.maxZ);
+    engine.setAmbience(exploring?(area?.id??'lobby'):null);
+    const distances=Object.values(next?.monsters??{}).filter(m=>m.mode!=='inactive')
+      .map(m=>Math.hypot(m.x-next.player.x,m.z-next.player.z)).filter(Number.isFinite);
+    engine.setHeartbeat(exploring && distances.length?heartbeatIntensity(Math.min(...distances)):0);
+    const cue=audioCueFor(previous,next);if(cue)pendingCue=cue;flushCue();
+    const seconds=Number.isFinite(dt)?Math.max(0,Math.min(.1,dt)):0;
+    const distance=Math.hypot((next?.player?.x??0)-(previous?.player?.x??0),(next?.player?.z??0)-(previous?.player?.z??0));
+    const interval=footstepInterval(seconds>0?distance/seconds:0);
+    if(!exploring || !Number.isFinite(interval)){untilStep=0;return;}
+    untilStep-=seconds;
+    if(untilStep<=0){engine.playFootstep();untilStep=interval;}
+  }
+  async function dispose(){if(disposed)return;stop();disposed=true;started=false;await engine.dispose();}
+  return {start,toggle,sync,supported,muted:()=>muted,stop,dispose,getStatus:()=>({...engine.getStatus(),muted,started})};
 }
-
-// 保留 S1 獨立試聽及外部呼叫的公開入口。
-export { createAudio } from './procedural-audio.js';

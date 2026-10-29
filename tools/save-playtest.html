@@ -1,10 +1,10 @@
 <!doctype html><html lang="zh-Hant"><meta charset="utf-8"><title>S0 存檔與被抓瀏覽器測試</title>
 <style>body{font:16px system-ui;background:#eef1ec;color:#152b27;margin:16px}button{padding:12px;margin:4px}iframe{width:100%;height:600px;border:1px solid #888}pre{white-space:pre-wrap}strong{color:#8a331e}</style>
 <h1>S0 瀏覽器測試台</h1><p><strong>測試專用：</strong>使用預製的生產線存檔與模擬 Xbox，不能算真人鍵鼠／實體手把通關。會取代此測試 origin 的章節存檔，不修改遊戲檔案。</p>
-<button id="run">建立測試存檔並啟動模擬手把</button><button id="enter">前進進入生產線（1.3 秒）</button><button id="pause">Start 暫停／繼續</button><button id="summary">讀取存檔摘要</button><button id="reload">重新載入遊戲框架</button>
+<button id="run">建立舊版測試存檔並啟動模擬手把</button><button id="run-advanced">建立已解題及列車啟動的新版存檔</button><button id="verify">檢查現有存檔的還原結果</button><button id="enter">前進進入生產線（1.3 秒）</button><button id="pause">Start 暫停／繼續</button><button id="summary">讀取存檔摘要</button><button id="reload">重新載入遊戲框架</button>
 <pre id="log" role="log"></pre><iframe id="game" title="實際遊戲 WebGL 測試框架"></iframe>
 <script type="module">
-import {createChapter,serializeChapterSave} from '../src/logic/index.js';
+import {createChapter,serializeChapterSave,parseChapterSave,restoreChapterSave} from '../src/logic/index.js';
 const key='star-candy-park.chapter-1.save',frame=document.querySelector('#game'),log=document.querySelector('#log');
 let text='',doc=null,observer=null,captured=0,recovered=0;
 const say=s=>{log.textContent+=new Date().toISOString()+' '+s+'\n';};
@@ -19,6 +19,7 @@ async function load(){
   const d=frame.contentDocument;if(d?.querySelector('#start-menu') && !d.querySelector('#start-menu').hidden){clearInterval(timer);doc=d;resolve();}
   else if(Date.now()>end){clearInterval(timer);reject(new Error('遊戲選單未就緒'));}
  },50);});
+ doc.querySelector('#intro-skip')?.click();
  observer=new MutationObserver(()=>{
   const black=doc.querySelector('#capture-screen');const now=!black.hidden;
   if(now && !black.wasVisible){captured++;say('被抓黑畫面顯示 #'+captured+'；近景 '+!doc.querySelector('#capture-canvas').hidden);}
@@ -30,11 +31,18 @@ async function load(){
 function focus(){frame.contentWindow.focus();doc.body.tabIndex=-1;doc.body.focus();}
 async function pulse(i){focus();const b=frame.contentWindow.qaPad.buttons[i];b.pressed=true;b.value=1;await wait(150);b.pressed=false;b.value=0;await wait(150);}
 const safe=fn=>async()=>{try{await fn();}catch(e){say('ERROR '+e.message);}};
-document.querySelector('#run').onclick=safe(async()=>{
- if(location.origin!=='http://127.0.0.1:8788'){say('建立測試存檔只允許隔離的 http://127.0.0.1:8788；請另開此測試 origin。');return;}
- const state=createChapter();state.checkpointId='production.checkpoint';state.inventory.itemIds=['lobby.flashlight','power.fuse','power.battery'];state.flashlight={charge:41,mode:'uv',enabled:false};state.puzzles['power.main']={installedItemId:'power.fuse',restored:true};
- localStorage.setItem(key,serializeChapterSave(state));say('預製測試存檔：生產線平台、41%、UV、已拿保險絲與電池、已供電');
+async function prepare(advanced=false){
+ if(location.origin!=='http://127.0.0.1:8788'){say('建立測試存檔只允許隔離的 http://127.0.0.1:8788');return;}
+ const state=createChapter();state.checkpointId='production.checkpoint';state.inventory.itemIds=['lobby.flashlight','lobby.employee-card','lobby.factory-map','power.fuse','power.battery'];state.flashlight={charge:41,mode:'uv',enabled:false};state.puzzles['power.main']={installedItemId:'power.fuse',restored:true};
+ if(advanced){state.puzzles['production.sequence']={installedItemId:null,restored:true};state.trainStarted=true;}
+ localStorage.setItem(key,serializeChapterSave(state));say('預製 '+(advanced?'v2（裝配線已解、列車已啟動）':'v1')+' 測試存檔；41%、UV');
  await load();await pulse(0);say('模擬 A 繼續；開始選單隱藏 '+doc.querySelector('#start-menu').hidden+'；暫停 '+!doc.querySelector('#pause-screen').hidden);
+}
+document.querySelector('#run').onclick=safe(()=>prepare(false));
+document.querySelector('#run-advanced').onclick=safe(()=>prepare(true));
+document.querySelector('#verify').onclick=safe(()=>{
+ const raw=localStorage.getItem(key),parsed=parseChapterSave(raw);if(parsed.status!=='valid'){say('還原失敗 '+parsed.reason);return;}
+ const restored=restoreChapterSave(parsed.data);say('現有存檔還原診斷 '+JSON.stringify({version:parsed.data.version,production:restored.puzzles['production.sequence'].restored,trainStarted:restored.trainStarted,charge:restored.flashlight.charge,itemIds:restored.inventory.itemIds}));
 });
 document.querySelector('#enter').onclick=safe(async()=>{focus();if(!doc.querySelector('#pause-screen').hidden)await pulse(9);frame.contentWindow.qaPad.axes[1]=-1;await wait(1300);frame.contentWindow.qaPad.axes[1]=0;say('已向前移動 1.3 秒，停下等待怪物；焦點 '+doc.hasFocus());});
 document.querySelector('#pause').onclick=safe(async()=>{await pulse(9);say('Start 脈衝；暫停 '+!doc.querySelector('#pause-screen').hidden);});

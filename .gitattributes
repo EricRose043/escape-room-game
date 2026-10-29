@@ -1,0 +1,4 @@
+# Keep source modules portable with Windows Git autocrlf.
+*.js text eol=lf
+*.mjs text eol=lf
+*.html text eol=lf

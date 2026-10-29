@@ -3,6 +3,18 @@
 const clamp = value => typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
 const AMBIENCE = Object.freeze({ lobby: 55, 'power-room': 65, production: 73, 'chase-corridor': 82, exit: 49 });
 
+// Ryan 工廠事件音型由同一組 tone／master／生命週期管理，避免第二個 context。
+const CUES = Object.freeze({
+  power:[[82,.32,'sine',.06,0],[123,.32,'triangle',.045,.12],[165,.4,'sine',.035,.24]],
+  chase:[[145,.36,'sawtooth',.05,0],[119,.42,'triangle',.04,.13]],
+  caught:[[76,.52,'sawtooth',.08,0],[52,.7,'sine',.06,.08]],
+  hide:[[88,.16,'triangle',.035,0],[62,.2,'sine',.03,.1]],
+  unhide:[[105,.18,'triangle',.03,0]],
+  escape:[[220,.34,'triangle',.045,0],[330,.42,'sine',.04,.18],[440,.7,'sine',.035,.38]],
+  door:[[92,.3,'square',.045,0],[68,.38,'sawtooth',.035,.16]],
+  train:[[55,.5,'sawtooth',.04,0],[82,.5,'triangle',.04,.22],[110,.7,'sine',.035,.42]],
+});
+
 export function createAudio(options = {}) {
   const Context = Object.hasOwn(options, 'AudioContext') ? options.AudioContext : (globalThis.AudioContext ?? globalThis.webkitAudioContext);
   const later = options.setTimeout ?? globalThis.setTimeout;
@@ -127,6 +139,12 @@ export function createAudio(options = {}) {
   }
   return {
     unlock, setMasterVolume, setAmbience, setHeartbeat,
+    playCue: cue => {
+      if (!canPlay() || !Object.hasOwn(CUES, cue)) return false;
+      let played=false;
+      for (const [frequency,duration,type,peak,delay] of CUES[cue]) played=tone(frequency,duration,peak,{type,delay}) || played;
+      return played;
+    },
     playFootstep: () => rustle(0.11, 0.1, 550),
     playAlarm: () => { if (!canPlay()) return false; const played = tone(440, 0.2, 0.075, { type: 'triangle', end: 660 }); if (played) tone(660, 0.2, 0.06, { delay: 0.25, type: 'triangle', end: 440 }); return played; },
     playDoor: () => { if (!canPlay()) return false; const played = rustle(0.45, 0.09, 800); if (played) tone(150, 0.4, 0.04, { end: 55 }); return played; },

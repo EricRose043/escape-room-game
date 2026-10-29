@@ -401,6 +401,7 @@ document.addEventListener('mousemove', (event) => {
 });
 
 function pauseForFocusLoss() {
+  audio.stop?.();
   saveStorage.flush('visibilitychange');
   clearInput();
   applySession({ focusLost: true });
@@ -571,4 +572,4 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) pauseForFocusLoss();
 });
 requestAnimationFrame(animate);
-window.addEventListener('pagehide',()=>{saveStorage.flush('pagehide');syncUI();});
+window.addEventListener('pagehide',event=>{saveStorage.flush('pagehide');audio.stop?.();if(!event?.persisted)void audio.dispose?.();syncUI();});
