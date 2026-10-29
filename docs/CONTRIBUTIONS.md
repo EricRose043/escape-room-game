@@ -46,3 +46,7 @@ Ryan 分支 aace2e6 相對 main=0fab5ef 有 34 筆提交，git author 均為 Rya
 ## LOG-07 合併證據（最新）
 
 Ryan 鎖定 fc603adece9baf554cdbd87d291b9d21ba7e3954，相對 main 0fab5ef 有 67 筆提交，git shortlog 皆為 RyanDing1010。b2066d2 以真正 merge commit 匯入，保留 Ryan、Eric 與 shuoen 的原始 SHA／作者，未 squash、rebase、force push 或冒用他人身分。d87b510／54ae26f 為 shuoen88 的本輪回歸與修復，PR #2 延續上傳。舊表45筆為上一輪快照；目前67筆不包含鎖定SHA之後的更新。尚未 main 合併，不能宣稱三人均已在 main 完成交付。
+
+## LOG-08 再核對
+
+本輪再次核對main=0fab5ef、Ryan=fc603ad；git merge-base --is-ancestor確認兩者與上輪8dfc46f均在最新分支歷史。Ryan67筆提交未重寫；shuoen88以本人的既有Git身分新增S2／S3、測試與文件提交。仍走PR #2上傳，不直接推main、不squash、不force push。本輪未代表Ryan／Eric認可新的驗收含義，也沒有代發訊息要求其驗收；待owner merge後才核對main三人歷史。

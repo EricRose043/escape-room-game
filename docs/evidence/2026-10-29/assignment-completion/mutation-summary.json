@@ -1,0 +1,39 @@
+[
+  {
+    "name": "S1-heartbeat",
+    "sourceCommit": "8dfc46f",
+    "isolatedClone": true,
+    "file": "src/logic/audio-mix.js",
+    "test": "tests/audio-mix.test.js",
+    "mutation": {
+      "before": "(AUDIO_MIX.heartbeatFar - distance)",
+      "after": "(distance - AUDIO_MIX.heartbeatNear)"
+    },
+    "mutantExit": 1,
+    "restoredExit": 0
+  },
+  {
+    "name": "S0-save-train",
+    "sourceCommit": "6a8fb1d",
+    "isolatedClone": true,
+    "file": "src/logic/chapter-save.js",
+    "mutation": {
+      "before": "data.trainStarted=state.trainStarted===true;",
+      "after": "data.trainStarted=false;"
+    },
+    "mutantExit": 1,
+    "restoredExit": 0
+  },
+  {
+    "name": "S3-door-crossing",
+    "sourceCommit": "122002caebfe9d026e0efc842ea9dc6685b6c1ab",
+    "isolatedClone": true,
+    "file": "src/logic/corridor-doors.js",
+    "mutation": {
+      "before": "old<0&&current>=0",
+      "after": "old>0&&current<=0"
+    },
+    "mutantExit": 1,
+    "restoredExit": 0
+  }
+]

@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: 新版存檔保存裝配線與列車，序列化往返不改原狀態
+ok 1 - 新版存檔保存裝配線與列車，序列化往返不改原狀態
+  ---
+  duration_ms: 2.6793
+  type: 'test'
+  ...
+# Subtest: 舊版存檔仍可載入，不補造從未保存的列車進度
+ok 2 - 舊版存檔仍可載入，不補造從未保存的列車進度
+  ---
+  duration_ms: 0.4132
+  type: 'test'
+  ...
+# Subtest: 裝配線解開與列車啟動當幀各自立即存檔，不等離頁
+ok 3 - 裝配線解開與列車啟動當幀各自立即存檔，不等離頁
+  ---
+  duration_ms: 0.6202
+  type: 'test'
+  ...
+# Subtest: 新版拒絕遺漏欄位、未知版本及矛盾列車進度
+ok 4 - 新版拒絕遺漏欄位、未知版本及矛盾列車進度
+  ---
+  duration_ms: 1.02
+  type: 'test'
+  ...
+# Subtest: 新版寫入失敗保留舊檔，重試可保存列車新進度
+ok 5 - 新版寫入失敗保留舊檔，重試可保存列車新進度
+  ---
+  duration_ms: 0.785
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 138.5072

@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: 設定面板透過手把與鍵盤調整實際控制項、顯示焦點並在關閉後解除事件
+ok 1 - 設定面板透過手把與鍵盤調整實際控制項、顯示焦點並在關閉後解除事件
+  ---
+  duration_ms: 1.7034
+  type: 'test'
+  ...
+# Subtest: 設定預設值由明確驚嚇選擇建立，不與外部物件共用狀態
+ok 2 - 設定預設值由明確驚嚇選擇建立，不與外部物件共用狀態
+  ---
+  duration_ms: 1.7687
+  type: 'test'
+  ...
+# Subtest: 設定上下界夾住、無效值忽略且不改舊物件
+ok 3 - 設定上下界夾住、無效值忽略且不改舊物件
+  ---
+  duration_ms: 1.1025
+  type: 'test'
+  ...
+# Subtest: 設定往返一致，壞資料／未知版本／缺欄與錯型回傳明確預設
+ok 4 - 設定往返一致，壞資料／未知版本／缺欄與錯型回傳明確預設
+  ---
+  duration_ms: 0.744
+  type: 'test'
+  ...
+# Subtest: 設定儲存僅操作自己的 key，拒絕儲存時仍能玩且保留舊檔
+ok 5 - 設定儲存僅操作自己的 key，拒絕儲存時仍能玩且保留舊檔
+  ---
+  duration_ms: 1.0975
+  type: 'test'
+  ...
+# Subtest: 鍵盤與Xbox／PS同一組命令可操作三項設定並返回，不洩漏關閉確認
+ok 6 - 鍵盤與Xbox／PS同一組命令可操作三項設定並返回，不洩漏關閉確認
+  ---
+  duration_ms: 0.5539
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 118.3765

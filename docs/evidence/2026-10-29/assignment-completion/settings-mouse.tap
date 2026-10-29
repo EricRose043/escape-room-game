@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: 正式 main 載入設定、即時關閉驚嚇、更新靈敏度並保持暫停
+ok 1 - 正式 main 載入設定、即時關閉驚嚇、更新靈敏度並保持暫停
+  ---
+  duration_ms: 14.6274
+  type: 'test'
+  ...
+# Subtest: 工廠音量在開始／靜音切換後保留設定值與零音量
+ok 2 - 工廠音量在開始／靜音切換後保留設定值與零音量
+  ---
+  duration_ms: 0.4612
+  type: 'test'
+  ...
+# Subtest: Xbox Y／PS三角形開設定採按下邊緣，長按不重複
+ok 3 - Xbox Y／PS三角形開設定採按下邊緣，長按不重複
+  ---
+  duration_ms: 0.6796
+  type: 'test'
+  ...
+# Subtest: 正式滑鼠輸入套用儲存的倍率，設定開啟時凍結轉頭
+ok 4 - 正式滑鼠輸入套用儲存的倍率，設定開啟時凍結轉頭
+  ---
+  duration_ms: 7.2754
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 150.5547

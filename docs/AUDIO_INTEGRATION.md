@@ -42,3 +42,7 @@
 ## 如何自行確認
 
 依 README 啟動本機靜態 HTTP，再開 `/tools/audio-test.html`，按啟用後試聽每種聲音及音量／停止。原始 `npm test` 指令仍是 node --test；本環境以 `node --test` 執行 180 項通過。瀏覽器測量見 LOG-20261029-04，音色、舒適度、遊戲中事件同步與實體設備仍待人工／整合驗收。
+
+## LOG-08 S2主音量已接入
+
+createFactoryAudio新增setMasterVolume(0～1)，保存設定值，start／toggle不再把它重設為0.32；靜音旗標仍優先輸出0。main初次讀取與factory-settings-change皆套用volume／100。實體聽感待驗；adapter零音量、靜音往返與重新開始由integration-settings.test.js驗證。

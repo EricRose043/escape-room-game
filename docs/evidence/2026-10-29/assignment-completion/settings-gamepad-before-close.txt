@@ -1,0 +1,13 @@
+S0 瀏覽器測試台
+
+測試專用：使用預製的生產線存檔與模擬 Xbox，不能算真人鍵鼠／實體手把通關。會取代此測試 origin 的章節存檔，不修改遊戲檔案。
+
+建立舊版測試存檔並啟動模擬手把建立已解題及列車啟動的新版存檔檢查現有存檔的還原結果前進進入生產線（1.3 秒）Start 暫停／繼續讀取存檔摘要重新載入遊戲框架
+
+設定測試（模擬手把，不代表實體驗收）：Y／△ 開設定十字鍵下十字鍵右A／✕B／○讀取設定與面板狀態
+
+2026-10-29T11:08:38.470Z 預製 v2（裝配線已解、列車已啟動） 測試存檔；41%、UV
+2026-10-29T11:08:38.627Z 實際 main.js 選單載入；繼續可用 true
+2026-10-29T11:08:38.627Z 存檔 {"version":2,"chapterId":"chapter-1","checkpointId":"production.checkpoint","itemIds":["lobby.flashlight","lobby.employee-card","lobby.factory-map","power.fuse","power.battery"],"puzzles":{"power.main":{"installedItemId":"power.fuse","restored":true},"production.sequence":{"installedItemId":null,"restored":true}},"flashlight":{"charge":41,"mode":"uv"},"trainStarted":true}
+2026-10-29T11:08:38.935Z 模擬 A 繼續；開始選單隱藏 true；暫停 false
+2026-10-29T11:08:47.724Z 設定診斷 {"raw":"{\"version\":1,\"settings\":{\"volume\":37,\"jumpScare\":true,\"mouseSensitivity\":1.25}}","panelVisible":true,"paused":true,"volume":"37","jumpScare":"true","sensitivity":"1.25"}

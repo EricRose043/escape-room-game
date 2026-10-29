@@ -172,3 +172,53 @@
 - 環境受限：原生Pointer Lock；已驗備援開始，不宣稱原生鎖定通過。Q-004新BRIEF／原VERIFY驗收差異仍待人類對齊。
 
 證據目錄：[integration-fix](evidence/2026-10-29/integration-fix)。[基線](evidence/2026-10-29/integration-fix/merge-baseline.tap)、[先紅](evidence/2026-10-29/integration-fix/regression-red.tap)、[修復後](evidence/2026-10-29/integration-fix/regression-green.tap)、[Windows](evidence/2026-10-29/integration-fix/windows-checkout.tap)、[額外診斷](evidence/2026-10-29/integration-fix/diagnostics.jsonl)、[關頁前](evidence/2026-10-29/integration-fix/before-close.txt)、[關頁後](evidence/2026-10-29/integration-fix/after-close.txt)、[正式頁](evidence/2026-10-29/integration-fix/reopened-game.jpg)、[讀回結果](evidence/2026-10-29/integration-fix/restored-progress.jpg)、[console](evidence/2026-10-29/integration-fix/game-console.json)。TAP僅正規化換行／行尾空白，未更改案例、數值或失敗內容。
+
+## LOG-20261029-08：完成S2、S3獨立交付與S0補驗
+
+- 日期／操作者：2026-10-29，shuoen88授權的Codex。使用者要求完成全部分工、需要決定先詢問、完成上傳、以最新版本為基礎。
+- 基線：重新以git ls-remote --heads核對所有遠端；main=0fab5ef、Ryan=fc603ad、分工=3072dfa、上輪修復=8dfc46f。explicit fetch main／story／分工refs後確認本分支含Ryan與Eric原歷史。不是將僅fetch當前分支誤當已同步所有分支。開始完整200/200通過。
+- 決策：詢問S2預設、S3衝突方向與實體設備。使用者已明確回覆「預設關閉，玩家可自行開啟」；後兩項未取得答覆，不假定同意。
+- 最終程式版：122002caebfe9d026e0efc842ea9dc6685b6c1ab。S2已接正式main；S3依原分工僅交獨立資料／關門規則／預覽，未修改Ryan列車場地或加入WORLD。其餘本輪文件不改程式。保留原53條VERIFY與Ryan BRIEF，不重寫需求。
+
+### TDD與回歸
+
+| 階段 | 先紅與實作 | 實際結果 |
+|---|---|---|
+| 設定規則 | d9aa9f3 → fc38443 | 首先模組不存在的載入紅；實作後5/5 |
+| 設定面板 | 08a6933 → e7d2d22 | 首先缺模組載入紅；實作後含規則6/6 |
+| 正式接入 | 0980b7f → 6a8fb1d | 3個行為測試0/3 → 全套209/209 |
+| 瀏覽器音量量化bug | 9ee94c6 → 2a20f67 | 面板1過1失敗 → 2/2；DEF-006 |
+| 焦點圈限 | 2e90c70 → 1ffd574 | 面板2過1失敗 → 全套216/216（含走廊純規則） |
+| 走廊規則 | 87dc383 → d538574 | 缺模組載入紅 → 5/5 |
+| 走廊場地 | 062e7c7 → 122002c | 缺區域模組載入紅 → 區域3＋規則5全部通過 |
+
+另補正式mousemove倍率與面板開啟時凍結驗證，未改任何舊測試斷言。`node --test --test-reporter=tap` 最終 **220/220**；環境無npm，未聲稱直接跑npm test。乾淨clone 122002c、core.autocrlf=true、main.js CRLF=0，同指令 **220/220**；windows-summary.json及windows-suite.tap為證。
+
+### 真瀏覽器設定與關頁
+
+1. 隔離8788測試台載入實際index及main，預製v2存檔＋標準Xbox模擬輸入A繼續。Y開設定，預設驚嚇關、音量32與倍率1。
+2. 模擬十字鍵右 → 音量37；下、A → 驚嚇開；下、右 → 倍率1.25。面板及localStorage皆為37／true／1.25。B關閉後面板hidden、遊戲仍paused，避免確認動作洩漏到場景。
+3. 真正關閉整個分頁。另開正式index → 跳過 → 設定，仍37／true／1.25，這次不重設設定或使用模擬手把。
+4. 真鍵盤方向鍵右、下、Enter、下、左，改為42／false／1.0；Esc返回原選單。error/warn空。保存DOM與畫面；同一主程式mouse事件倍率由Node main替身驗證，原生Pointer Lock仍環境受限。
+5. 最後重載122002c正式頁，Shift+Tab由音量回到返回按鈕，Tab再回音量，焦點留在面板內；settings-final-focus.txt及settings-final.jpg為證。
+6. 首次發現滑桿原生步距5把32變30；先紅再改step=1後重載，已驗32、37、42均與文字一致。不是只改測試假物件。
+
+### S3真瀏覽器獨立預覽
+
+開tools/corridor-test.html →「自動走訪三道門」→沿實際updatePlayer碰撞與updateCorridorDoors規則走完兩次轉彎，顯示3/3門已關。error/warn空，畫面與DOM已存。此頁未接正式WORLD、不含怪物、不寫正式存檔；不能當整章追逐通關。
+
+### 選定規則突變（不是全規則覆蓋）
+
+每次從已commit乾淨版另clone，只改一條，測試抓到後finally還原，再跑綠：
+
+- 8dfc46f：心跳距離公式反向，audio-mix測試退出1；還原退出0。
+- 6a8fb1d：序列化列車啟動強制false，save-progress-v2退出1；還原退出0。
+- 122002c：走廊跨線方向反轉，corridor-doors／chase-corridor退出1；還原退出0。
+
+詳細before／after及退出碼見mutation-summary.json；故意改壞內容不在提交或正式工作檔。第一次執行突變工具遇到Windows文字編碼失敗，已改明確UTF-8重跑；不將工具失敗算測試抓到突變。
+
+### 已驗、未驗及環境限制
+
+已驗：220項、Windows220項、3項選定突變、S2真瀏覽器鍵盤與模擬手把、設定真關頁保留、S3獨立3門、文件53條追溯。未驗：實體Xbox／PS、學校舊電腦、真人完整章節、S3正式整合、完整聽感與未抽樣突變。Pointer Lock受內建環境限制，備援與main輸入已分開驗。原要求／新版玩法差異仍見Q-004。
+
+證據：[完整套件](evidence/2026-10-29/assignment-completion/full-suite.tap)、[Windows](evidence/2026-10-29/assignment-completion/windows-suite.tap)、[突變摘要](evidence/2026-10-29/assignment-completion/mutation-summary.json)、[模擬手把前](evidence/2026-10-29/assignment-completion/settings-gamepad-before-close.txt)、[返回](evidence/2026-10-29/assignment-completion/settings-gamepad-return.txt)、[真關頁讀回](evidence/2026-10-29/assignment-completion/settings-after-reopen.txt)、[鍵盤設定畫面](evidence/2026-10-29/assignment-completion/settings-keyboard.jpg)、[S3完成畫面](evidence/2026-10-29/assignment-completion/corridor-preview.jpg)。同目錄保留各輪紅／綠TAP及console清單，僅正規化換行與行尾空白。

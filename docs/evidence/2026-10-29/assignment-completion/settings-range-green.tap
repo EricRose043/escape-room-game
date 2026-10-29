@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: 設定面板透過手把與鍵盤調整實際控制項、顯示焦點並在關閉後解除事件
+ok 1 - 設定面板透過手把與鍵盤調整實際控制項、顯示焦點並在關閉後解除事件
+  ---
+  duration_ms: 2.1732
+  type: 'test'
+  ...
+# Subtest: 音量滑桿能精確表示非五的倍數，避免32%被瀏覽器自動量化成30%
+ok 2 - 音量滑桿能精確表示非五的倍數，避免32%被瀏覽器自動量化成30%
+  ---
+  duration_ms: 0.3445
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83.8395

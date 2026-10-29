@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: S3 獨立區域符合 D010 與全域 ID／引用，尚未加入正式地圖
+ok 1 - S3 獨立區域符合 D010 與全域 ID／引用，尚未加入正式地圖
+  ---
+  duration_ms: 2.7529
+  type: 'test'
+  ...
+# Subtest: 能走過轉彎與三道門，門只在身後關上且不夾住玩家
+ok 2 - 能走過轉彎與三道門，門只在身後關上且不夾住玩家
+  ---
+  duration_ms: 2.6768
+  type: 'test'
+  ...
+# Subtest: 同一份門狀態控制碰撞與遮擋，關門後無法走回
+ok 3 - 同一份門狀態控制碰撞與遮擋，關門後無法走回
+  ---
+  duration_ms: 0.7032
+  type: 'test'
+  ...
+# Subtest: 走廊門需要實際越過正向觸發線，未通過不關閉
+ok 4 - 走廊門需要實際越過正向觸發線，未通過不關閉
+  ---
+  duration_ms: 1.5994
+  type: 'test'
+  ...
+# Subtest: 逆向與門寬外越線不關；首筆已在另一側不憑空關門
+ok 5 - 逆向與門寬外越線不關；首筆已在另一側不憑空關門
+  ---
+  duration_ms: 1.1243
+  type: 'test'
+  ...
+# Subtest: 轉彎後負方向門可關閉，已關閉不因回頭重開或重複
+ok 6 - 轉彎後負方向門可關閉，已關閉不因回頭重開或重複
+  ---
+  duration_ms: 0.286
+  type: 'test'
+  ...
+# Subtest: 用移動線段與門寬交點檢查，不能只憑終點位於門另一側
+ok 7 - 用移動線段與門寬交點檢查，不能只憑終點位於門另一側
+  ---
+  duration_ms: 0.2182
+  type: 'test'
+  ...
+# Subtest: 無效位置不改狀態也不產生誤觸發
+ok 8 - 無效位置不改狀態也不產生誤觸發
+  ---
+  duration_ms: 0.2394
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 117.7739

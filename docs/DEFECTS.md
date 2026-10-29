@@ -110,3 +110,16 @@ Ryan 已改 BRIEF 與 STEP 7～10 設計，但 VERIFY 仍是糖果生產線、�
 DEF-005 複測操作：在隔離 8788 origin 開 tools/save-playtest.html →「建立已解題及列車啟動的新版存檔」→ 模擬手把 A 繼續 → 檢查現有存檔 → 真正關閉整個分頁 → 開 index.html → 跳過 → 繼續 → 鍵盤開始 → 靜音 → 關閉 → 重開測試台，只按「檢查現有存檔的還原結果」。最後一步不 seed 或修改存檔。附 before-close.txt、after-close.txt 及兩張截圖於 evidence/2026-10-29/integration-fix。
 
 仍未關閉：Q-001～004 的人類需求決策、真人完整通關、實體設備與聽感。上述「修復」均指 PR #2 的修復分支，並非 main 已上線。
+
+## DEF-006：原生音量滑桿把32%量化為30%
+
+- 發現：LOG-08，6a8fb1d，內建Chromium。操作：正式main載入 → Y／△開設定；預期滑桿與文字均32%，實際AX滑桿30、文字32%。原因range step=5，但沿用的預設音量32不是5的倍數。
+- 修復：9ee94c6新增先紅的數值可表達性測試（1過1失敗）；2a20f67改原生range步距1，保留鍵盤／手把每次調5的操作。
+- 複測：新測試轉綠；真瀏覽器重載後32／32、調整後37／37，真關頁正式頁仍37。最終220/220；狀態：本分支已修復待main合併。證據settings-range-red／green.tap、settings-gamepad-before-close.txt與settings-after-reopen.txt。
+
+## LOG-08 更新的待驗與決策
+
+- Q-002：shuoen88已選驚嚇預設關閉，可自行開啟；本分支依D019實作。Eric最終PR審查仍保留。
+- QA-005：本輪已做3個選定規則的獨立突變，均被抓到且還原綠；其餘規則未做，不宣稱全覆蓋。
+- INT-003：S3原分工座標與新版loading-bay重疊。獨立模組／預覽已完成，但未加入WORLD；正式改位置接入或由Eric安排，已詢問使用者，尚未取得答覆。屬整合決策，不是正式遊戲新增的碰撞bug。
+- QA-003／004：實體設備與整章實玩仍待結果；提供HUMAN_TEST_CHECKLIST，未向其他成員擅自發訊息，也未代填測試。

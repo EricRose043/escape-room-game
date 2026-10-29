@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: 心跳在近距為一、遠距為零，範圍內隨距離增加而下降
+not ok 1 - 心跳在近距為一、遠距為零，範圍內隨距離增加而下降
+  ---
+  duration_ms: 1.9392
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-mutation-20261029-8p81zg1t\\repo\\tests\\audio-mix.test.js:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    0 !== 1
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-mutation-20261029-8p81zg1t/repo/tests/audio-mix.test.js:6:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+# Subtest: 心跳無效或負距離不產生突然滿強度
+ok 2 - 心跳無效或負距離不產生突然滿強度
+  ---
+  duration_ms: 1.3694
+  type: 'test'
+  ...
+# Subtest: 走路越快腳步間隔越短，但不超過安全節奏上下限
+ok 3 - 走路越快腳步間隔越短，但不超過安全節奏上下限
+  ---
+  duration_ms: 0.2549
+  type: 'test'
+  ...
+# Subtest: 停下及無效速度以 Infinity 表示不安排腳步
+ok 4 - 停下及無效速度以 Infinity 表示不安排腳步
+  ---
+  duration_ms: 0.1739
+  type: 'test'
+  ...
+# Subtest: 相同輸入可重播，混音常數不會被呼叫改寫
+ok 5 - 相同輸入可重播，混音常數不會被呼叫改寫
+  ---
+  duration_ms: 0.7967
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 104.8309
