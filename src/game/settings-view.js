@@ -8,7 +8,7 @@ export function showSettings(root,settings,onChange,onClose) {
   const hint=make('p','方向鍵／十字鍵：上下選擇、左右調整；Enter／A／✕ 切換；Esc／B／○ 返回。');
   const status=make('p');status.setAttribute('role','status');
   const controls=[],values=[];
-  for(const [index,key,label,min,max,step] of [[0,'volume','主音量',0,100,5],[1,'jumpScare','驚嚇近景'],[2,'mouseSensitivity','滑鼠靈敏度',.25,3,.25]]) {
+  for(const [index,key,label,min,max,step] of [[0,'volume','主音量',0,100,1],[1,'jumpScare','驚嚇近景'],[2,'mouseSensitivity','滑鼠靈敏度',.25,3,.25]]) {
     const row=make('div');row.className='settings-row';
     const text=make('label',label),value=make('output');text.htmlFor=`setting-${key}`;
     const control=make(key==='jumpScare'?'button':'input');control.id=`setting-${key}`;
