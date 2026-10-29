@@ -12,12 +12,14 @@ import { createCapture, updateCapture, CAPTURE_SECONDS } from './capture.js';
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
 export function isDevicePowered(state, device) {
+  const puzzle=getPuzzle(device.puzzleId);
+  if(puzzle?.requiresInstall===false) return state.puzzles['power.main']?.restored===true;
   return Boolean(state.puzzles[device.puzzleId]?.installedItemId);
 }
 // 顯示與提交驗證共用唯一謎題資料；提交時仍再次檢查安裝狀態。
 export function validatePuzzleCode(state, puzzleId, code) {
   const puzzle = getPuzzle(puzzleId);
-  return Boolean(puzzle && state.puzzles[puzzleId]?.installedItemId && code === puzzle.code);
+  return Boolean(puzzle && (puzzle.requiresInstall===false ? isDevicePowered(state,{puzzleId}) : state.puzzles[puzzleId]?.installedItemId) && code === puzzle.code);
 }
 export function selectChapterTarget(state) {
   if(state.ui.mode!=='explore') return null;
@@ -38,13 +40,14 @@ export function createChapter({jumpScare=false}={}) {
     checkpointId:CHECKPOINTS[0].id,
     puzzles:Object.fromEntries(WORLD.areas.flatMap(a=>a.puzzles).map(p=>[p.id,{installedItemId:null,restored:false}])),
     monsters:Object.fromEntries(MONSTERS.map(m=>[m.id,createMonster(m)])),
-    events:[],
+    events:[],trainStarted:false,
     ui:{mode:'explore'}};
 }
 export function hasFlashlight(state) {
   return ITEMS.some(i=>i.kind==='flashlight' && state.inventory.itemIds.includes(i.id));
 }
 export const POWER_TRANSITION_SECONDS = 0.6;
+export const ENDING_SECONDS = 8;
 // 死亡回復及日後讀檔共用；呼叫者負責流程與暫停，不還原危險座標或介面。
 export function restoreCheckpoint(state) {
   const checkpoint=CHECKPOINTS.find(c=>c.id===state.checkpointId);
@@ -62,7 +65,7 @@ export function restoreCheckpoint(state) {
     puzzles:Object.fromEntries(Object.entries(state.puzzles).map(([id,puzzle])=>[id,{
       ...puzzle,restoreElapsed:puzzle.restored?POWER_TRANSITION_SECONDS:0,
     }])),
-    monsters,events:[],ui:{mode:'explore'},
+    monsters,events:[],trainStarted:state.trainStarted===true,ui:{mode:'explore'},
   };
 }
 export function powerProgress(state, puzzleId) {
@@ -124,6 +127,10 @@ export function updateChapter(state,actions={},dt=0,{jumpScare=state.jumpScare??
     return {...state,player:{...state.player,paused:true}};
   }
   if (state.player.paused || actions.gameplayActive===false) return state;
+  if(state.ui.mode==='ending') {
+    const elapsed=Math.min(ENDING_SECONDS,(state.ui.elapsed??0)+(Number.isFinite(dt)?Math.max(0,dt):0));
+    return {...state,ui:elapsed>=ENDING_SECONDS?{mode:'complete'}:{...state.ui,elapsed}};
+  }
   if(state.ui.mode==='caught') {
     const ui=updateCapture(state.ui,dt,{jumpScare:allowed});
     if(ui.elapsed>=CAPTURE_SECONDS-1e-9) return {...restoreCheckpoint(state),jumpScare:allowed};
@@ -153,6 +160,13 @@ export function updateChapter(state,actions={},dt=0,{jumpScare=state.jumpScare??
   if(state.ui.mode!=='explore') return state;
   // 先處理開啟，避免同一個 A／✕ 輸入第一位，或開啟當幀移動／耗電。
   const initialTarget=selectChapterTarget(state);
+  if(actions.interactPressed && initialTarget?.kind==='trainConsole') {
+    const ready=state.puzzles['production.sequence']?.restored && state.inventory.itemIds.includes('lobby.employee-card');
+    return ready?{...state,trainStarted:true,ui:{mode:'explore',message:'列車已啟動，快上車！'}}:{...state,ui:{...state.ui,message:'需要完成裝配線檢修並刷員工卡'}};
+  }
+  if(actions.interactPressed && initialTarget?.kind==='train') {
+    return state.trainStarted?{...state,player:{...state.player,paused:true},ui:{mode:'ending',elapsed:0}}:{...state,ui:{...state.ui,message:'列車尚未啟動'}};
+  }
   if(actions.interactPressed && initialTarget?.kind==='locker') {
     const next=tryEnterHiding(state,initialTarget,getGeometry(state).collisionBoxes,monsterBodies(state));
     if(next.ui.mode!=='hiding') return next;
