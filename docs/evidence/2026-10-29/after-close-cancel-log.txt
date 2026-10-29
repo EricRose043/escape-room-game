@@ -1,0 +1,1 @@
+2026-10-29T08:15:35.051Z 存檔 {"version":1,"chapterId":"chapter-1","checkpointId":"production.checkpoint","itemIds":["lobby.flashlight","power.fuse","power.battery"],"puzzles":{"power.main":{"installedItemId":"power.fuse","restored":true}},"flashlight":{"charge":41,"mode":"uv"}}

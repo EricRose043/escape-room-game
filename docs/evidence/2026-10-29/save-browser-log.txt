@@ -1,0 +1,8 @@
+2026-10-29T08:13:45.097Z 預製測試存檔：生產線平台、41%、UV、已拿保險絲與電池、已供電
+2026-10-29T08:13:45.168Z 實際 main.js 選單載入；繼續可用 true
+2026-10-29T08:13:45.168Z 存檔 {"version":1,"chapterId":"chapter-1","checkpointId":"production.checkpoint","itemIds":["lobby.flashlight","power.fuse","power.battery"],"puzzles":{"power.main":{"installedItemId":"power.fuse","restored":true}},"flashlight":{"charge":41,"mode":"uv"}}
+2026-10-29T08:13:45.470Z 模擬 A 繼續；開始選單隱藏 true；暫停 false
+2026-10-29T08:13:50.169Z 已向前移動 1.3 秒，停下等待怪物；焦點 true
+2026-10-29T08:14:07.609Z 被抓黑畫面顯示 #1；近景 false
+2026-10-29T08:14:08.812Z 黑畫面結束／回復 #1
+2026-10-29T08:14:08.812Z 存檔 {"version":1,"chapterId":"chapter-1","checkpointId":"production.checkpoint","itemIds":["lobby.flashlight","power.fuse","power.battery"],"puzzles":{"power.main":{"installedItemId":"power.fuse","restored":true}},"flashlight":{"charge":41,"mode":"uv"}}

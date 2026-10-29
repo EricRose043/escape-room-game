@@ -54,3 +54,22 @@
 - 證據（輸出、截圖或錄影連結）：
 - 結果與限制／DEF 或 Q 編號：
 - 修復版本與複測者／複測結果：
+
+## LOG-20261029-03：實際 WebGL 被抓、存讀與取消重開
+
+- 日期／操作者：2026-10-29，shuoen88 授權的 Codex；測試約台灣時間 16:13～16:15，原始文字證據採 UTC。
+- 版本：`3072dfae6079f3d16350694bdd90573f0ff81bc7`；新測試台 `tools/save-playtest.html` 載入原始 index.html 與未修改的 main.js，three.js 與 WebGL 真實執行。測試台原始碼隨本輪 commit 保存。
+- 環境：Windows、ChatGPT 內建 Chromium 瀏覽器、`http://127.0.0.1:8788`。使用預製有效存檔及模擬 standard Xbox，不是本人鍵鼠走完全程，也不是實體手把驗收。
+- 前置存檔：production.checkpoint；手電筒、保險絲、電力室電池已取得；保險絲已安裝、電力已恢復；電量 41%、UV、關燈。此進度是 fixture，不能宣稱本輪從開場取得。
+
+| 測試／案例 | 真正執行的步驟 | 實際結果 | 判定及邊界 |
+|---|---|---|---|
+| 被抓回復 T6.01／T6.03 | 測試台按「建立測試存檔並啟動模擬手把」，再按「前進進入生產線（1.3 秒）」後停下，等怪物自行巡邏、發現與接觸 | DOM 觀察到 08:14:07.609Z 黑畫面出現，08:14:08.812Z 結束，約 1.203 秒；回復後渲染場景、電量 41%、UV 關燈，存檔點仍為 production.checkpoint | 此 fixture／模擬手把條件通過；實體鍵鼠及開啟驚嚇分支待驗 |
+| 進度保留 T6.02 | 比對被抓前後實際 localStorage 存檔摘要與 UI | itemIds 三項、保險絲安裝、restored=true、checkpoint、charge=41、mode=uv 完全相同 | 預製進度的保留通過；未測本輪動態拾物後被抓 |
+| 關頁繼續 TG.03 | 真正關閉兩個遊戲分頁，重新建立 index.html 分頁，點「繼續」 | 繼續可用；HUD 還原 41%、UV 關閉；存檔仍是生產線與已供電進度 | 跨分頁關閉／重開與資料還原通過；鍵鼠啟動仍受 Pointer Lock 限制，不能記為完整鍵鼠續玩 |
+| 取消重開 US-03 | 重開的 index 選「重新開始」→「取消，保留進度」→「繼續」，再次關頁後讀取摘要 | 回到選單時繼續仍可用；繼續後 41%／UV；再次讀取 raw JSON 與被抓前內容一致 | 真實選單與保存舊進度通過 |
+
+- 證據：[被抓觀察與存檔 JSON](evidence/2026-10-29/save-browser-log.txt)、[回復畫面](evidence/2026-10-29/save-recovered.jpg)、[取消重開畫面](evidence/2026-10-29/cancel-restart.jpg)、[重開後繼續畫面](evidence/2026-10-29/reopen-continued.jpg)、[最終存檔摘要](evidence/2026-10-29/after-close-cancel-log.txt)。以實際畫面／DOM 與 raw JSON 記錄，不以測試台按鈕名稱視為通過。
+- 未觀察到這四項中的資料遺失或未處理程式錯誤；正式頁讀到的 console error／warn 清單為空。沒有以環境限制補造 DEF-002。
+- ENV-001：正式頁點開始或繼續會顯示「無法鎖定滑鼠」，重試仍不能以鍵鼠開始。本內建瀏覽器不提供可用 Pointer Lock；只確認此環境限制，尚無一般 Chrome 的故障證據。未修改／假造 Pointer Lock；改用測試台模擬手把路徑。
+- 未檢查：一般 Chrome 的真實鍵鼠流程、實體 Xbox／PS、從開場拾物到被抓的完整路線、驚嚇開啟的實際觀感、舊電腦 FPS；此處顯示的 FPS 不是學校電腦效能驗收。
