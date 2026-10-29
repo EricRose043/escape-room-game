@@ -1,0 +1,21 @@
+腳步聲 峰值=0.008485；context=running
+門聲 峰值=0.025194；context=running
+警報 峰值=0.025865；context=running
+生產線環境聲 峰值=0.012950；context=running
+較遠心跳 峰值=0.018841；context=running
+靠近心跳 峰值=0.040194；context=running
+全部停止 峰值=0.000000；context=running
+警報 峰值=0.006081；context=running
+警報 峰值=0.000000；context=running
+連續步行 峰值=0.008485；context=running
+全部停止 峰值=0.000000；context=running
+
+{
+  "supported": true,
+  "contextState": "running",
+  "volume": 0.35,
+  "ambience": null,
+  "heartbeatIntensity": 0,
+  "voices": 0,
+  "ambientNodes": 0
+}

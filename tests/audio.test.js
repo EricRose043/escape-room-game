@@ -43,6 +43,7 @@ test('每幀重送環境及心跳不疊加節點或計時器，零強度停止�
   for (let i = 0; i < 100; i++) { audio.setAmbience('production'); audio.setHeartbeat(0.6); }
   assert.equal(nodes.length, count); assert.equal(timers.size, 1);
   audio.setHeartbeat(0); assert.equal(timers.size, 0);
+  assert.equal(audio.getStatus().voices, 0, '零強度立即停止已排程的心跳雙拍');
   audio.setAmbience(null); assert.equal(audio.getStatus().ambience, null);
   await audio.dispose();
 });
