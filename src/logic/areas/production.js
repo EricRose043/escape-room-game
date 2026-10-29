@@ -30,8 +30,17 @@ export const PRODUCTION = {
       panelThickness:0.025,peek:{minY:1.54,maxY:1.66,width:0.6}},
     {id:'production.sequence-keypad',kind:'keypad',name:'裝配線控制器',puzzleId:'production.sequence',bounds:{minX:20.55,maxX:21.1,minY:1,maxY:1.65,minZ:-6.95,maxZ:-6.05}},
   ],
-  lights:[{id:'production.ceiling-light',position:{x:14.2,y:3.1,z:-6.5},powerPuzzleId:'power.main',offIntensity:7,onIntensity:26,color:0xc5d6bf,distance:18}],
-  signs:[{id:'production.east-sign',text:'貨運區｜列車月台',position:{x:21.18,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3}],
+  lights:[
+    {id:'production.ceiling-light',position:{x:14.2,y:3.1,z:-6.5},powerPuzzleId:'power.main',offIntensity:7,onIntensity:26,color:0xc5d6bf,distance:18},
+    {id:'production.alert-light',position:{x:14.2,y:2.8,z:-12.25},powerPuzzleId:'power.main',offIntensity:0.4,onIntensity:1.5,color:0xc04a39,distance:11},
+  ],
+  signs:[
+    {id:'production.east-sign',text:'貨運區｜列車月台',position:{x:21.18,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
+    {id:'production.monitor-record',text:'異常紀錄：玩偶位置與監視畫面不一致',position:{x:14.2,y:2.75,z:-0.32},normal:{x:0,y:0,z:-1},width:3.8,height:0.38},
+    {id:'production.console-guide',text:'月台檢修碼輸入後，東側貨運門解鎖',position:{x:14.2,y:2.85,z:-12.48},normal:{x:0,y:0,z:1},width:3.8,height:0.38},
+    {id:'production.locker-sign-l1',text:'緊急避難櫃',position:{x:8.5,y:2.42,z:-2.16},normal:{x:0,y:0,z:1},width:1.15,height:0.25},
+    {id:'production.locker-sign-l2',text:'緊急避難櫃',position:{x:19.5,y:2.42,z:-11.26},normal:{x:0,y:0,z:1},width:1.15,height:0.25},
+  ],
   navigation:{
     nodes:[node('A',10,-10.3),node('B',18.5,-10.3),node('C',18.5,-2),node('D',10,-2),
       node('N',14.2,-10.3),node('S',14.2,-2),node('M',14.2,-6.5),node('W',10,-6.5),
