@@ -1,0 +1,5 @@
+{"control":"legacy horizontal fixture (unscored)","actual":{"target":null,"trainStarted":false}}
+{"name":"looking down can start train","pass":true,"actual":{"target":"bay.train-console","trainStarted":true}}
+{"name":"new progress survives serialization and restore","pass":true,"actual":{"before":{"production":true,"train":true},"after":{"production":true,"train":true},"raw":"{\"version\":2,\"chapterId\":\"chapter-1\",\"checkpointId\":\"production.checkpoint\",\"itemIds\":[\"lobby.flashlight\",\"lobby.employee-card\",\"lobby.factory-map\",\"power.fuse\"],\"puzzles\":{\"power.main\":{\"installedItemId\":\"power.fuse\",\"restored\":true},\"production.sequence\":{\"installedItemId\":null,\"restored\":true}},\"flashlight\":{\"charge\":100,\"mode\":\"normal\"},\"trainStarted\":true}"}}
+{"name":"ending finishes after ten simulated seconds","pass":true,"actual":{"target":"bay.train","paused":false,"before":{"mode":"ending","elapsed":0},"after":{"mode":"complete"}}}
+{"summary":{"checks":3,"passed":3,"failed":0},"note":"Fixture diagnostics; not a browser playthrough or an additional full-suite test count"}

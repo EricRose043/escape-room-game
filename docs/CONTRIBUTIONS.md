@@ -42,3 +42,7 @@
 Ryan 分支 aace2e6 相對 main=0fab5ef 有 34 筆提交，git author 均為 RyanDing1010；不再以舊的 main-only 查核推定他沒有貢獻。提交已存在與程式驗收通過分開判定；目前列車回歸有失敗，詳 PROGRESS／LOG-05。main、PR #1／#2 的舊 SHA 與作者均未改寫。
 
 最新補查補充：測試期間 Ryan 又新增 11 筆，最後鎖定 8bf3e2f，共 45 筆作者均為 RyanDing1010。34 筆是本輪第一快照 aace2e6，不是最終數字；原始提交皆保留。兩套音效各自有作者證據，整合衝突不能以刪除任一方貢獻解決。
+
+## LOG-07 合併證據（最新）
+
+Ryan 鎖定 fc603adece9baf554cdbd87d291b9d21ba7e3954，相對 main 0fab5ef 有 67 筆提交，git shortlog 皆為 RyanDing1010。b2066d2 以真正 merge commit 匯入，保留 Ryan、Eric 與 shuoen 的原始 SHA／作者，未 squash、rebase、force push 或冒用他人身分。d87b510／54ae26f 為 shuoen88 的本輪回歸與修復，PR #2 延續上傳。舊表45筆為上一輪快照；目前67筆不包含鎖定SHA之後的更新。尚未 main 合併，不能宣稱三人均已在 main 完成交付。

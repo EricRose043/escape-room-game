@@ -1,11 +1,16 @@
 # S1 聲音模組交付與接入說明
 
-本輪僅新增模組與獨立試聽頁，不修改 `src/game/main.js`、`src/logic/index.js`、共用章節／怪物／世界資料。由 EricRose043 整合到正式遊戲後，另做實際遊戲驗收。
+最新 LOG-07：依使用者修復授權，S1 已在 PR #2 分支接入正式 main。Ryan createFactoryAudio／audioCueFor 保留，adapter 把事件、位移腳步、區域環境與距離心跳交給唯一 S1 引擎；main 的失焦／離頁清理已接上。main 分支仍待 owner 審查合併。下方初版 API 設計保留，實作位置依本段更新。
+
+- S1 引擎現位於 `src/game/procedural-audio.js`；`src/game/audio.js` 仍 re-export createAudio，並提供 createFactoryAudio／audioCueFor。
+- 引擎新增 playCue，保留 Ryan 電力、追逐、躲藏、被抓、開門、列車與逃離的原事件旋律，與環境／心跳共用 context、音量及聲部上限。
+- 工廠主音量初值 0.32；獨立 createAudio 預設 0.35。S2 主音量介面仍待後續功能。
+- S1 原測試移名 `tests/procedural-audio.test.js`，Ryan `tests/audio.test.js` 原斷言保留，新 `tests/audio-integration.test.js` 驗 adapter。200/200 通過；正式頁可開始／切靜音且 error/warn 空。真人聽感仍待驗。
 
 ## 已交付
 
 - `src/logic/audio-mix.js`：`heartbeatIntensity(distance)`、`footstepInterval(speed)`、唯讀 `AUDIO_MIX`。
-- `src/game/audio.js`：`createAudio()`，延後到使用者啟用才建立 AudioContext；只用原創 oscillator／noise buffer／gain／filter，不下載音效、不用 three.js。
+- `src/game/procedural-audio.js`：`createAudio()`，延後到使用者啟用才建立 AudioContext；只用原創 oscillator／noise buffer／gain／filter，不下載音效、不用 three.js。
 - `tools/audio-test.html`：獨立啟用、單次音效、連續步行、環境、遠近心跳、音量及停止；以 AnalyserNode 記錄訊號峰值，不取代人類聽感驗收。
 - 新測試：`tests/audio-mix.test.js`、`tests/audio.test.js`。原有測試與主程式未改。
 
@@ -23,7 +28,7 @@
 | `dispose()` | 離頁或銷毀遊戲時清理節點與 timer，關閉 context；之後不可再 unlock |
 | `getStatus()` | 僅供試聽／測試診斷：context 狀態、音量、環境、心跳強度及聲部數 |
 
-## Eric 需要接上的位置（說明，並未修改 main）
+## 初版接入設計（歷史；最新已接入狀態見頁首）
 
 1. 直接 import `createAudio` 與兩個 mix 函式；不必為此修改 logic/index.js。建立一個 audio 實例。
 2. 開始／繼續的使用者事件呼叫 unlock，失敗就顯示可重試提示；失敗不應阻擋遊戲。套用 S2 主音量／100。

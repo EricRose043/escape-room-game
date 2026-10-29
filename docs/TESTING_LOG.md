@@ -141,3 +141,34 @@
 
 - 證據：[最新完整 TAP](evidence/2026-10-29/story-retest-8bf/story-suite.tap)、[最新診斷](evidence/2026-10-29/story-retest-8bf/diagnostics.jsonl)、[衝突預覽](evidence/2026-10-29/story-retest-8bf/merge-preview.txt)、[新版地圖／靜音畫面](evidence/2026-10-29/story-retest-8bf/map-muted.jpg)、[DOM](evidence/2026-10-29/story-retest-8bf/browser-dom.txt)、[瀏覽器錯誤清單](evidence/2026-10-29/story-retest-8bf/browser-errors.json)。TAP 為完整文字，僅移除行尾空白以供 diff 檢查，未改數值、案例或錯誤內容。
 - 未檢查：後續新 SHA、一般 Chrome 滑鼠鎖定、真人完整列車路線、實體手把、音色／音量舒適度、舊電腦 FPS。最新已知阻擋是 DEF-005 與 INT-002；不再將已修正的 DEF-003／004 列為該 SHA 的現存邏輯故障。
+
+## LOG-20261029-07：修復存檔與整合音效
+
+- 授權與操作者：shuoen88「幫我解決問題並記得把修改後的內容上傳」，Codex 執行；2026-10-29，Windows、Node v24.22.1、內建 Chromium／WebGL。
+- 版本：Ryan 最後鎖定 fc603adece9baf554cdbd87d291b9d21ba7e3954（相對 main 67 筆 Ryan 原提交）。b2066d2 合併 Ryan 與原 S1 分支歷史，保留雙方測試。合併基線192/192。d87b510 新增回歸先紅：200項，193通過／7失敗。54ae26f 修復後200/200。原 BRIEF 為 Ryan 匯入版，本輪未改寫 BRIEF／VERIFY。
+- 命令：`node --test --test-reporter=tap`；package.json 的 npm test 即 node --test，但本環境無 npm，不能記為有直接跑 npm test。
+- DEF-005：進階採v2保存 production.sequence 與 trainStarted，嚴格拒絕缺欄／矛盾前置。無進階進度仍輸出相容v1；v1可讀但不補造舊版未寫入的資料。解題或啟動列車立即flush，失敗保留舊檔可重試；5個新回歸案例通過。
+- INT-002：Ryan的audioCueFor與工廠API保留；S1引擎移名procedural-audio.js，原S1測試同時移名而保留斷言。Ryan音效測試僅補WebAudio替身的方法，未刪除／放寬斷言。3個新adapter案例驗單引擎、事件、距離心跳、位移腳步、暫停／靜音／dispose。main增加失焦stop及pagehide清理。
+
+### Windows換行複測
+
+在全新目錄執行 `git -c core.autocrlf=true clone --no-hardlinks --branch shuoen/save-playtest-and-audio <本機repo> <全新目錄>`，clone來源HEAD為54ae26f；再設定該clone的core.autocrlf=true。因.gitattributes腳本eol=lf，src/game/main.js的CRLF數為0；`node --test --test-reporter=tap` 200/200通過。修復正常Windows checkout，不宣稱繞過attributes的手動CRLF也支援。
+
+### 真瀏覽器關頁重開
+
+1. 啟動服務於隔離 `http://127.0.0.1:8788`，根目錄為本修復分支。測試台按「建立已解題及列車啟動的新版存檔」，使用標準Xbox模擬輸入A讓實際未改寫的main繼續。fixture包含裝配線已解、列車已啟動、地圖／員工卡／供電、UV關閉及電量41。
+2. 按「檢查現有存檔的還原結果」：v2／production=true／trainStarted=true／charge=41。保存before-close.txt，真正關閉整個分頁。
+3. 另開正式index.html → 跳過開場 → 繼續；HUD41及UV關閉，進度已儲存、地圖按鈕存在。按鍵盤開始，暫停層消失，Pointer Lock不可用時顯示方向鍵／拖曳備援提示。按音效，顯示靜音。正式頁error/warn清單為空，保存reopened-game.jpg與game-console.json，再真正關閉分頁。
+4. 重新開測試台，只按「檢查現有存檔的還原結果」（不seed）：v2／production=true／trainStarted=true／charge=41。保存after-close.txt與restored-progress.jpg。
+
+這是實際main／localStorage／真分頁生命週期的fixture測試，非真人逐關解題或實體手把通關。未在read-only瀏覽器evaluate中修改隱藏遊戲狀態。
+
+### 額外診斷與未驗項
+
+`node tools/review-factory-branch.mjs <本修復repo>`：3/3通過，控制台低頭命中、正常登車後logic更新達complete、進階存檔往返保留。這不代表真瀏覽器列車全章已走完。
+
+- 已檢查：完整200項、乾淨Windows200項、額外3項、真關頁讀回、正式頁開始／靜音UI、無error/warn。
+- 未檢查：鎖定fc603ad後的新提交、真人從開場走到結局、實體Xbox／PS、聲音舒適度、學校舊電腦FPS、逐條突變。
+- 環境受限：原生Pointer Lock；已驗備援開始，不宣稱原生鎖定通過。Q-004新BRIEF／原VERIFY驗收差異仍待人類對齊。
+
+證據目錄：[integration-fix](evidence/2026-10-29/integration-fix)。[基線](evidence/2026-10-29/integration-fix/merge-baseline.tap)、[先紅](evidence/2026-10-29/integration-fix/regression-red.tap)、[修復後](evidence/2026-10-29/integration-fix/regression-green.tap)、[Windows](evidence/2026-10-29/integration-fix/windows-checkout.tap)、[額外診斷](evidence/2026-10-29/integration-fix/diagnostics.jsonl)、[關頁前](evidence/2026-10-29/integration-fix/before-close.txt)、[關頁後](evidence/2026-10-29/integration-fix/after-close.txt)、[正式頁](evidence/2026-10-29/integration-fix/reopened-game.jpg)、[讀回結果](evidence/2026-10-29/integration-fix/restored-progress.jpg)、[console](evidence/2026-10-29/integration-fix/game-console.json)。TAP僅正規化換行／行尾空白，未更改案例、數值或失敗內容。

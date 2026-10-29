@@ -191,3 +191,19 @@ TF 表是分支查核證據，玩法及驗收含義變更仍待人確認；Q-004
 - TF-06：序列化往返仍遺失裝配線與列車進度，DEF-005 未解；現有套件全綠並未涵蓋此缺口。
 - TF-07：S1 自有分支 180/180；最新整合預覽因兩個同名音效檔 add/add 衝突而停止，沒有可宣稱通過的合併套件（INT-002）。
 - TF-08（Ryan 最新音效 UI）：真實頁面開啟／靜音按鈕可切換，console 無錯；不同於 S1 先前的 AnalyserNode 訊號測量，不能混用結果。
+
+## LOG-07 整合修復案例（2026-10-29）
+
+來源：BRIEF 的已解謎題保留、D014 存讀保護、TEAM_TASKS S1 與 D018 的修復授權；原 VERIFY 53 條追溯不變。
+
+| 案例 | 新回歸與結果 |
+|---|---|
+| TF-06a | v2 保存 production.sequence／trainStarted 往返不變且不修改輸入；save-progress-v2.test.js |
+| TF-06b | v1 仍可讀，不補造未曾保存的進度；同檔 |
+| TF-06c | 裝配線／列車當幀 flush；缺欄、未知版、矛盾前置拒絕；寫入失敗保留舊檔可重試；同檔 |
+| TF-07a | 兩方 API 存在且 factory 只建立一個 S1 引擎；audio-integration.test.js |
+| TF-07b | 原事件、距離心跳、實際位移腳步交給共享引擎；暫停／靜音停止，dispose 後不再排程；同檔 |
+| TF-06d | 真瀏覽器預製 v2、兩次關頁、正式 main 繼續後仍 true／true／41；LOG-07，並非真人逐關解題 |
+| TG-03a | .gitattributes 下乾淨 Windows autocrlf=true clone 200/200 通過；不代表任意手改 CRLF 均支援 |
+
+合併基線192/192；先紅200項中193通過／7失敗（d87b510）；修復後200/200（54ae26f）。Ryan audio.test.js 的原斷言保留，只補共享引擎所需 WebAudio 假物件方法；S1 斷言隨模組移名保留。完整章節、聽感與實體設備仍未驗。

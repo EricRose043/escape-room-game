@@ -1,6 +1,6 @@
 # 缺陷、需求問題與待驗事項
 
-統整：shuoen88；程式作者負責修復，shuoen88 協調複測，Eric 審查合併。狀態依據實際證據更新；不能把未實作或未驗收直接記為已確認的程式 bug。
+統整：shuoen88；程式作者負責修復，shuoen88 協調複測，Eric 審查合併。最新結果以本檔末尾 LOG-07 複測為準；以下各節保留初次重現背景。狀態依據實際證據更新；不能把未實作或未驗收直接記為已確認的程式 bug。
 
 ## DEF-001：Windows CRLF 使既有測試替身無法移除 import
 
@@ -95,3 +95,18 @@ Ryan 已改 BRIEF 與 STEP 7～10 設計，但 VERIFY 仍是糖果生產線、�
 - 不能直接拿 S1 檔案蓋上 Ryan main，也不能丟掉 S1 測試來消除衝突；那會分別造成缺失 export 或喪失已驗證功能。
 - 由 Eric、Ryan、shuoen 決定單一公開介面或明確轉接／拆模組，補上整合測試、保留兩邊作者。這是協作整合待決，不是本輪自行選擇哪一套取代另一套。
 - 證據 LOG-06／merge-preview.txt；未建立真正 merge commit、未改任一方共用程式。原本兩個分支各自綠燈不能當成合在一起也能執行。
+
+## 2026-10-29 LOG-07 修復複測（優先於上述歷史狀態）
+
+| ID | 本輪狀態 | 修復／複測依據 |
+|---|---|---|
+| DEF-001 | 修復分支已通過，待 main 合併 | 54ae26f 加入 .gitattributes，固定腳本 LF；全新 core.autocrlf=true Windows clone，main.js CRLF=0、200/200 通過。未放寬舊測試 import 斷言；手動繞過 attributes 產生的 CRLF 不在保證範圍 |
+| DEF-002 | 保留原修復，已接入此分支遊戲 | S1 引擎移至 procedural-audio.js，原生命週期斷言保留於 procedural-audio.test.js；200/200 通過 |
+| DEF-003／004 | Ryan 原修復已合入此分支 | fc603ad 經 b2066d2 保留歷史；完整套件與額外列車 logic 通過；真人全章仍未驗 |
+| DEF-005 | 修復及關頁複測通過，待 main 合併 | d87b510 紅燈；54ae26f v2 新增兩個進度、嚴格前置驗證、立即 flush，保留 v1；新測試含寫入失敗舊檔保護。真瀏覽器載入預製 v2，關閉測試分頁、開正式頁繼續、開始、靜音、再關閉後讀取仍為 true／true／41 |
+| INT-001 | 本分支編號衝突已整理 | 劇情決定改編 D017，保留 Ryan 內容、來源及原提交；分工仍 D015，不表示 Q-004 已獲人審 |
+| INT-002 | 本分支整合與回歸通過 | b2066d2 保留兩方原始測試；54ae26f adapter 保留工廠 API 與事件旋律，S1 單一 context 播放。新整合測試驗事件、心跳、腳步、暫停／靜音／dispose，正式頁可開始與靜音、error/warn 空 |
+
+DEF-005 複測操作：在隔離 8788 origin 開 tools/save-playtest.html →「建立已解題及列車啟動的新版存檔」→ 模擬手把 A 繼續 → 檢查現有存檔 → 真正關閉整個分頁 → 開 index.html → 跳過 → 繼續 → 鍵盤開始 → 靜音 → 關閉 → 重開測試台，只按「檢查現有存檔的還原結果」。最後一步不 seed 或修改存檔。附 before-close.txt、after-close.txt 及兩張截圖於 evidence/2026-10-29/integration-fix。
+
+仍未關閉：Q-001～004 的人類需求決策、真人完整通關、實體設備與聽感。上述「修復」均指 PR #2 的修復分支，並非 main 已上線。

@@ -1,0 +1,5 @@
+2026-10-29T10:36:47.639Z 預製 v2（裝配線已解、列車已啟動） 測試存檔；41%、UV
+2026-10-29T10:36:48.345Z 實際 main.js 選單載入；繼續可用 true
+2026-10-29T10:36:48.345Z 存檔 {"version":2,"chapterId":"chapter-1","checkpointId":"production.checkpoint","itemIds":["lobby.flashlight","lobby.employee-card","lobby.factory-map","power.fuse","power.battery"],"puzzles":{"power.main":{"installedItemId":"power.fuse","restored":true},"production.sequence":{"installedItemId":null,"restored":true}},"flashlight":{"charge":41,"mode":"uv"},"trainStarted":true}
+2026-10-29T10:36:48.654Z 模擬 A 繼續；開始選單隱藏 true；暫停 false
+2026-10-29T10:36:56.825Z 現有存檔還原診斷 {"version":2,"production":true,"trainStarted":true,"charge":41,"itemIds":["lobby.flashlight","lobby.employee-card","lobby.factory-map","power.fuse","power.battery"]}
