@@ -1,6 +1,10 @@
 export function audioCueFor(previous,next) {
+  if(!previous?.trainStarted&&next?.trainStarted) return 'train';
   if(next?.ui?.mode==='ending' && previous?.ui?.mode!=='ending') return 'escape';
   if(next?.ui?.mode==='caught' && previous?.ui?.mode!=='caught') return 'caught';
+  if(next?.ui?.mode==='hiding' && previous?.ui?.mode!=='hiding') return 'hide';
+  if(previous?.ui?.mode==='hiding' && next?.ui?.mode==='explore') return 'unhide';
+  if(next?.puzzles?.['production.sequence']?.restored && !previous?.puzzles?.['production.sequence']?.restored) return 'door';
   if(next?.puzzles?.['power.main']?.restored && !previous?.puzzles?.['power.main']?.restored) return 'power';
   const chased=Object.values(next?.monsters??{}).some(monster=>monster.mode==='chase');
   const wasChased=Object.values(previous?.monsters??{}).some(monster=>monster.mode==='chase');
@@ -60,7 +64,11 @@ export function createFactoryAudio({contextFactory}={}) {
     if(cue==='power') {tone(82,0.32,'sine',0.06);tone(123,0.32,'triangle',0.045,0.12);tone(165,0.4,'sine',0.035,0.24);}
     if(cue==='chase') {tone(145,0.36,'sawtooth',0.05);tone(119,0.42,'triangle',0.04,0.13);}
     if(cue==='caught') {tone(76,0.52,'sawtooth',0.08);tone(52,0.7,'sine',0.06,0.08);}
+    if(cue==='hide') {tone(88,0.16,'triangle',0.035);tone(62,0.2,'sine',0.03,0.1);}
+    if(cue==='unhide') tone(105,0.18,'triangle',0.03);
     if(cue==='escape') {tone(220,0.34,'triangle',0.045);tone(330,0.42,'sine',0.04,0.18);tone(440,0.7,'sine',0.035,0.38);}
+    if(cue==='door') {tone(92,0.3,'square',0.045);tone(68,0.38,'sawtooth',0.035,0.16);}
+    if(cue==='train') {tone(55,0.5,'sawtooth',0.04);tone(82,0.5,'triangle',0.04,0.22);tone(110,0.7,'sine',0.035,0.42);}
     const moving=active && next?.ui?.mode==='explore' && Math.hypot(next.player.x-previous.player.x,next.player.z-previous.player.z)>0.001;
     if(!moving) stepElapsed=0;
     else {stepElapsed-=(Number.isFinite(dt)?Math.max(0,dt):0);if(stepElapsed<=0){noiseStep();stepElapsed=0.48;}}
