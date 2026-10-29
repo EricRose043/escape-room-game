@@ -7,7 +7,7 @@ const area=logic.WORLD.areas.find(a=>a.id==='production'),definition=area.monste
 const at=(s,x,z)=>({...s,player:{...s.player,x,z,paused:false}});
 function powered() {
   const s=logic.createChapter();
-  return {...s,player:{...s.player,paused:false},inventory:{itemIds:['lobby.flashlight','power.fuse']},
+  return {...s,player:{...s.player,paused:false},inventory:{itemIds:['lobby.employee-card','lobby.flashlight','power.fuse']},
     puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:true,restoreElapsed:0.2}}};
 }
 function production() {
@@ -63,7 +63,7 @@ test('三個存檔點 ID 前置條件與玩家半徑位置有效',()=>{
 
 test('首次完整進區啟用存檔點，回頭不降級或重複啟用',()=>{
   let s=logic.createChapter();assert.equal(s.checkpointId,lobbyId);
-  s={...s,inventory:{itemIds:['lobby.flashlight']}};
+  s={...s,inventory:{itemIds:['lobby.employee-card','lobby.flashlight']}};
   const b=logic.WORLD.areas.find(a=>a.id==='power-room').bounds,r=logic.PLAYER_RADIUS;
   const edge=at(s,0,b.maxZ-r+0.001);
   assert.equal(logic.updateChapter(edge).checkpointId,lobbyId);
@@ -194,3 +194,4 @@ test('平台回復位置安全，重新進區仍可被發現與接觸',()=>{
   for(let i=0;i<600;i++) {s=logic.updateChapter(s,{},0.1);if(s.events.some(e=>e.type==='contact')) {contact=true;break;}}
   assert.ok(contact,'第二次回復後仍能再次接觸');
 });
+
