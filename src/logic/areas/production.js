@@ -18,8 +18,8 @@ export const PRODUCTION = {
     box('production.machine-b','machine',15.2,17.2,0,2.2,-8,-3),
   ],
   doors:[{id:'production.east-door',name:'貨運區門',bounds:{minX:21.2,maxX:21.4,minY:0,maxY:2.6,minZ:-7.4,maxZ:-5.6},
-    openWhen:{type:'puzzleSolved',puzzleId:'production.sequence'},destination:{type:'reserved',areaId:'chase-corridor'}}],
-  items:[],clues:[],puzzles:[{id:'production.sequence'}],
+    openWhen:{type:'puzzleSolved',puzzleId:'production.sequence'},destination:{type:'area',areaId:'loading-bay'}}],
+  items:[],clues:[{id:'production.sequence-clue',puzzleId:'production.sequence',text:'月台檢修碼：3－1－4－2',position:{x:20.9,y:2.1,z:-6.4},normal:{x:-1,y:0,z:0},width:0.8,height:0.3}],puzzles:[{id:'production.sequence',code:'3142',requiresInstall:false}],
   // 櫃體碰撞／視線仍用完整外框；畫面薄板的窺視縫對齊眼高。
   devices:[
     {id:'production.locker-l1',kind:'locker',name:'西側置物櫃',bounds:{minX:8,maxX:9,minY:0,maxY:2.2,minZ:-3,maxZ:-2.2},
@@ -28,6 +28,7 @@ export const PRODUCTION = {
     {id:'production.locker-l2',kind:'locker',name:'北側置物櫃',bounds:{minX:19,maxX:20,minY:0,maxY:2.2,minZ:-12.2,maxZ:-11.3},
       doorYaw:Math.PI,inside:{x:19.5,z:-11.75},exitCandidates:[{x:19.5,z:-10.3},{x:19.5,z:-10.6}],
       panelThickness:0.025,peek:{minY:1.54,maxY:1.66,width:0.6}},
+    {id:'production.sequence-keypad',kind:'keypad',name:'裝配線控制器',puzzleId:'production.sequence',bounds:{minX:20.55,maxX:21.1,minY:1,maxY:1.65,minZ:-6.95,maxZ:-6.05}},
   ],
   lights:[{id:'production.ceiling-light',position:{x:14.2,y:3.1,z:-6.5},powerPuzzleId:'power.main',offIntensity:7,onIntensity:26,color:0xc5d6bf,distance:18}],
   signs:[{id:'production.east-sign',text:'貨運區｜列車月台',position:{x:21.18,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3}],
@@ -47,4 +48,3 @@ export const PRODUCTION = {
     repathSeconds:0.25,lostSightSeconds:0.75,searchSeconds:4,
     contactDistance:0.8,contactResetDistance:1}],
 };
-
