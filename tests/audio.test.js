@@ -10,6 +10,10 @@ test('工廠音效只在電力、追逐、被抓和逃脫轉場時觸發',()=>{
   assert.equal(audioCueFor(before,state({monsters:{m:{mode:'chase'}}})),'chase');
   assert.equal(audioCueFor(before,state({ui:{mode:'caught'}})),'caught');
   assert.equal(audioCueFor(before,state({ui:{mode:'ending'}})),'escape');
+  assert.equal(audioCueFor(before,state({puzzles:{'power.main':{restored:false},'production.sequence':{restored:true}}})),'door');
+  assert.equal(audioCueFor(before,state({trainStarted:true})),'train');
+  assert.equal(audioCueFor(before,state({ui:{mode:'hiding'}})),'hide');
+  assert.equal(audioCueFor(state({ui:{mode:'hiding'}}),state()),'unhide');
 });
 test('音效控制器延遲啟動、可靜音，並能播放程序化線索',()=>{
   let oscillators=0,masterGain;
