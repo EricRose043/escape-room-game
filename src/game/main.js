@@ -64,7 +64,7 @@ const itemMeshes = new Map(ITEMS.map(item => [item.id,
 scene.add(new THREE.AmbientLight(0x8e9eae, 0.45));
 
 // 單盞手電筒，不開陰影或後製；照射範圍與 logic 共用設定。
-const torch = new THREE.SpotLight(0xffeed0, 35, BEAM.distance, BEAM.halfAngle, 0, 2);
+const torch = new THREE.SpotLight(0xffeed0, 18, BEAM.distance, BEAM.halfAngle, 0, 2);
 torch.castShadow = false;
 torch.visible = false;
 scene.add(torch);
@@ -102,7 +102,7 @@ function syncLighting() {
     const hit = rayBoxDistance(ray, box);
     if (hit !== null) nearest = Math.min(nearest, hit);
   }
-  torch.intensity = compensatedIntensity(nearest);
+  torch.intensity = compensatedIntensity(nearest,18);
   torch.position.set(origin.x, origin.y, origin.z);
   torch.target.position.set(origin.x + direction.x, origin.y + direction.y, origin.z + direction.z);
   torch.visible = hasFlashlight(chapter) && chapter.flashlight.enabled && chapter.flashlight.charge > 0;
@@ -155,6 +155,7 @@ let dPitch = 0;
 let previousTime;
 let requestingLock = false;
 let pointerLockFailed = false;
+let dragLooking=false;
 let unlockReason = null;
 let keypadPending = [];
 const keypadView = createKeypadView(document.querySelector('#keypad-screen'),command=>{
@@ -193,7 +194,7 @@ function syncUI() {
   const hiding=chapter.ui.mode==='hiding';
   hidingHint.hidden=session.paused || !hiding;
   setText(hidingHint,hiding?`${chapter.ui.message || '躲藏中'} · ${buttonLabel('interact',prompt.device)} 出櫃`:'');
-  setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
+  setText(pauseTitle, session.hasStarted ? '已暫停' : '失落玩具工廠');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
   chargeRow.hidden = !hasFlashlight(chapter);
   chargeMeter.value = chapter.flashlight.charge;
@@ -202,7 +203,7 @@ function syncUI() {
   const device = prompt.device;
   setText(controlsHint, chapter.ui.mode==='caught' ? `回復中 · ${buttonLabel('pause',device)} 暫停` : hiding
     ? `${buttonLabel('look', device)} 窺視（左右 45°／上下 25°） · ${buttonLabel('pause',device)} 暫停`
-    : `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
+    : `${buttonLabel('move', device)} 走路 · 滑鼠／方向鍵轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
   setText(pauseInstructions, device === 'keyboard'
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，${buttonLabel('cancel',device)} 返回開始選單，或使用下方按鈕切換鍵盤滑鼠。`
@@ -288,13 +289,15 @@ async function requestLock() {
 
 resumeButton.addEventListener('click', () => {
   if(startMenu.mode!=='closed') handleStartCommand({type:'activate'},'keyboard');
-  else if (session.paused && ['keypad','caught'].includes(chapter.ui.mode)) applySession({pausePressed:true});
+  else if(session.paused) applySession(session.hasStarted?{pausePressed:true}:{confirmPressed:true});
   else requestLock();
 });
 renderer.domElement.addEventListener('click', () => {
   keyboardActivity = true;
   if (!session.hasStarted || !session.paused) requestLock();
 });
+renderer.domElement.addEventListener('mousedown',()=>{if(!session.paused && document.pointerLockElement!==renderer.domElement) dragLooking=true;});
+window.addEventListener('mouseup',()=>{dragLooking=false;});
 document.addEventListener('pointerlockerror', lockFailed);
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === renderer.domElement;
@@ -342,6 +345,13 @@ document.addEventListener('keydown', (event) => {
     if (command && !session.paused && !document.hidden && document.hasFocus()) keypadPending.push(command);
     return;
   }
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.code)) {
+    event.preventDefault();
+    if(session.paused || document.hidden || !document.hasFocus()) return;
+    dYaw+=event.code==='ArrowLeft'?0.22:event.code==='ArrowRight'?-0.22:0;
+    dPitch+=event.code==='ArrowUp'?0.16:event.code==='ArrowDown'?-0.16:0;
+    keyboardActivity=true;return;
+  }
   if(event.code==='KeyM' && !event.repeat && chapter.inventory.itemIds.includes('lobby.factory-map')) { mapPanel.hidden=false;if(!session.paused)applySession({forcePause:true});return; }
   if (!['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Escape', 'KeyE', 'KeyF', 'KeyR'].includes(event.code)) return;
   keyboardActivity = true;
@@ -367,7 +377,7 @@ document.addEventListener('keyup', (event) => keys.delete(event.code));
 document.addEventListener('mousemove', (event) => {
   if (!event.movementX && !event.movementY) return;
   keyboardActivity = true;
-  if (session.paused || ['keypad','caught'].includes(chapter.ui.mode) || document.pointerLockElement !== renderer.domElement) return;
+  if (session.paused || ['keypad','caught'].includes(chapter.ui.mode) || (document.pointerLockElement !== renderer.domElement && !dragLooking)) return;
   dYaw -= event.movementX * MOUSE_SENSITIVITY;
   dPitch -= event.movementY * MOUSE_SENSITIVITY;
 });
