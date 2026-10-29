@@ -44,7 +44,12 @@ export function showSettings(root,settings,onChange,onClose) {
     render();changed(before);
   }
   function command(cmd) {if(menu.closed||!cmd)return;const before=menu.settings;menu=updateSettingsMenu(menu,cmd);if(menu.closed){finish();return;}render(true);changed(before);}
-  function keydown(event) {const cmd=settingsKeyboardCommand(event);if(cmd){event.preventDefault();event.stopPropagation();command(cmd);}}
+  function keydown(event) {
+    if(event.code==='Tab') {
+      event.preventDefault();event.stopPropagation();menu={...menu,selected:(menu.selected+(event.shiftKey?3:1))%4};render(true);return;
+    }
+    const cmd=settingsKeyboardCommand(event);if(cmd){event.preventDefault();event.stopPropagation();command(cmd);}
+  }
   function finish(){root.hidden=true;root.removeEventListener('keydown',keydown);onClose();}
   function close(){if(menu.closed)return;menu={...menu,closed:true};finish();}
   root.addEventListener('keydown',keydown);render(true);
