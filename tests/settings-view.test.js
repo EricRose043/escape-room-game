@@ -27,3 +27,9 @@ test('設定面板透過手把與鍵盤調整實際控制項、顯示焦點並�
   root.emit('keydown',{code:'Escape'});assert.equal(root.hidden,true);assert.equal(closed,1);
   root.emit('keydown',{code:'ArrowRight'});assert.equal(changes.length,3);view.close();assert.equal(closed,1);
 });
+test('音量滑桿能精確表示非五的倍數，避免32%被瀏覽器自動量化成30%',()=>{
+  const {root,document}=dom();const settings={volume:32,jumpScare:false,mouseSensitivity:1};
+  showSettings(root,settings,()=>{},()=>{});
+  const range=document.activeElement;
+  assert.equal((settings.volume-Number(range.min))/Number(range.step)%1,0);
+});
