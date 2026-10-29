@@ -12,6 +12,11 @@ const state=({x=0,z=4,power=false,sequence=false,chase=false,train=false}={})=>(
 test('進入裝配線時提示電力線索與可躲藏位置',()=>{
   assert.equal(storyBeat(state({x:6,z:-6}),state({x:8,z:-6}),world),'production-entry');
 });
+test('取得工廠地圖與員工卡時提供符合用途的故事提示',()=>{
+  const withItem=(s,id)=>({...s,inventory:{itemIds:[id]}});
+  assert.equal(storyBeat(state(),withItem(state(),'lobby.factory-map'),world),'map-found');
+  assert.equal(storyBeat(state(),withItem(state(),'lobby.employee-card'),world),'card-found');
+});
 test('控制室通電、首次追逐、貨運門解鎖及列車啟動各自觸發一次劇情提示',()=>{
   assert.equal(storyBeat(state(),state({power:true}),world),'power-restored');
   assert.equal(storyBeat(state({x:8,z:-6}),state({x:8,z:-6,chase:true}),world),'first-chase');
