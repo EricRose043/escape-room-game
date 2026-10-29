@@ -11,7 +11,7 @@ test('玩具工廠地圖放在辦公室前段且可從出生點取得',()=>{
   assert.ok(map,'地圖應作為可取得物品存在');
   assert.equal(WORLD.areas.find(area=>area.id==='lobby').name,'工廠辦公室');
   assert.ok(map.minZ>=0 && map.maxZ<=8,'地圖要留在第一區');
-  const player={...createPlayer(WORLD.spawn),paused:false,pitch:-0.5};
+  const player={...createPlayer(WORLD.spawn),paused:false,pitch:-1};
   assert.equal(selectItem(player,{itemIds:[]},[map],[])?.id,map.id);
 });
 
