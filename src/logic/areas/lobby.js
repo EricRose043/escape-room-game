@@ -34,8 +34,8 @@ export const LOBBY = {
     {id:'lobby.torch-sign',text:'雙光源巡檢燈',position:{x:-1.5,y:0.92,z:4.15},normal:{x:0,y:1,z:0},width:0.7,height:0.2},
     {id:'lobby.map-sign',text:'工廠逃生配置圖',position:{x:0,y:0.88,z:5.6},normal:{x:0,y:1,z:0},width:1.1,height:0.25},
     {id:'lobby.warning',text:'請勿替藍色展示玩偶接上電源',position:{x:2.5,y:2,z:7.98},normal:{x:0,y:0,z:-1},width:2.8,height:0.35},
-    {id:'lobby.seal-notice',text:'封廠公告：展示區列為事故現場，未經授權不得進入',position:{x:-2.5,y:2.55,z:7.98},normal:{x:0,y:0,z:-1},width:3.6,height:0.35},
-    {id:'lobby.night-note',text:'夜班紀錄：停電後，監視器仍拍到玩偶離開展示台',position:{x:-2.5,y:2.08,z:7.98},normal:{x:0,y:0,z:-1},width:3.6,height:0.35},
+    {id:'lobby.seal-notice',text:'官方公告：設備故障停工；展示區列為事故現場',position:{x:-2.5,y:2.55,z:7.98},normal:{x:0,y:0,z:-1},width:3.6,height:0.35},
+    {id:'lobby.night-note',text:'備援監視器紀錄：停電後玩偶離開展示台',position:{x:-2.5,y:2.08,z:7.98},normal:{x:0,y:0,z:-1},width:3.6,height:0.35},
     {id:'lobby.door-sign',text:'刷員工卡進入控制室',position:{x:1.9,y:1.8,z:0.02},normal:{x:0,y:0,z:1},width:1.6,height:0.35},
   ],
 };
