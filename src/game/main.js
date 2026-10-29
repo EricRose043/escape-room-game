@@ -8,6 +8,7 @@ import {
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
   keyboardStartMenuCommand, startMenuGamepadCommand,
+  createSettings, createSettingsStorage, deserialize,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
@@ -18,8 +19,12 @@ import { compensatedIntensity } from './lighting.js';
 import { createFactoryAudio } from './audio.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
-// 僅供監督者驗收開啟分支；待 S2 設定接上後移除。
-const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'};
+// 驚嚇預設關閉（使用者已確認）；保留既有 ?jumpscare=1 驗收入口。
+const settingsDefaults=createSettings(false);
+const settingsStorage=createSettingsStorage({getItem:key=>window.localStorage.getItem(key)},settingsDefaults);
+let settings=settingsStorage.load();
+const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'||settings.jumpScare};
+let settingsOpen=false;
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
 const introSlides=['曾經，這座玩具工廠讓整座城市都亮了起來。最受歡迎的，是那隻張開雙臂迎接孩子的藍色玩偶。','直到封廠前一夜，整條生產線突然停擺。公司沒有公告原因，員工也在同一晚被緊急撤離。','封存的監視畫面留下最後一段紀錄：展示區已斷電，藍色玩偶卻離開了展示台。鏡頭隨即中斷。','一張維修單被撕掉大半，只剩一句紅字：「不要替展示玩偶接上電源。」多年來，沒有人說明那晚發生了什麼。','你為了查明工廠封閉的真相，循著封廠前的舊新聞線索來到辦公室。身後的大門突然鎖上——黑暗裡，某個沉重的東西落了地。'];
@@ -52,6 +57,7 @@ document.body.appendChild(renderer.domElement);
 const worldView = createWorldView(scene);
 const monsterView = createMonsterView(scene);
 const audio=createFactoryAudio();
+audio.setMasterVolume?.(settings.volume/100);
 const audioToggle=document.querySelector('#audio-toggle');
 audioToggle.hidden=!audio.supported();
 audioToggle.addEventListener('click',()=>{const muted=audio.toggle();audioToggle.textContent=muted?'音效：靜音':'音效：開啟';});
@@ -229,6 +235,16 @@ const mapPanel=document.querySelector('#factory-map');
 let mapReturnToGame=false;
 function openMap(){mapPanel.hidden=false;mapReturnToGame=!session.paused;if(mapReturnToGame)applySession({forcePause:true});}
 function closeMap(){mapPanel.hidden=true;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}}
+window.addEventListener('factory-settings-open',()=>{
+  settingsOpen=true;mapPanel.hidden=true;mapReturnToGame=false;
+  applySession({forcePause:true});clearInput();audio.stop?.();releasePointer('settings');
+});
+window.addEventListener('factory-settings-change',event=>{
+  settings=deserialize(JSON.stringify({version:1,settings:event.detail}),settingsDefaults);
+  chapterOptions.jumpScare=settings.jumpScare;
+  audio.setMasterVolume?.(settings.volume/100);syncUI();
+});
+window.addEventListener('factory-settings-close',()=>{settingsOpen=false;clearInput();syncUI();});
 document.querySelector('#factory-map-button').addEventListener('click',openMap);
 document.querySelector('#map-close').addEventListener('click',closeMap);
 document.querySelector('#ending-close').addEventListener('click',()=>{document.querySelector('#ending-screen').hidden=true;mapPanel.hidden=false;});
@@ -342,6 +358,7 @@ document.addEventListener('pointerlockchange', () => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if(settingsOpen) return;
   if(!intro.hidden) { if(event.code==='Escape'||event.code==='Enter'||event.code==='Space'){event.preventDefault();finishIntro();} return; }
   if(!mapPanel.hidden) { if(event.code==='Escape'||event.code==='KeyM'){event.preventDefault();closeMap();} return; }
   if(startMenu.mode!=='closed') {
@@ -396,8 +413,8 @@ document.addEventListener('mousemove', (event) => {
   if (!event.movementX && !event.movementY) return;
   keyboardActivity = true;
   if (session.paused || ['keypad','caught'].includes(chapter.ui.mode) || (document.pointerLockElement !== renderer.domElement && !dragLooking)) return;
-  dYaw -= event.movementX * MOUSE_SENSITIVITY;
-  dPitch -= event.movementY * MOUSE_SENSITIVITY;
+  dYaw -= event.movementX * MOUSE_SENSITIVITY * settings.mouseSensitivity;
+  dPitch -= event.movementY * MOUSE_SENSITIVITY * settings.mouseSensitivity;
 });
 
 function pauseForFocusLoss() {
@@ -485,6 +502,14 @@ function readActions(time) {
   keyboardActivity = false;
 
   const before = session;
+  if(settingsOpen) {
+    window.dispatchEvent?.(new CustomEvent('factory-settings-gamepad',{detail:pad?.actions??{}}));
+    syncUI();return {...mergeActions(),gameplayActive:false};
+  }
+  if(pad?.actions.settingsPressed) {
+    window.dispatchEvent?.(new CustomEvent('factory-settings-toggle'));
+    clearInput();return {...mergeActions(),gameplayActive:false};
+  }
   if(startMenu.mode!=='closed') {
     const command=startMenuGamepadCommand(pad?.actions);
     if(command) handleStartCommand(command,'gamepad');

@@ -19,3 +19,4 @@ export * from './story-beats.js';
 export * from './chapter-save.js';
 export * from './save-storage.js';
 export * from './start-menu.js';
+export * from './settings.js';

@@ -22,8 +22,9 @@ export function createFactoryAudio({contextFactory,audioFactory=createAudio}={})
     constructor(){const context=contextFactory();if(!context)throw new Error('Audio unavailable');return context;}
   }}:{};
   const engine=audioFactory(options);
-  let muted=false,started=false,disposed=false,untilStep=0,pendingCue=null;
-  engine.setMasterVolume(.32);
+  let muted=false,started=false,disposed=false,untilStep=0,pendingCue=null,masterVolume=.32;
+  engine.setMasterVolume(masterVolume);
+  function setMasterVolume(value){masterVolume=Number.isFinite(value)?Math.max(0,Math.min(1,value)):0;engine.setMasterVolume(muted?0:masterVolume);}
   const supported=()=>engine.getStatus().supported;
   function stop(){untilStep=0;pendingCue=null;engine.stop();}
   function flushCue(){
@@ -33,13 +34,13 @@ export function createFactoryAudio({contextFactory,audioFactory=createAudio}={})
   }
   function start(){
     if(disposed || !supported()) return false;
-    started=true;engine.setMasterVolume(muted?0:.32);
+    started=true;engine.setMasterVolume(muted?0:masterVolume);
     engine.setAmbience(muted?null:'lobby');
     Promise.resolve(engine.unlock()).then(ok=>{if(ok)flushCue();}).catch(()=>{});
     return true;
   }
   function toggle(){
-    muted=!muted;engine.setMasterVolume(muted?0:.32);
+    muted=!muted;engine.setMasterVolume(muted?0:masterVolume);
     if(muted)stop();start();return muted;
   }
   function sync(previous,next,active,dt){
@@ -61,5 +62,5 @@ export function createFactoryAudio({contextFactory,audioFactory=createAudio}={})
     if(untilStep<=0){engine.playFootstep();untilStep=interval;}
   }
   async function dispose(){if(disposed)return;stop();disposed=true;started=false;await engine.dispose();}
-  return {start,toggle,sync,supported,muted:()=>muted,stop,dispose,getStatus:()=>({...engine.getStatus(),muted,started})};
+  return {start,toggle,sync,supported,setMasterVolume,muted:()=>muted,stop,dispose,getStatus:()=>({...engine.getStatus(),muted,started})};
 }

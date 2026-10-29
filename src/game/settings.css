@@ -1,0 +1,10 @@
+#settings-button{position:fixed;right:16px;top:108px;z-index:9;min-height:44px;padding:8px 14px;background:#1b2529;color:#eee8d7;border:1px solid #b08c49;font:16px system-ui;cursor:pointer}
+#settings-panel{position:fixed;inset:0;z-index:12;background:#080b10f2;display:grid;place-items:center;color:#eee8d7;font:16px/1.5 system-ui;overflow:auto}
+#settings-panel[hidden]{display:none}
+#settings-panel>div{box-sizing:border-box;width:min(620px,calc(100vw - 24px));margin:12px;padding:24px;background:#172025;border:1px solid #b08c49}
+#settings-panel h2{margin-top:0}
+.settings-row{display:grid;grid-template-columns:1fr;gap:8px;margin:16px 0}
+#settings-panel input{width:100%;min-height:44px;accent-color:#f0cd78}
+#settings-panel button{min-height:44px;padding:8px 16px;border:1px solid #b08c49;background:#29363c;color:#fff;font:inherit;cursor:pointer}
+#settings-panel output{color:#e6cf9d}
+#settings-panel :focus-visible,#settings-panel .selected,#settings-button:focus-visible{outline:3px solid #f7d46e;outline-offset:3px}
