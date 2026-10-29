@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import * as logic from '../src/logic/index.js';
+import {createFactoryAudio} from '../src/game/audio.js';
 
 function memory() {
   const values=new Map();return {values,getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),
@@ -37,7 +38,7 @@ async function runtime(storage,seed) {
   const source=(await readFile(new URL('../src/game/main.js',import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?from '[^']+';\n/gm,'')+'\nreturn {state:()=>chapter,setChapter:value=>{chapter=value;}};';
   const values={...logic,createChapter:options=>seed?{...structuredClone(seed),jumpScare:options?.jumpScare===true}:logic.createChapter(options)};
-  const dependencies={THREE,document,window,navigator:{getGamepads:()=>pads},requestAnimationFrame:fn=>{frame=fn;},
+  const dependencies={THREE,document,window,navigator:{getGamepads:()=>pads},createFactoryAudio,requestAnimationFrame:fn=>{frame=fn;},
     createWorldView:()=>({sync(){}}),createMonsterView:()=>({sync(){}}),createKeypadView:()=>({sync(){}}),
     createStartMenuView,createCaptureView,compensatedIntensity:()=>35,...values};
   const app=new Function(...Object.keys(dependencies),source)(...Object.values(dependencies));
@@ -122,4 +123,3 @@ test('正式流程供電進區被抓關頁繼續後保留進度且仍可再被�
   app.pads([pad([])]);app.frame(200);const pending=app.state();app.window.emit('pagehide');
   assert.equal(JSON.parse(storage.getItem(logic.CHAPTER_SAVE_KEY)).flashlight.charge,pending.flashlight.charge);
 });
-
