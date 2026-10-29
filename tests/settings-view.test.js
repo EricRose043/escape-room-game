@@ -33,3 +33,9 @@ test('音量滑桿能精確表示非五的倍數，避免32%被瀏覽器自動�
   const range=document.activeElement;
   assert.equal((settings.volume-Number(range.min))/Number(range.step)%1,0);
 });
+test('設定對話框的Tab與Shift+Tab循環留在四個控制項內',()=>{
+  const {root,document}=dom();showSettings(root,{volume:32,jumpScare:false,mouseSensitivity:1},()=>{},()=>{});
+  const first=document.activeElement;
+  root.emit('keydown',{code:'Tab',shiftKey:true});assert.equal(document.activeElement.textContent,'返回遊戲選單');
+  root.emit('keydown',{code:'Tab'});assert.equal(document.activeElement,first);
+});
