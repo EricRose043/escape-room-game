@@ -6,7 +6,7 @@ const definition=logic.MONSTERS[0],id=definition.id;
 function ready(options) {
   const s=logic.createChapter(options);
   return {...s,player:{...s.player,x:18.5,z:-9.5,paused:false},
-    inventory:{itemIds:['lobby.flashlight','power.fuse']},
+    inventory:{itemIds:['lobby.employee-card','lobby.flashlight','power.fuse']},
     puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:true,restoreElapsed:0.2}},
     monsters:{[id]:{...logic.createMonster(definition),mode:'patrol'}}};
 }
@@ -82,3 +82,4 @@ test('回復清除接觸遲滯，重新進區可再次被抓',()=>{
   assert.ok(chased);assert.equal(s.ui.mode,'caught');assert.equal(s.ui.elapsed,0);
   assert.equal(s.monsters[id].contactCount,1);
 });
+
