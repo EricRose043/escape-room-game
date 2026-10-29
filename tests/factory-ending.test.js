@@ -21,7 +21,7 @@ test('啟動列車後登車完成逃脫，沒啟動前不能通關',()=>{
   const boarding=bay.devices.find(device=>device.kind==='train');
   assert.ok(console);assert.ok(boarding);
   let s=logic.createChapter();
-  s={...s,player:{...s.player,paused:false,x:console.bounds.minX-0.5,z:(console.bounds.minZ+console.bounds.maxZ)/2,yaw:-Math.PI/2},
+  s={...s,player:{...s.player,paused:false,x:console.bounds.minX-0.5,z:(console.bounds.minZ+console.bounds.maxZ)/2,yaw:-Math.PI/2,pitch:-0.55},
     inventory:{itemIds:['lobby.flashlight','lobby.employee-card']},
     puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:true,restoreElapsed:0.6},
       'production.sequence':{installedItemId:null,restored:true,restoreElapsed:0.6}}};
