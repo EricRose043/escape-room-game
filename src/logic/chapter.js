@@ -28,7 +28,9 @@ export function selectChapterTarget(state) {
 }
 export function deviceMessage(state, device) {
   if(device.kind==='locker') return '躲進置物櫃';
-  if (state.puzzles[device.puzzleId]?.restored) return '主電力已恢復';
+  if(device.kind==='trainConsole') return state.trainStarted?'列車已啟動，快登車':'月台檢修碼已確認，刷員工卡啟動列車';
+  if(device.kind==='train') return state.trainStarted?'登上列車逃離工廠':'列車尚未啟動';
+  if (state.puzzles[device.puzzleId]?.restored) return device.puzzleId==='power.main'?'主電力已恢復':'貨運月台門已解鎖';
   if (device.kind === 'keypad') return isDevicePowered(state,device) ? '控制器已通電' : '控制器未通電';
   if (isDevicePowered(state,device)) return '備援控制已接通';
   return state.inventory.itemIds.includes(device.acceptsItemId) ? '安裝保險絲' : '缺少保險絲';
