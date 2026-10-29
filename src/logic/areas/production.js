@@ -2,9 +2,9 @@ const box = (id, kind, minX, maxX, minY, maxY, minZ, maxZ, extra = {}) => ({id,k
 const node = (name,x,z) => ({id:`production.nav.${name}`,x,z});
 const edge = (from,to) => ({from:`production.nav.${from}`,to:`production.nav.${to}`});
 export const PRODUCTION = {
-  id:'production',name:'糖果生產線',bounds:{minX:7.2,maxX:21.2,minZ:-12.5,maxZ:-0.5},height:3.5,
+  id:'production',name:'玩具裝配線',bounds:{minX:7.2,maxX:21.2,minZ:-12.5,maxZ:-0.5},height:3.5,
   checkpoint: {id:'production.checkpoint',order:2,spawn:{x:6.5,z:-6.5,yaw:-Math.PI/2,pitch:0},
-    floorId:'power.landing-floor',requires:{itemIds:['lobby.flashlight'],puzzleIds:['power.main']}},
+    floorId:'power.landing-floor',requires:{itemIds:['lobby.flashlight','lobby.employee-card'],puzzleIds:['power.main']}},
   boxes:[
     box('production.west-north','wall',7,7.2,0,3.5,-12.5,-7.4),
     box('production.west-south','wall',7,7.2,0,3.5,-5.6,-0.5),
@@ -17,9 +17,9 @@ export const PRODUCTION = {
     box('production.machine-a','machine',11.2,13.2,0,2.2,-9,-4),
     box('production.machine-b','machine',15.2,17.2,0,2.2,-8,-3),
   ],
-  doors:[{id:'production.east-door',name:'下一區門',bounds:{minX:21.2,maxX:21.4,minY:0,maxY:2.6,minZ:-7.4,maxZ:-5.6},
-    openWhen:{type:'puzzleSolved',puzzleId:'production.sequence'},destination:{type:'reserved',areaId:'chase-corridor'}}],
-  items:[],clues:[],puzzles:[{id:'production.sequence'}],
+  doors:[{id:'production.east-door',name:'貨運區門',bounds:{minX:21.2,maxX:21.4,minY:0,maxY:2.6,minZ:-7.4,maxZ:-5.6},
+    openWhen:{type:'puzzleSolved',puzzleId:'production.sequence'},destination:{type:'area',areaId:'loading-bay'}}],
+  items:[],clues:[{id:'production.sequence-clue',puzzleId:'production.sequence',text:'月台檢修碼：3－1－4－2',position:{x:20.9,y:2.1,z:-6.4},normal:{x:-1,y:0,z:0},width:0.8,height:0.3}],puzzles:[{id:'production.sequence',code:'3142',requiresInstall:false}],
   // 櫃體碰撞／視線仍用完整外框；畫面薄板的窺視縫對齊眼高。
   devices:[
     {id:'production.locker-l1',kind:'locker',name:'西側置物櫃',bounds:{minX:8,maxX:9,minY:0,maxY:2.2,minZ:-3,maxZ:-2.2},
@@ -28,9 +28,19 @@ export const PRODUCTION = {
     {id:'production.locker-l2',kind:'locker',name:'北側置物櫃',bounds:{minX:19,maxX:20,minY:0,maxY:2.2,minZ:-12.2,maxZ:-11.3},
       doorYaw:Math.PI,inside:{x:19.5,z:-11.75},exitCandidates:[{x:19.5,z:-10.3},{x:19.5,z:-10.6}],
       panelThickness:0.025,peek:{minY:1.54,maxY:1.66,width:0.6}},
+    {id:'production.sequence-keypad',kind:'keypad',name:'裝配線控制器',puzzleId:'production.sequence',bounds:{minX:20.55,maxX:21.1,minY:1,maxY:1.65,minZ:-6.95,maxZ:-6.05}},
   ],
-  lights:[{id:'production.ceiling-light',position:{x:14.2,y:3.1,z:-6.5},powerPuzzleId:'power.main',offIntensity:7,onIntensity:26,color:0xc5d6bf,distance:18}],
-  signs:[{id:'production.east-sign',text:'生產線待啟動',position:{x:21.18,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3}],
+  lights:[
+    {id:'production.ceiling-light',position:{x:14.2,y:3.1,z:-6.5},powerPuzzleId:'power.main',offIntensity:7,onIntensity:26,color:0xc5d6bf,distance:18},
+    {id:'production.alert-light',position:{x:14.2,y:2.8,z:-12.25},powerPuzzleId:'power.main',offIntensity:0.4,onIntensity:1.5,color:0xc04a39,distance:11},
+  ],
+  signs:[
+    {id:'production.east-sign',text:'貨運區｜列車月台',position:{x:21.18,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
+    {id:'production.monitor-record',text:'監視器最後畫面：展示台空了；封鎖門沒有開啟紀錄',position:{x:14.2,y:2.75,z:-0.32},normal:{x:0,y:0,z:-1},width:3.8,height:0.38},
+    {id:'production.console-guide',text:'月台檢修碼輸入後，東側貨運門解鎖',position:{x:14.2,y:2.85,z:-12.48},normal:{x:0,y:0,z:1},width:3.8,height:0.38},
+    {id:'production.locker-sign-l1',text:'緊急避難櫃',position:{x:8.5,y:2.42,z:-2.16},normal:{x:0,y:0,z:1},width:1.15,height:0.25},
+    {id:'production.locker-sign-l2',text:'緊急避難櫃',position:{x:19.5,y:2.42,z:-11.26},normal:{x:0,y:0,z:1},width:1.15,height:0.25},
+  ],
   navigation:{
     nodes:[node('A',10,-10.3),node('B',18.5,-10.3),node('C',18.5,-2),node('D',10,-2),
       node('N',14.2,-10.3),node('S',14.2,-2),node('M',14.2,-6.5),node('W',10,-6.5),
@@ -38,7 +48,7 @@ export const PRODUCTION = {
     edges:[edge('A','N'),edge('N','B'),edge('B','E'),edge('E','C'),edge('C','S'),edge('S','D'),
       edge('D','W'),edge('W','A'),edge('N','M'),edge('M','S'),edge('W','entry'),edge('D','L1'),edge('B','L2')],
   },
-  monsters:[{id:'production.marshmallow',areaId:'production',name:'棉花糖先生',
+  monsters:[{id:'production.marshmallow',areaId:'production',name:'藍色展示玩偶',
     spawn:{x:18.5,z:-10.3,yaw:Math.PI},height:2.1,radius:0.35,clearance:0.05,
     patrol:['production.nav.B','production.nav.C','production.nav.D','production.nav.A'],
     patrolSpeed:1,turnSpeed:Math.PI,dwellSeconds:1,

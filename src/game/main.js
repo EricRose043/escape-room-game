@@ -3,7 +3,7 @@ import {
   setPaused, EYE_HEIGHT,
   readGamepad, mergeActions, buttonLabel, createPrompt, updatePrompt, pauseOnDisconnect,
   createSession, updateSession, keyboardInteractPressed, gameplayActions,
-  ITEMS, selectChapterTarget, deviceMessage, keyboardEquipmentActions,
+  ITEMS, WORLD, storyBeat, STORY_BEAT_TEXT, selectChapterTarget, deviceMessage, keyboardEquipmentActions,
   BEAM, CLUES, isClueVisible, viewRay, rayBoxDistance,
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
@@ -15,11 +15,20 @@ import { createKeypadView } from './keypad-view.js';
 import { createCaptureView } from './capture-view.js';
 import { createStartMenuView } from './start-menu-view.js';
 import { compensatedIntensity } from './lighting.js';
+import { createFactoryAudio } from './audio.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
 // 僅供監督者驗收開啟分支；待 S2 設定接上後移除。
 const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'};
 let chapter = createChapter(chapterOptions);
+const intro=document.querySelector('#story-intro');
+const introSlides=['曾經，這座玩具工廠讓整座城市都亮了起來。最受歡迎的，是那隻張開雙臂迎接孩子的藍色玩偶。','直到封廠前一夜，整條生產線突然停擺。公司沒有公告原因，員工也在同一晚被緊急撤離。','封存的監視畫面留下最後一段紀錄：展示區已斷電，藍色玩偶卻離開了展示台。鏡頭隨即中斷。','一張維修單被撕掉大半，只剩一句紅字：「不要替展示玩偶接上電源。」多年來，沒有人說明那晚發生了什麼。','你為了查明工廠封閉的真相，循著封廠前的舊新聞線索來到辦公室。身後的大門突然鎖上——黑暗裡，某個沉重的東西落了地。'];
+let introStarted=performance.now(),introStage=-1;
+let introTimer;
+function finishIntro(){intro.hidden=true;clearInterval(introTimer);try{audio.start();}catch{}}
+document.querySelector('#intro-skip').addEventListener('click',finishIntro);
+introTimer=setInterval(()=>{const elapsed=performance.now()-introStarted;if(elapsed>=60000){finishIntro();return;}const stage=Math.min(4,Math.floor(elapsed/12000));if(stage!==introStage){introStage=stage;intro.dataset.scene=String(stage);document.querySelector('#intro-copy').textContent=introSlides[stage];}},250);
+introTimer?.unref?.();
 // 將存取包在函式內，連 localStorage getter 拋錯也交由儲存層處理。
 const saveStorage=createSaveStorage({
   getItem:key=>window.localStorage.getItem(key),
@@ -35,12 +44,17 @@ const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 50);
 camera.rotation.order = 'YXZ';
 
 // 簡單幾何、無即時陰影或後製；像素比上限 1，降低內顯負擔。
-const renderer = new THREE.WebGLRenderer({ antialias: false });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+let renderPixelRatio=Math.min(window.devicePixelRatio||1,1.25);
+renderer.setPixelRatio(renderPixelRatio);
 document.body.appendChild(renderer.domElement);
 
 const worldView = createWorldView(scene);
 const monsterView = createMonsterView(scene);
+const audio=createFactoryAudio();
+const audioToggle=document.querySelector('#audio-toggle');
+audioToggle.hidden=!audio.supported();
+audioToggle.addEventListener('click',()=>{const muted=audio.toggle();audioToggle.textContent=muted?'音效：靜音':'音效：開啟';});
 function addBox(width, height, depth, x, y, z, material) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
   mesh.position.set(x, y, z);
@@ -57,7 +71,7 @@ const itemMeshes = new Map(ITEMS.map(item => [item.id,
 scene.add(new THREE.AmbientLight(0x8e9eae, 0.45));
 
 // 單盞手電筒，不開陰影或後製；照射範圍與 logic 共用設定。
-const torch = new THREE.SpotLight(0xffeed0, 35, BEAM.distance, BEAM.halfAngle, 0, 2);
+const torch = new THREE.SpotLight(0xffeed0, 18, BEAM.distance, BEAM.halfAngle, 0, 2);
 torch.castShadow = false;
 torch.visible = false;
 scene.add(torch);
@@ -95,7 +109,7 @@ function syncLighting() {
     const hit = rayBoxDistance(ray, box);
     if (hit !== null) nearest = Math.min(nearest, hit);
   }
-  torch.intensity = compensatedIntensity(nearest);
+  torch.intensity = compensatedIntensity(nearest,18);
   torch.position.set(origin.x, origin.y, origin.z);
   torch.target.position.set(origin.x + direction.x, origin.y + direction.y, origin.z + direction.z);
   torch.visible = hasFlashlight(chapter) && chapter.flashlight.enabled && chapter.flashlight.charge > 0;
@@ -130,6 +144,8 @@ const chargeText = document.querySelector('#charge-text');
 const flashlightMode = document.querySelector('#flashlight-mode');
 const crosshair = document.querySelector('#crosshair');
 const interactionHint = document.querySelector('#interaction-hint');
+const storyCaption=document.querySelector('#story-caption');
+let storyCaptionRemaining=0;
 const contactHint = document.querySelector('#contact-hint');
 const hidingHint = document.querySelector('#hiding-hint');
 const saveStatus = document.querySelector('#save-status');
@@ -148,6 +164,7 @@ let dPitch = 0;
 let previousTime;
 let requestingLock = false;
 let pointerLockFailed = false;
+let dragLooking=false;
 let unlockReason = null;
 let keypadPending = [];
 const keypadView = createKeypadView(document.querySelector('#keypad-screen'),command=>{
@@ -162,6 +179,10 @@ const startMenuView=createStartMenuView(document.querySelector('#start-menu'),co
 function setText(element, text) {
   if (element.textContent !== text) element.textContent = text;
 }
+function showStoryBeat(beat) {
+  const message=STORY_BEAT_TEXT[beat];if(!message)return;
+  storyCaption.textContent=message;storyCaption.hidden=false;storyCaptionRemaining=6.5;
+}
 
 function syncUI() {
   pauseScreen.hidden = !session.paused || startMenu.mode!=='closed';
@@ -171,6 +192,10 @@ function syncUI() {
   setText(document.querySelector('#start-save-status'),saveStorage.status().message);
   keypadView.sync(chapter.ui,session.paused,prompt.device);
   captureView.sync(chapter.ui,{...chapterOptions,paused:session.paused});
+  let completed=false;try {completed=window.localStorage.getItem('toy-factory-complete')==='true';} catch {}
+  const hasMap=chapter.inventory.itemIds.includes('lobby.factory-map') || completed;
+  document.querySelector('#factory-map-button').hidden=!hasMap || chapter.ui.mode==='complete';
+  document.querySelector('#ending-screen').hidden=chapter.ui.mode!=='complete';
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
   const target = selectChapterTarget(chapter);
   interactionHint.hidden = !target;
@@ -182,7 +207,7 @@ function syncUI() {
   const hiding=chapter.ui.mode==='hiding';
   hidingHint.hidden=session.paused || !hiding;
   setText(hidingHint,hiding?`${chapter.ui.message || '躲藏中'} · ${buttonLabel('interact',prompt.device)} 出櫃`:'');
-  setText(pauseTitle, session.hasStarted ? '已暫停' : '星星糖果樂園');
+  setText(pauseTitle, session.hasStarted ? '已暫停' : '失落玩具工廠');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
   chargeRow.hidden = !hasFlashlight(chapter);
   chargeMeter.value = chapter.flashlight.charge;
@@ -191,7 +216,7 @@ function syncUI() {
   const device = prompt.device;
   setText(controlsHint, chapter.ui.mode==='caught' ? `回復中 · ${buttonLabel('pause',device)} 暫停` : hiding
     ? `${buttonLabel('look', device)} 窺視（左右 45°／上下 25°） · ${buttonLabel('pause',device)} 暫停`
-    : `${buttonLabel('move', device)} 走路 · ${buttonLabel('look', device)} 轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
+    : `${buttonLabel('move', device)} 走路 · 滑鼠／方向鍵轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
   setText(pauseInstructions, device === 'keyboard'
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，${buttonLabel('cancel',device)} 返回開始選單，或使用下方按鈕切換鍵盤滑鼠。`
@@ -200,6 +225,13 @@ function syncUI() {
     ? (pointerLockFailed ? lockMessage.textContent : '點一下畫面以啟用滑鼠轉頭') : '');
 }
 
+const mapPanel=document.querySelector('#factory-map');
+let mapReturnToGame=false;
+function openMap(){mapPanel.hidden=false;mapReturnToGame=!session.paused;if(mapReturnToGame)applySession({forcePause:true});}
+function closeMap(){mapPanel.hidden=true;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}}
+document.querySelector('#factory-map-button').addEventListener('click',openMap);
+document.querySelector('#map-close').addEventListener('click',closeMap);
+document.querySelector('#ending-close').addEventListener('click',()=>{document.querySelector('#ending-screen').hidden=true;mapPanel.hidden=false;});
 function clearInput() {
   keys.clear();
   interactPending = false;
@@ -225,6 +257,7 @@ function handleStartCommand(command,source='keyboard') {
   if(document.hidden || !document.hasFocus() || startMenu.mode==='closed') return;
   startMenu=updateStartMenu(startMenu,command);
   if(startMenu.effect==='new' || startMenu.effect==='continue') {
+    audio.start();
     let next;
     if(startMenu.effect==='continue') {
       const result=saveStorage.load();next=result.status==='valid'?restoreChapterSave(result.data,chapterOptions):null;
@@ -255,7 +288,7 @@ function releasePointer(reason) {
 
 function lockFailed() {
   pointerLockFailed = true;
-  lockMessage.textContent = '無法鎖定滑鼠，請再點一次畫面，或使用鍵盤滑鼠的開始／繼續按鈕。';
+  lockMessage.textContent = '滑鼠鎖定不可用時，開始後可用方向鍵轉頭，或按住滑鼠拖曳。';
   syncUI();
 }
 
@@ -272,14 +305,17 @@ async function requestLock() {
 }
 
 resumeButton.addEventListener('click', () => {
+  audio.start();
   if(startMenu.mode!=='closed') handleStartCommand({type:'activate'},'keyboard');
-  else if (session.paused && ['keypad','caught'].includes(chapter.ui.mode)) applySession({pausePressed:true});
+  else if(session.paused) applySession(session.hasStarted?{pausePressed:true}:{confirmPressed:true});
   else requestLock();
 });
 renderer.domElement.addEventListener('click', () => {
   keyboardActivity = true;
   if (!session.hasStarted || !session.paused) requestLock();
 });
+renderer.domElement.addEventListener('mousedown',()=>{if(!session.paused && document.pointerLockElement!==renderer.domElement) dragLooking=true;});
+window.addEventListener('mouseup',()=>{dragLooking=false;});
 document.addEventListener('pointerlockerror', lockFailed);
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === renderer.domElement;
@@ -306,6 +342,8 @@ document.addEventListener('pointerlockchange', () => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if(!intro.hidden) { if(event.code==='Escape'||event.code==='Enter'||event.code==='Space'){event.preventDefault();finishIntro();} return; }
+  if(!mapPanel.hidden) { if(event.code==='Escape'||event.code==='KeyM'){event.preventDefault();closeMap();} return; }
   if(startMenu.mode!=='closed') {
     const command=keyboardStartMenuCommand(event);
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Space','Escape'].includes(event.code)) event.preventDefault();
@@ -325,6 +363,14 @@ document.addEventListener('keydown', (event) => {
     if (command && !session.paused && !document.hidden && document.hasFocus()) keypadPending.push(command);
     return;
   }
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.code)) {
+    event.preventDefault();
+    if(session.paused || document.hidden || !document.hasFocus()) return;
+    dYaw+=event.code==='ArrowLeft'?0.22:event.code==='ArrowRight'?-0.22:0;
+    dPitch+=event.code==='ArrowUp'?0.16:event.code==='ArrowDown'?-0.16:0;
+    keyboardActivity=true;return;
+  }
+  if(event.code==='KeyM' && !event.repeat && chapter.inventory.itemIds.includes('lobby.factory-map')) { openMap();return; }
   if (!['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Escape', 'KeyE', 'KeyF', 'KeyR'].includes(event.code)) return;
   keyboardActivity = true;
   if (event.code === 'Escape') {
@@ -349,7 +395,7 @@ document.addEventListener('keyup', (event) => keys.delete(event.code));
 document.addEventListener('mousemove', (event) => {
   if (!event.movementX && !event.movementY) return;
   keyboardActivity = true;
-  if (session.paused || ['keypad','caught'].includes(chapter.ui.mode) || document.pointerLockElement !== renderer.domElement) return;
+  if (session.paused || ['keypad','caught'].includes(chapter.ui.mode) || (document.pointerLockElement !== renderer.domElement && !dragLooking)) return;
   dYaw -= event.movementX * MOUSE_SENSITIVITY;
   dPitch -= event.movementY * MOUSE_SENSITIVITY;
 });
@@ -482,6 +528,17 @@ function animate(time) {
   const beforeChapter=chapter;
   const beforeMode=chapter.ui.mode;
   chapter = updateChapter(chapter, actions, dt, chapterOptions);
+  audio.sync(beforeChapter,chapter,session.hasStarted&&!session.paused,dt);
+  showStoryBeat(storyBeat(beforeChapter,chapter,WORLD));
+  if(storyCaptionRemaining>0&&actions.gameplayActive!==false&&!session.paused&&!document.hidden) {
+    storyCaptionRemaining=Math.max(0,storyCaptionRemaining-dt);
+    if(storyCaptionRemaining===0)storyCaption.hidden=true;
+  }
+  if(beforeMode!=='complete' && chapter.ui.mode==='complete') {
+    try { localStorage.setItem('toy-factory-complete','true'); } catch {}
+    document.querySelector('#map-title').textContent='完整工廠地圖｜通關解鎖';
+    document.querySelector('#map-content').textContent='辦公室 ─ 控制室 ─ 裝配線 ─ 貨運月台\n入口      電力紀錄   置物櫃     玩具列車\n\n完整巡檢路線與月台出口已標記。';
+  }
   if(session.hasStarted && startMenu.mode==='closed') saveStorage.observe(beforeChapter,chapter,actions.gameplayActive?dt:0);
   if (beforeMode!==chapter.ui.mode) {
     clearInput();
@@ -498,7 +555,9 @@ function animate(time) {
   frames += 1;
   const elapsed = time - sampleStart;
   if (elapsed >= 1000) {
-    fpsDisplay.textContent = `FPS: ${Math.round(frames * 1000 / elapsed)}`;
+    const fps=Math.round(frames*1000/elapsed);
+    fpsDisplay.textContent = `FPS: ${fps}`;
+    if(fps<42 && renderPixelRatio>1) {renderPixelRatio=1;renderer.setPixelRatio(renderPixelRatio);resize();}
     frames = 0;
     sampleStart = time;
   }

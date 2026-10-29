@@ -1,136 +1,80 @@
-// 原創 Web Audio 合成；不下載音檔、不匯入 three.js，也不主動接入遊戲。
-// 主音量 v 為 0～1；S2 的 0～100 請除以 100 再傳入。
-const clamp = value => typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
-const AMBIENCE = Object.freeze({ lobby: 55, 'power-room': 65, production: 73, 'chase-corridor': 82, exit: 49 });
-
-export function createAudio(options = {}) {
-  const Context = Object.hasOwn(options, 'AudioContext') ? options.AudioContext : (globalThis.AudioContext ?? globalThis.webkitAudioContext);
-  const later = options.setTimeout ?? globalThis.setTimeout;
-  const cancel = options.clearTimeout ?? globalThis.clearTimeout;
-  let context = null, master = null, ready = false, disposed = false, pendingUnlock = null;
-  let volume = 0.35, ambience = null, intensity = 0, heartbeatTimer = null, noise = null;
-  const voices = new Set(), ambient = new Map();
-  const canPlay = () => ready && !disposed && context?.state === 'running';
-  function disconnect(node) { try { node.disconnect(); } catch { /* 已斷開可忽略。 */ } }
-  function release(voice) {
-    if (!voices.delete(voice)) return;
-    for (const node of voice.nodes) disconnect(node);
-  }
-  function endVoice(voice) {
-    try { voice.source.stop(); } catch { /* 已停止可忽略。 */ }
-    release(voice);
-  }
-  function automate(param, value) {
-    const now = context.currentTime;
-    param.cancelScheduledValues(now);
-    param.setValueAtTime(param.value, now);
-    param.linearRampToValueAtTime(value, now + 0.03);
-  }
-  function envelope(gain, start, duration, peak) {
-    gain.gain.setValueAtTime(0, start);
-    gain.gain.linearRampToValueAtTime(peak, start + Math.min(0.012, duration / 4));
-    gain.gain.linearRampToValueAtTime(0, start + duration);
-  }
-  function tone(frequency, duration, peak, { delay = 0, end = frequency, type = 'sine', heartbeat = false } = {}) {
-    if (!canPlay() || voices.size >= 16) return false;
-    const source = context.createOscillator(), gain = context.createGain();
-    const start = context.currentTime + delay;
-    source.type = type; source.frequency.setValueAtTime(frequency, start);
-    source.frequency.exponentialRampToValueAtTime(Math.max(1, end), start + duration);
-    envelope(gain, start, duration, peak);
-    source.connect(gain); gain.connect(master);
-    const voice = { source, nodes: [source, gain], heartbeat }; voices.add(voice);
-    source.onended = () => release(voice);
-    source.start(start); source.stop(start + duration + 0.01); return true;
-  }
-  function rustle(duration, peak, frequency) {
-    if (!canPlay() || voices.size >= 16) return false;
-    if (!noise) {
-      noise = context.createBuffer(1, Math.ceil(context.sampleRate * 0.6), context.sampleRate);
-      const samples = noise.getChannelData(0);
-      for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
-    }
-    const source = context.createBufferSource(), filter = context.createBiquadFilter(), gain = context.createGain();
-    source.buffer = noise; filter.type = 'lowpass'; filter.frequency.setValueAtTime(frequency, context.currentTime);
-    envelope(gain, context.currentTime, duration, peak);
-    source.connect(filter); filter.connect(gain); gain.connect(master);
-    const voice = { source, nodes: [source, filter, gain] }; voices.add(voice);
-    source.onended = () => release(voice);
-    source.start(); source.stop(context.currentTime + duration + 0.01); return true;
-  }
-  function stopAmbience() {
-    for (const [source, gain] of ambient) { try { source.stop(); } catch { /* 已停止。 */ } disconnect(source); disconnect(gain); }
-    ambient.clear();
-  }
-  function startAmbience() {
-    if (!canPlay() || !ambience || ambient.size) return;
-    const frequency = AMBIENCE[ambience] ?? AMBIENCE.lobby;
-    for (const [ratio, peak] of [[1, 0.025], [1.503, 0.012]]) {
-      const source = context.createOscillator(), gain = context.createGain();
-      source.type = 'sine'; source.frequency.value = frequency * ratio;
-      gain.gain.setValueAtTime(0, context.currentTime);
-      gain.gain.linearRampToValueAtTime(peak, context.currentTime + 0.4);
-      source.connect(gain); gain.connect(master); ambient.set(source, gain);
-      source.onended = () => { ambient.delete(source); disconnect(source); disconnect(gain); }; source.start();
-    }
-  }
-  function clearHeartbeat() { if (heartbeatTimer !== null) cancel(heartbeatTimer); heartbeatTimer = null; }
-  function beat() {
-    heartbeatTimer = null;
-    if (!canPlay() || intensity <= 0) return;
-    const peak = 0.035 + 0.085 * intensity;
-    tone(76, 0.13, peak, { end: 42, heartbeat: true });
-    tone(68, 0.12, peak * 0.65, { delay: 0.19, end: 39, heartbeat: true });
-    heartbeatTimer = later(beat, 1500 - 850 * intensity);
-  }
-  function setMasterVolume(value) {
-    volume = clamp(value); if (master && !disposed) automate(master.gain, volume); return volume;
-  }
-  function setAmbience(areaId) {
-    const next = typeof areaId === 'string' && areaId ? areaId : null;
-    if (next === ambience) { startAmbience(); return; }
-    stopAmbience(); ambience = next; startAmbience();
-  }
-  function setHeartbeat(value) {
-    const next = clamp(value);
-    // 重送同值不重建節點；零值也終止已排程的雙拍。
-    if (next === intensity) return;
-    intensity = next;
-    if (intensity === 0) {
-      clearHeartbeat();
-      for (const voice of [...voices]) if (voice.heartbeat) endVoice(voice);
-    } else if (canPlay() && heartbeatTimer === null) beat();
-  }
-  async function unlock() {
-    if (disposed || typeof Context !== 'function') return false;
-    if (pendingUnlock) return pendingUnlock;
-    pendingUnlock = (async () => {
-      try {
-        if (!context) { context = new Context(); master = context.createGain(); master.gain.value = volume; master.connect(context.destination); }
-        if (context.state !== 'running') await context.resume();
-        ready = context.state === 'running' && !disposed;
-        if (ready) { startAmbience(); if (intensity > 0 && heartbeatTimer === null) beat(); }
-        return ready;
-      } catch { ready = false; return false; }
-    })();
-    try { return await pendingUnlock; } finally { pendingUnlock = null; }
-  }
-  function stop() {
-    clearHeartbeat(); intensity = 0; ambience = null; stopAmbience();
-    for (const voice of [...voices]) endVoice(voice);
-  }
-  async function dispose() {
-    if (disposed) return;
-    stop(); disposed = true; ready = false; noise = null;
-    if (master) disconnect(master);
-    try { if (context && context.state !== 'closed') await context.close(); } catch { /* 關閉失敗不阻擋離頁。 */ }
-  }
-  return {
-    unlock, setMasterVolume, setAmbience, setHeartbeat,
-    playFootstep: () => rustle(0.11, 0.1, 550),
-    playAlarm: () => { if (!canPlay()) return false; const played = tone(440, 0.2, 0.075, { type: 'triangle', end: 660 }); if (played) tone(660, 0.2, 0.06, { delay: 0.25, type: 'triangle', end: 440 }); return played; },
-    playDoor: () => { if (!canPlay()) return false; const played = rustle(0.45, 0.09, 800); if (played) tone(150, 0.4, 0.04, { end: 55 }); return played; },
-    stop, dispose,
-    getStatus: () => ({ supported: typeof Context === 'function', contextState: disposed ? 'closed' : (context?.state ?? 'locked'), volume, ambience, heartbeatIntensity: intensity, voices: voices.size, ambientNodes: ambient.size }),
-  };
+export function audioCueFor(previous,next) {
+  if(!previous?.trainStarted&&next?.trainStarted) return 'train';
+  if(next?.ui?.mode==='ending' && previous?.ui?.mode!=='ending') return 'escape';
+  if(next?.ui?.mode==='caught' && previous?.ui?.mode!=='caught') return 'caught';
+  if(next?.ui?.mode==='hiding' && previous?.ui?.mode!=='hiding') return 'hide';
+  if(previous?.ui?.mode==='hiding' && next?.ui?.mode==='explore') return 'unhide';
+  if(next?.puzzles?.['production.sequence']?.restored && !previous?.puzzles?.['production.sequence']?.restored) return 'door';
+  if(next?.puzzles?.['power.main']?.restored && !previous?.puzzles?.['power.main']?.restored) return 'power';
+  const chased=Object.values(next?.monsters??{}).some(monster=>monster.mode==='chase');
+  const wasChased=Object.values(previous?.monsters??{}).some(monster=>monster.mode==='chase');
+  return chased&&!wasChased?'chase':null;
 }
+
+export function createFactoryAudio({contextFactory}={}) {
+  let context=null,master=null,bedGain=null,humA=null,humB=null,muted=false,stepElapsed=0;
+  const getContext=contextFactory??(()=>{
+    if(typeof window==='undefined') return null;
+    const AudioContextType=window.AudioContext??window.webkitAudioContext;
+    return AudioContextType?new AudioContextType():null;
+  });
+  function ensure() {
+    if(context) return true;
+    try {context=getContext();} catch {return false;}
+    if(!context) return false;
+    master=context.createGain();master.gain.value=muted?0:0.32;master.connect(context.destination);
+    bedGain=context.createGain();bedGain.gain.value=0.0001;bedGain.connect(master);
+    humA=context.createOscillator();humA.type='triangle';humA.frequency.value=47;humA.connect(bedGain);humA.start();
+    humB=context.createOscillator();humB.type='sine';humB.frequency.value=71;humB.connect(bedGain);humB.start();
+    return true;
+  }
+  function tone(frequency,duration,wave='sine',volume=0.045,delay=0) {
+    if(!context || muted) return;
+    const start=context.currentTime+delay,osc=context.createOscillator(),gain=context.createGain();
+    osc.type=wave;osc.frequency.setValueAtTime(frequency,start);gain.gain.setValueAtTime(0.0001,start);
+    gain.gain.exponentialRampToValueAtTime(volume,start+0.025);gain.gain.exponentialRampToValueAtTime(0.0001,start+duration);
+    osc.connect(gain);gain.connect(master);osc.start(start);osc.stop(start+duration+0.04);
+  }
+  function noiseStep() {
+    if(!context || muted) return;
+    const length=Math.floor(context.sampleRate*0.11),buffer=context.createBuffer(1,length,context.sampleRate),data=buffer.getChannelData(0);
+    for(let i=0;i<length;i++) data[i]=(Math.random()*2-1)*(1-i/length);
+    const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain();
+    source.buffer=buffer;filter.type='lowpass';filter.frequency.value=260;gain.gain.value=0.12;
+    source.connect(filter);filter.connect(gain);gain.connect(master);source.start();
+  }
+  function start() {
+    if(!ensure()) return false;
+    try {const resumed=context.resume();resumed?.catch?.(()=>{});} catch {}
+    return true;
+  }
+  function toggle() {
+    muted=!muted;
+    if(ensure()) {
+      try {const resumed=context.resume();resumed?.catch?.(()=>{});} catch {}
+      master.gain.setTargetAtTime(muted?0:0.32,context.currentTime,0.04);
+    }
+    return muted;
+  }
+  function sync(previous,next,active,dt) {
+    if(!context) return;
+    const chasing=Object.values(next?.monsters??{}).some(monster=>monster.mode==='chase');
+    bedGain.gain.setTargetAtTime(active?(chasing?0.035:0.012):0.002,context.currentTime,0.5);
+    const cue=audioCueFor(previous,next);
+    if(cue==='power') {tone(82,0.32,'sine',0.06);tone(123,0.32,'triangle',0.045,0.12);tone(165,0.4,'sine',0.035,0.24);}
+    if(cue==='chase') {tone(145,0.36,'sawtooth',0.05);tone(119,0.42,'triangle',0.04,0.13);}
+    if(cue==='caught') {tone(76,0.52,'sawtooth',0.08);tone(52,0.7,'sine',0.06,0.08);}
+    if(cue==='hide') {tone(88,0.16,'triangle',0.035);tone(62,0.2,'sine',0.03,0.1);}
+    if(cue==='unhide') tone(105,0.18,'triangle',0.03);
+    if(cue==='escape') {tone(220,0.34,'triangle',0.045);tone(330,0.42,'sine',0.04,0.18);tone(440,0.7,'sine',0.035,0.38);}
+    if(cue==='door') {tone(92,0.3,'square',0.045);tone(68,0.38,'sawtooth',0.035,0.16);}
+    if(cue==='train') {tone(55,0.5,'sawtooth',0.04);tone(82,0.5,'triangle',0.04,0.22);tone(110,0.7,'sine',0.035,0.42);}
+    const moving=active && next?.ui?.mode==='explore' && Math.hypot(next.player.x-previous.player.x,next.player.z-previous.player.z)>0.001;
+    if(!moving) stepElapsed=0;
+    else {stepElapsed-=(Number.isFinite(dt)?Math.max(0,dt):0);if(stepElapsed<=0){noiseStep();stepElapsed=0.48;}}
+  }
+  return {start,toggle,sync,supported:()=>Boolean((typeof window!=='undefined'&&(window.AudioContext||window.webkitAudioContext))||contextFactory),muted:()=>muted};
+}
+
+// 保留 S1 獨立試聽及外部呼叫的公開入口。
+export { createAudio } from './procedural-audio.js';

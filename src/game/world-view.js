@@ -4,7 +4,7 @@ import { DEVICES, isDevicePowered, powerProgress } from '../logic/chapter.js';
 
 export function createWorldView(scene) {
   const palette = {wall:0x586367,table:0x66504c,floor:0x42434a,ceiling:0x343941,fuseBox:0x46525a,keypad:0x58626a,door:0x5d6964,
-    machine:0x577b75,locker:0x4d646d,lockerDoor:0x6d8589,trim:0x273c42};
+    machine:0x577b75,locker:0x4d646d,lockerDoor:0x6d8589,trim:0x273c42,hazard:0xc79a48,train:0x45525a,trainConsole:0xb08c49};
   const materials = Object.fromEntries(Object.entries(palette).map(([kind,color])=>[kind,new THREE.MeshLambertMaterial({color})]));
   for(const kind of ['locker','lockerDoor','trim']) materials[kind].side=THREE.DoubleSide;
   const addBox = (b,kind=b.kind) => {
@@ -14,12 +14,29 @@ export function createWorldView(scene) {
   };
   // logic 保留完整櫃體遮擋，畫面改用有厚度的薄板，櫃內也看得到板面。
   for(const b of [...STATIC_BOXES.filter(b=>b.kind!=='locker'),...SURFACES]) addBox(b);
+  const trainGroup=new THREE.Group();
+  const trainParts=(w,h,d,x,y,z,color)=>{const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color}));mesh.position.set(x,y,z);trainGroup.add(mesh);};
+  trainParts(3.8,0.8,2.4,0,0.85,0,0xc34e39);trainParts(1.5,1.05,2.2,0.9,1.55,0,0xd9ad4e);
+  trainParts(1.35,1.2,1.35,-1.35,1.5,0,0x355f77);trainParts(4.1,0.18,2.55,0,0.4,0,0x26353b);
+  trainParts(1.55,0.14,1.45,0.9,2.2,0,0xe5d29b);
+  for(const x of [-1.35,1.35]) for(const z of [-0.9,0.9]) {const wheel=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.34,0.18,10),new THREE.MeshLambertMaterial({color:0x20272a}));wheel.rotation.z=Math.PI/2;wheel.position.set(x,0.38,z);trainGroup.add(wheel);}
+  trainGroup.position.set(32.5,0,-6.5);scene.add(trainGroup);
+  const railMaterial=new THREE.MeshLambertMaterial({color:0x89909a});
+  const sleeperMaterial=new THREE.MeshLambertMaterial({color:0x4b3b32});
+  for(const z of [-7.38,-5.62]) {const rail=new THREE.Mesh(new THREE.BoxGeometry(14,0.09,0.09),railMaterial);rail.position.set(28.25,0.045,z);scene.add(rail);}
+  for(let x=22;x<=34.6;x+=0.8) {const tie=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.07,2.05),sleeperMaterial);tie.position.set(x,0.025,-6.5);scene.add(tie);}
   // 裝飾沿同一 AABB 建立，不新增碰撞規則或可操作的生產線謎題。
   for(const machine of STATIC_BOXES.filter(b=>b.kind==='machine')) {
     addBox({...machine,minX:machine.minX+0.1,maxX:machine.maxX-0.1,minY:1.05,maxY:1.2,
       minZ:machine.maxZ,maxZ:machine.maxZ+0.012},'trim');
     addBox({...machine,minX:machine.minX+0.1,maxX:machine.maxX-0.1,minY:machine.maxY-0.01,maxY:machine.maxY+0.006,
       minZ:machine.minZ+0.1,maxZ:machine.maxZ-0.1},'trim');
+    const count=Math.max(4,Math.floor((machine.maxX-machine.minX)/0.34));
+    for(let i=0;i<count;i++) {
+      const x=machine.minX+0.08+i*0.34;
+      addBox({minX:x,maxX:Math.min(x+0.18,machine.maxX-0.04),minY:0.06,maxY:0.2,
+        minZ:machine.maxZ+0.012,maxZ:machine.maxZ+0.03},i%2?'trim':'hazard');
+    }
   }
   for(const locker of DEVICES.filter(d=>d.kind==='locker')) {
     const b=locker.bounds,t=locker.panelThickness,peek=locker.peek,cx=(b.minX+b.maxX)/2;
@@ -77,6 +94,7 @@ export function createWorldView(scene) {
   const lights=Array.from({length:2},()=>{const light=new THREE.PointLight();light.castShadow=false;light.visible=false;scene.add(light);return light;});
   return {
     sync(state) {
+      trainGroup.position.x=32.5+(state.ui.mode==='ending'?(state.ui.elapsed??0)*1.2:0);
       for(const door of DOORS) doors.get(door.id).visible=!isDoorOpen(door,state);
       for(const device of DEVICES) {
         const material=indicators.get(device.id);

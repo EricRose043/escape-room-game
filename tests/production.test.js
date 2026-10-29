@@ -5,7 +5,7 @@ import * as logic from '../src/logic/index.js';
 const area = () => logic.WORLD.areas.find(a => a.id === 'production');
 function state(power = true) {
   const s = logic.createChapter();
-  return {...s, player:{...s.player,paused:false}, inventory:{itemIds:['lobby.flashlight']},
+  return {...s, player:{...s.player,paused:false}, inventory:{itemIds:['lobby.employee-card','lobby.flashlight']},
     puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:power}}};
 }
 function walk(s, x, z, update = logic.updateChapter) {
@@ -54,7 +54,7 @@ test('未恢復供電不能進生產線，恢復後可經平台進入', () => {
   const power=logic.WORLD.areas.find(a=>a.id==='power-room');
   assert.ok(!power.boxes.some(b=>b.id==='power.landing-end'));
   assert.ok(!power.signs.some(s=>s.id==='power.landing-sign'));
-  assert.equal(power.signs.find(s=>s.id==='power.exit-sign').text,'糖果生產線');
+  assert.equal(power.signs.find(s=>s.id==='power.exit-sign').text,'玩具裝配線');
   const landing=logic.SURFACES.find(b=>b.id==='power.landing-floor');
   const floor=logic.SURFACES.find(b=>b.id==='production.floor');
   assert.equal(landing.maxX,floor.minX,'平台與新區地板無縫相接');
@@ -80,7 +80,7 @@ test('下一區門保持關閉且同時阻擋移動與視線', () => {
   const p=area(); assert.ok(p);
   const s=state(),door=p.doors[0],g=logic.getGeometry(s);
   assert.equal(door.openWhen.puzzleId,'production.sequence');
-  assert.equal(door.destination.type,'reserved');
+  assert.deepEqual(door.destination,{type:'area',areaId:'loading-bay'});
   assert.equal(s.puzzles['production.sequence'].restored,false);
   assert.equal(logic.isDoorOpen(door,s),false);
   for(const list of [g.collisionBoxes,g.occluderBoxes]) assert.ok(list.some(b=>b.id===door.id));
@@ -90,10 +90,10 @@ test('下一區門保持關閉且同時阻擋移動與視線', () => {
   const ray={origin:{x:20,y:1.6,z:-6.5},direction:{x:1,y:0,z:0}};
   assert.ok(logic.rayBoxDistance(ray,door.bounds)<1.3);
 });
-test('5a～5c 不新增物品與密碼；櫃子可進入躲藏，照明沿用兩盞固定池', () => {
+test('玩具工廠前區物品與既有密碼有效；櫃子可躲藏，照明沿用兩盞固定池', () => {
   const p=area(); assert.ok(p);
-  assert.equal(logic.ITEMS.length,4);
-  assert.equal(logic.WORLD.areas.flatMap(a=>a.puzzles).filter(p=>p.code).length,1);
+  assert.equal(logic.ITEMS.length,6);
+  assert.equal(logic.WORLD.areas.flatMap(a=>a.puzzles).filter(p=>p.code).length,2);
   let s=state(); s.player={...s.player,x:8.5,z:-1.2,yaw:0,pitch:0};
   const locker=p.devices.find(d=>d.id==='production.locker-l1');
   const target=logic.selectChapterTarget(s);

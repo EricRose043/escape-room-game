@@ -1,8 +1,8 @@
 const box = (id, kind, minX, maxX, minY, maxY, minZ, maxZ, extra = {}) => ({ id, kind, minX, maxX, minY, maxY, minZ, maxZ, ...extra });
 export const POWER_ROOM = {
-  id: 'power-room', name: '電力室', bounds: { minX:-5,maxX:5,minZ:-8.2,maxZ:-0.2 }, height:3.5,
+  id: 'power-room', name: '控制室', bounds: { minX:-5,maxX:5,minZ:-8.2,maxZ:-0.2 }, height:3.5,
   checkpoint: {id:'power.checkpoint',order:1,spawn:{x:0,z:-1.2,yaw:0,pitch:0},
-    floorId:'power-room.floor',requires:{itemIds:['lobby.flashlight'],puzzleIds:[]}},
+    floorId:'power-room.floor',requires:{itemIds:['lobby.flashlight','lobby.employee-card'],puzzleIds:[]}},
   boxes: [
     box('power.west','wall',-5.2,-5,0,3.5,-8.2,-0.2),
     box('power.north','wall',-5.2,5.2,0,3.5,-8.4,-8.2),
@@ -34,9 +34,12 @@ export const POWER_ROOM = {
     normal:{x:-1,y:0,z:0},width:1.8,height:0.4}],
   lights: [{id:'power.ceiling-light',position:{x:0,y:3.1,z:-4.2},powerPuzzleId:'power.main',offIntensity:7,onIntensity:26,color:0xb8c5d8,distance:14}],
   signs: [
-    {id:'power.room-sign',text:'電力室｜維修中',position:{x:-1.9,y:1.8,z:-0.22},normal:{x:0,y:0,z:-1},width:1.8,height:0.35},
+    {id:'power.room-sign',text:'控制室｜員工卡權限',position:{x:-1.9,y:1.8,z:-0.22},normal:{x:0,y:0,z:-1},width:2.1,height:0.35},
     {id:'power.box-sign',text:'電箱｜備援控制',position:{x:4.23,y:2.3,z:-3},normal:{x:-1,y:0,z:0},width:1.4,height:0.3},
     {id:'power.uv-note',text:'檢修墨跡在普通照明下不可見',position:{x:4.98,y:2.3,z:-4.5},normal:{x:-1,y:0,z:0},width:2.2,height:0.3},
-    {id:'power.exit-sign',text:'糖果生產線',position:{x:4.98,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
+    {id:'power.exit-sign',text:'玩具裝配線',position:{x:4.98,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
+    {id:'power.incident-log',text:'封廠前夜 22:14｜展示台空了，門禁卻沒有開啟紀錄',position:{x:0,y:2.1,z:-8.18},normal:{x:0,y:0,z:1},width:4.3,height:0.5},
+    {id:'power.night-report',text:'緊急維修：主電源重啟會接通展示區備援線路',position:{x:0,y:1.45,z:-8.18},normal:{x:0,y:0,z:1},width:4.2,height:0.38},
+    {id:'power.train-log',text:'撤離方案：員工卡可啟動貨運月台列車',position:{x:-2.9,y:1.8,z:-5.38},normal:{x:0,y:0,z:-1},width:2.5,height:0.4},
   ],
 };
