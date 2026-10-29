@@ -20,6 +20,13 @@ const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移�
 // 僅供監督者驗收開啟分支；待 S2 設定接上後移除。
 const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'};
 let chapter = createChapter(chapterOptions);
+const intro=document.querySelector('#story-intro');
+const introSlides=['曾經，這裡製作的玩具風靡全城。每個孩子都想帶一個回家。','一夜之間，公司突然關閉。沒有公告，也沒有人知道原因。','封存的監視畫面裡，藍色展示玩偶在斷電後自行移動。','最後一張維修單只留下警告：不要替展示玩偶接上電源。','多年後，你走進工廠。身後的門鎖上了。'];
+let introStarted=performance.now();
+function finishIntro(){intro.hidden=true;}
+document.querySelector('#intro-skip').addEventListener('click',finishIntro);
+const introTimer=setInterval(()=>{const elapsed=performance.now()-introStarted;if(elapsed>=60000){clearInterval(introTimer);finishIntro();return;}document.querySelector('#intro-copy').textContent=introSlides[Math.min(4,Math.floor(elapsed/12000))];},250);
+introTimer?.unref?.();
 // 將存取包在函式內，連 localStorage getter 拋錯也交由儲存層處理。
 const saveStorage=createSaveStorage({
   getItem:key=>window.localStorage.getItem(key),
@@ -171,6 +178,10 @@ function syncUI() {
   setText(document.querySelector('#start-save-status'),saveStorage.status().message);
   keypadView.sync(chapter.ui,session.paused,prompt.device);
   captureView.sync(chapter.ui,{...chapterOptions,paused:session.paused});
+  let completed=false;try {completed=window.localStorage.getItem('toy-factory-complete')==='true';} catch {}
+  const hasMap=chapter.inventory.itemIds.includes('lobby.factory-map') || completed;
+  document.querySelector('#factory-map-button').hidden=!hasMap || chapter.ui.mode==='complete';
+  document.querySelector('#ending-screen').hidden=chapter.ui.mode!=='complete';
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
   const target = selectChapterTarget(chapter);
   interactionHint.hidden = !target;
@@ -200,6 +211,10 @@ function syncUI() {
     ? (pointerLockFailed ? lockMessage.textContent : '點一下畫面以啟用滑鼠轉頭') : '');
 }
 
+const mapPanel=document.querySelector('#factory-map');
+document.querySelector('#factory-map-button').addEventListener('click',()=>{mapPanel.hidden=false;if(!session.paused)applySession({forcePause:true});});
+document.querySelector('#map-close').addEventListener('click',()=>{mapPanel.hidden=true;});
+document.querySelector('#ending-close').addEventListener('click',()=>{document.querySelector('#ending-screen').hidden=true;mapPanel.hidden=false;});
 function clearInput() {
   keys.clear();
   interactPending = false;
@@ -306,6 +321,8 @@ document.addEventListener('pointerlockchange', () => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if(!intro.hidden) { if(event.code==='Escape'||event.code==='Enter'||event.code==='Space'){event.preventDefault();finishIntro();} return; }
+  if(!mapPanel.hidden) { if(event.code==='Escape'||event.code==='KeyM'){event.preventDefault();mapPanel.hidden=true;} return; }
   if(startMenu.mode!=='closed') {
     const command=keyboardStartMenuCommand(event);
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Space','Escape'].includes(event.code)) event.preventDefault();
@@ -325,6 +342,7 @@ document.addEventListener('keydown', (event) => {
     if (command && !session.paused && !document.hidden && document.hasFocus()) keypadPending.push(command);
     return;
   }
+  if(event.code==='KeyM' && !event.repeat && chapter.inventory.itemIds.includes('lobby.factory-map')) { mapPanel.hidden=false;if(!session.paused)applySession({forcePause:true});return; }
   if (!['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Escape', 'KeyE', 'KeyF', 'KeyR'].includes(event.code)) return;
   keyboardActivity = true;
   if (event.code === 'Escape') {
@@ -482,6 +500,11 @@ function animate(time) {
   const beforeChapter=chapter;
   const beforeMode=chapter.ui.mode;
   chapter = updateChapter(chapter, actions, dt, chapterOptions);
+  if(beforeMode!=='complete' && chapter.ui.mode==='complete') {
+    try { localStorage.setItem('toy-factory-complete','true'); } catch {}
+    document.querySelector('#map-title').textContent='完整工廠地圖｜通關解鎖';
+    document.querySelector('#map-content').textContent='辦公室 ─ 控制室 ─ 裝配線 ─ 貨運月台\n入口      電力紀錄   置物櫃     玩具列車\n\n完整巡檢路線與月台出口已標記。';
+  }
   if(session.hasStarted && startMenu.mode==='closed') saveStorage.observe(beforeChapter,chapter,actions.gameplayActive?dt:0);
   if (beforeMode!==chapter.ui.mode) {
     clearInput();
