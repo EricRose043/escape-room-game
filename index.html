@@ -69,8 +69,19 @@
       #factory-map pre { text-align:left;display:inline-block;padding:14px;background:#111719;color:#e8d8a8;font:16px/1.7 monospace; }
       #factory-map button,#story-intro button,#ending-screen button { padding:10px 24px;color:#eee;background:#29363c;border:1px solid #b08c49;font:inherit;cursor:pointer; }
       #story-intro { z-index:10;background:radial-gradient(ellipse,#293339,#030506 75%); }
+      #story-intro::before { content:"";position:absolute;left:50%;bottom:18vh;width:min(38vw,330px);height:48vh;transform:translateX(-50%);border-radius:46% 46% 22% 22%;opacity:.24;filter:blur(13px);background:radial-gradient(ellipse at 50% 17%,#3582ad 0 17%,transparent 18%),linear-gradient(90deg,transparent 0 14%,#286c91 15% 30%,transparent 31% 69%,#286c91 70% 85%,transparent 86%),linear-gradient(#286c91,#163c55);animation:intro-drift 5s ease-in-out infinite alternate;pointer-events:none; }
+      #story-intro::after { content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 3px,#b4d3df0a 4px);pointer-events:none; }
+      #story-intro[data-scene="1"] { background:radial-gradient(ellipse,#3a3129,#030506 75%); }
+      #story-intro[data-scene="2"] { background:radial-gradient(ellipse,#122633,#030506 75%); }
+      #story-intro[data-scene="3"] { background:radial-gradient(ellipse,#263c46,#030506 75%); }
+      #story-intro[data-scene="4"] { background:radial-gradient(ellipse,#11191d,#030506 75%); }
+      @keyframes intro-drift { from {transform:translate(-50%,5px) scale(.97);opacity:.16;} to {transform:translate(-50%,-8px) scale(1.03);opacity:.3;} }
       #story-intro h1 { letter-spacing:.18em;color:#e2b65c; }
+      #story-intro section { position:relative;z-index:1;background:#172025b8; }
       #intro-copy { min-height:5em;font-size:1.2rem;line-height:1.8; }
+      #story-intro #intro-copy { position:fixed;left:50%;bottom:7vh;transform:translateX(-50%);width:min(880px,calc(100vw - 40px));min-height:0;margin:0;padding:18px 24px;background:#05090dcc;border-top:2px solid #b08c49;border-bottom:1px solid #657078;box-sizing:border-box;font-size:clamp(16px,2vw,22px); }
+      #audio-toggle { position:fixed;right:16px;bottom:16px;z-index:3;padding:8px 13px;background:#1b2529ef;color:#eee0bc;border:1px solid #71827d;font:inherit;cursor:pointer; }
+      #audio-toggle[hidden] { display:none; }
     </style>
     <script type="importmap">
       {
@@ -81,12 +92,12 @@
     </script>
   </head>
   <body>
-    <div id="story-intro"><section><p>舊檔案｜60 秒</p><h1>失落玩具工廠</h1><p id="intro-copy">曾經，這裡製作的玩具風靡全城。每個孩子都想帶一個回家。</p><button id="intro-skip" type="button">跳過劇情</button></section></div>
+    <div id="story-intro"><section><p>舊檔案｜60 秒</p><h1>失落玩具工廠</h1><p id="intro-copy" aria-live="polite" aria-atomic="true">曾經，這裡製作的玩具風靡全城。每個孩子都想帶一個回家。</p><button id="intro-skip" type="button">跳過劇情</button></section></div>
     <div id="crosshair" hidden aria-hidden="true">+</div>
     <div id="interaction-hint" hidden role="status"></div>
     <div id="fps" aria-label="每秒畫格數">FPS: —</div>
     <div id="input-hud">
-      <p id="controls-hint">WASD 走路 · 滑鼠轉頭 · Esc 暫停</p>
+      <p id="controls-hint">WASD 走路 · 滑鼠／方向鍵轉頭 · Esc 暫停</p>
       <p id="input-hint"></p>
       <p id="contact-hint" hidden role="status" aria-live="polite"></p>
       <p id="hiding-hint" hidden role="status" aria-live="polite"></p>
@@ -141,6 +152,7 @@
       </section>
     </div>
     <button id="factory-map-button" type="button" hidden>查看工廠地圖（M）</button>
+    <button id="audio-toggle" type="button">音效：開啟</button>
     <div id="factory-map" hidden><section role="dialog" aria-modal="true"><h2 id="map-title">員工手繪平面圖</h2><pre id="map-content">辦公室 ─ 控制室 ─ 裝配線 ─ 貨運月台
  入口      電力紀錄   置物櫃     玩具列車
 
