@@ -15,6 +15,7 @@ import { createKeypadView } from './keypad-view.js';
 import { createCaptureView } from './capture-view.js';
 import { createStartMenuView } from './start-menu-view.js';
 import { compensatedIntensity } from './lighting.js';
+import { createFactoryAudio } from './audio.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
 // 僅供監督者驗收開啟分支；待 S2 設定接上後移除。
@@ -22,10 +23,11 @@ const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get(
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
 const introSlides=['曾經，這裡製作的玩具風靡全城。每個孩子都想帶一個回家。','一夜之間，公司突然關閉。沒有公告，也沒有人知道原因。','封存的監視畫面裡，藍色展示玩偶在斷電後自行移動。','最後一張維修單只留下警告：不要替展示玩偶接上電源。','多年後，你走進工廠。身後的門鎖上了。'];
-let introStarted=performance.now();
-function finishIntro(){intro.hidden=true;}
+let introStarted=performance.now(),introStage=-1;
+let introTimer;
+function finishIntro(){intro.hidden=true;clearInterval(introTimer);try{audio.start();}catch{}}
 document.querySelector('#intro-skip').addEventListener('click',finishIntro);
-const introTimer=setInterval(()=>{const elapsed=performance.now()-introStarted;if(elapsed>=60000){clearInterval(introTimer);finishIntro();return;}document.querySelector('#intro-copy').textContent=introSlides[Math.min(4,Math.floor(elapsed/12000))];},250);
+introTimer=setInterval(()=>{const elapsed=performance.now()-introStarted;if(elapsed>=60000){finishIntro();return;}const stage=Math.min(4,Math.floor(elapsed/12000));if(stage!==introStage){introStage=stage;intro.dataset.scene=String(stage);document.querySelector('#intro-copy').textContent=introSlides[stage];}},250);
 introTimer?.unref?.();
 // 將存取包在函式內，連 localStorage getter 拋錯也交由儲存層處理。
 const saveStorage=createSaveStorage({
@@ -42,12 +44,17 @@ const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 50);
 camera.rotation.order = 'YXZ';
 
 // 簡單幾何、無即時陰影或後製；像素比上限 1，降低內顯負擔。
-const renderer = new THREE.WebGLRenderer({ antialias: false });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+let renderPixelRatio=Math.min(window.devicePixelRatio||1,1.25);
+renderer.setPixelRatio(renderPixelRatio);
 document.body.appendChild(renderer.domElement);
 
 const worldView = createWorldView(scene);
 const monsterView = createMonsterView(scene);
+const audio=createFactoryAudio();
+const audioToggle=document.querySelector('#audio-toggle');
+audioToggle.hidden=!audio.supported();
+audioToggle.addEventListener('click',()=>{const muted=audio.toggle();audioToggle.textContent=muted?'音效：靜音':'音效：開啟';});
 function addBox(width, height, depth, x, y, z, material) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
   mesh.position.set(x, y, z);
@@ -213,8 +220,11 @@ function syncUI() {
 }
 
 const mapPanel=document.querySelector('#factory-map');
-document.querySelector('#factory-map-button').addEventListener('click',()=>{mapPanel.hidden=false;if(!session.paused)applySession({forcePause:true});});
-document.querySelector('#map-close').addEventListener('click',()=>{mapPanel.hidden=true;});
+let mapReturnToGame=false;
+function openMap(){mapPanel.hidden=false;mapReturnToGame=!session.paused;if(mapReturnToGame)applySession({forcePause:true});}
+function closeMap(){mapPanel.hidden=true;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}}
+document.querySelector('#factory-map-button').addEventListener('click',openMap);
+document.querySelector('#map-close').addEventListener('click',closeMap);
 document.querySelector('#ending-close').addEventListener('click',()=>{document.querySelector('#ending-screen').hidden=true;mapPanel.hidden=false;});
 function clearInput() {
   keys.clear();
@@ -241,6 +251,7 @@ function handleStartCommand(command,source='keyboard') {
   if(document.hidden || !document.hasFocus() || startMenu.mode==='closed') return;
   startMenu=updateStartMenu(startMenu,command);
   if(startMenu.effect==='new' || startMenu.effect==='continue') {
+    audio.start();
     let next;
     if(startMenu.effect==='continue') {
       const result=saveStorage.load();next=result.status==='valid'?restoreChapterSave(result.data,chapterOptions):null;
@@ -271,7 +282,7 @@ function releasePointer(reason) {
 
 function lockFailed() {
   pointerLockFailed = true;
-  lockMessage.textContent = '無法鎖定滑鼠，請再點一次畫面，或使用鍵盤滑鼠的開始／繼續按鈕。';
+  lockMessage.textContent = '滑鼠鎖定不可用時，開始後可用方向鍵轉頭，或按住滑鼠拖曳。';
   syncUI();
 }
 
@@ -288,6 +299,7 @@ async function requestLock() {
 }
 
 resumeButton.addEventListener('click', () => {
+  audio.start();
   if(startMenu.mode!=='closed') handleStartCommand({type:'activate'},'keyboard');
   else if(session.paused) applySession(session.hasStarted?{pausePressed:true}:{confirmPressed:true});
   else requestLock();
@@ -325,7 +337,7 @@ document.addEventListener('pointerlockchange', () => {
 
 document.addEventListener('keydown', (event) => {
   if(!intro.hidden) { if(event.code==='Escape'||event.code==='Enter'||event.code==='Space'){event.preventDefault();finishIntro();} return; }
-  if(!mapPanel.hidden) { if(event.code==='Escape'||event.code==='KeyM'){event.preventDefault();mapPanel.hidden=true;} return; }
+  if(!mapPanel.hidden) { if(event.code==='Escape'||event.code==='KeyM'){event.preventDefault();closeMap();} return; }
   if(startMenu.mode!=='closed') {
     const command=keyboardStartMenuCommand(event);
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Space','Escape'].includes(event.code)) event.preventDefault();
@@ -352,7 +364,7 @@ document.addEventListener('keydown', (event) => {
     dPitch+=event.code==='ArrowUp'?0.16:event.code==='ArrowDown'?-0.16:0;
     keyboardActivity=true;return;
   }
-  if(event.code==='KeyM' && !event.repeat && chapter.inventory.itemIds.includes('lobby.factory-map')) { mapPanel.hidden=false;if(!session.paused)applySession({forcePause:true});return; }
+  if(event.code==='KeyM' && !event.repeat && chapter.inventory.itemIds.includes('lobby.factory-map')) { openMap();return; }
   if (!['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Escape', 'KeyE', 'KeyF', 'KeyR'].includes(event.code)) return;
   keyboardActivity = true;
   if (event.code === 'Escape') {
@@ -510,6 +522,7 @@ function animate(time) {
   const beforeChapter=chapter;
   const beforeMode=chapter.ui.mode;
   chapter = updateChapter(chapter, actions, dt, chapterOptions);
+  audio.sync(beforeChapter,chapter,session.hasStarted&&!session.paused,dt);
   if(beforeMode!=='complete' && chapter.ui.mode==='complete') {
     try { localStorage.setItem('toy-factory-complete','true'); } catch {}
     document.querySelector('#map-title').textContent='完整工廠地圖｜通關解鎖';
@@ -531,7 +544,9 @@ function animate(time) {
   frames += 1;
   const elapsed = time - sampleStart;
   if (elapsed >= 1000) {
-    fpsDisplay.textContent = `FPS: ${Math.round(frames * 1000 / elapsed)}`;
+    const fps=Math.round(frames*1000/elapsed);
+    fpsDisplay.textContent = `FPS: ${fps}`;
+    if(fps<42 && renderPixelRatio>1) {renderPixelRatio=1;renderer.setPixelRatio(renderPixelRatio);resize();}
     frames = 0;
     sampleStart = time;
   }
