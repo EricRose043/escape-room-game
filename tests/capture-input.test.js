@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import * as logic from '../src/logic/index.js';
+import {createFactoryAudio} from '../src/game/audio.js';
 
 const id=logic.MONSTERS[0].id;
 const pad=(buttons=[],name='Xbox')=>({id:name,index:0,mapping:'standard',connected:true,axes:[0,0,0,0],
@@ -51,7 +52,7 @@ async function runtime(jumpScare=false) {
   const {createStartMenuView}=await import('../src/game/start-menu-view.js');
   const values={...logic,createChapter:options=>({...ready(options),player:{...ready(options).player,paused:true}}),
     updateChapter:(...args)=>(lastChapter=logic.updateChapter(...args))};
-  const dependencies={THREE,document,window,navigator:{getGamepads:()=>pads},
+  const dependencies={THREE,document,window,navigator:{getGamepads:()=>pads},createFactoryAudio,
     requestAnimationFrame:fn=>{frame=fn;},createWorldView:()=>({sync(){}}),createMonsterView:()=>({sync(){}}),
     createKeypadView:()=>({sync(){}}),createCaptureView,createStartMenuView,compensatedIntensity:()=>35,...values};
   new Function(...Object.keys(dependencies),source)(...Object.values(dependencies));
@@ -136,4 +137,3 @@ test('成功進櫃與密碼鎖流程不被舊接觸打斷',()=>{
     assert.notEqual(next.ui.mode,'caught');assert.deepEqual(next.monsters,panel.monsters);
   }
 });
-
