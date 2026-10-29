@@ -31,6 +31,7 @@ function focus(){frame.contentWindow.focus();doc.body.tabIndex=-1;doc.body.focus
 async function pulse(i){focus();const b=frame.contentWindow.qaPad.buttons[i];b.pressed=true;b.value=1;await wait(150);b.pressed=false;b.value=0;await wait(150);}
 const safe=fn=>async()=>{try{await fn();}catch(e){say('ERROR '+e.message);}};
 document.querySelector('#run').onclick=safe(async()=>{
+ if(location.origin!=='http://127.0.0.1:8788'){say('建立測試存檔只允許隔離的 http://127.0.0.1:8788；請另開此測試 origin。');return;}
  const state=createChapter();state.checkpointId='production.checkpoint';state.inventory.itemIds=['lobby.flashlight','power.fuse','power.battery'];state.flashlight={charge:41,mode:'uv',enabled:false};state.puzzles['power.main']={installedItemId:'power.fuse',restored:true};
  localStorage.setItem(key,serializeChapterSave(state));say('預製測試存檔：生產線平台、41%、UV、已拿保險絲與電池、已供電');
  await load();await pulse(0);say('模擬 A 繼續；開始選單隱藏 '+doc.querySelector('#start-menu').hidden+'；暫停 '+!doc.querySelector('#pause-screen').hidden);

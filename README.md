@@ -388,3 +388,9 @@ location.reload();
 - [貢獻與作者紀錄](docs/CONTRIBUTIONS.md)：各人 PR／commit 證據與保留歷史的合併方式。
 
 分工調整在 EricRose043 審查合併後生效。自動測試通過不等於整章實玩、實體手把或效能已通過。
+
+## 獨立測試與 S1 音效交付
+
+- 靜態伺服器開啟後，進入 `/tools/audio-test.html`，按「啟用聲音」逐項試聽；主音量 35%，可調整及全部停止。S1 尚未接進正式遊戲，原遊戲行為不變。接入方式見 [S1 聲音說明](docs/AUDIO_INTEGRATION.md)。
+- `/tools/save-playtest.html` 是 S0 診斷頁，僅允許在隔離的 `http://127.0.0.1:8788` 建立 fixture；會取代該測試 origin 的章節存檔。不要在有重要遊戲進度的 origin 操作。以 `python -m http.server 8788 --bind 127.0.0.1` 啟動後使用；模擬手把與預製存檔不代表真人實機通關。
+- 本輪被抓／存讀及音訊測量的實際結果與限制，見實測紀錄 LOG-20261029-03／04；既有 Windows 換行缺陷尚待負責人修復。

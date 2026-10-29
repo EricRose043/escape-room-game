@@ -20,3 +20,5 @@
 | D005 | 2026-10-22 | Claude 與 Codex 協作照 YUJIN-Workspaces 精簡版：Claude 用 supervisor/send-codex.sh 直接送指令、每輪先討論計畫 1–5 次再開工、施工輪不得改 BRIEF／VERIFY | EricRose043 | AGENTS.md「Claude 與 Codex 怎麼協作」 |
 
 | D015 | 2026-10-29 | 依 week 8 簡報調整三人主責：Ryan 劇情與素材、Eric 網站與機關、shuoen 測試與整合；保留 R1／R2／S1／S2／S3 功能分配。新增 TESTS 逐條追溯、實測／缺陷／貢獻紀錄；使用 merge commit 保留真實作者，不補造其他人的 commit。取代 D013 的角色與驗收統整方式，原檔案邊界延續。 | shuoen88 在本次對話提出並授權；本分支提案待 Eric 審查合併生效，不代表三人已共同核准 | TEAM_TASKS.md、TESTS.md、docs/TESTING_LOG.md、docs/DEFECTS.md、docs/CONTRIBUTIONS.md；老師 week 8 簡報第 7～11、17、22～27 頁 |
+
+| D016 | 2026-10-29 | shuoen88 先完成 S0 測試紀錄，再實作獨立 S1：Web Audio 程式合成、主音量 0～1（S2 需除以 100）、心跳近 2m／遠 14m、步幅參數 1.3m 與 0.18～1.2 秒間隔；數值是初版可調音效參數，不改遊戲機制。保留 stop／dispose 與診斷 API，不接入共用 main，由 Eric 整合。 | shuoen88 本次授權；此分支交付待 Eric 審查 | TEAM_TASKS S0／S1、docs/AUDIO_INTEGRATION.md、LOG-20261029-03／04 |
