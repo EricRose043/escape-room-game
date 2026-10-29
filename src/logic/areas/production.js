@@ -36,7 +36,7 @@ export const PRODUCTION = {
   ],
   signs:[
     {id:'production.east-sign',text:'貨運區｜列車月台',position:{x:21.18,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
-    {id:'production.monitor-record',text:'異常紀錄：玩偶位置與監視畫面不一致',position:{x:14.2,y:2.75,z:-0.32},normal:{x:0,y:0,z:-1},width:3.8,height:0.38},
+    {id:'production.monitor-record',text:'監視器最後畫面：展示台空了；封鎖門沒有開啟紀錄',position:{x:14.2,y:2.75,z:-0.32},normal:{x:0,y:0,z:-1},width:3.8,height:0.38},
     {id:'production.console-guide',text:'月台檢修碼輸入後，東側貨運門解鎖',position:{x:14.2,y:2.85,z:-12.48},normal:{x:0,y:0,z:1},width:3.8,height:0.38},
     {id:'production.locker-sign-l1',text:'緊急避難櫃',position:{x:8.5,y:2.42,z:-2.16},normal:{x:0,y:0,z:1},width:1.15,height:0.25},
     {id:'production.locker-sign-l2',text:'緊急避難櫃',position:{x:19.5,y:2.42,z:-11.26},normal:{x:0,y:0,z:1},width:1.15,height:0.25},
