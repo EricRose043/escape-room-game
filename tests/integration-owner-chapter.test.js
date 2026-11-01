@@ -40,3 +40,7 @@ test('上一版本地糖果存檔可保留電力道具與時間，不偽造新�
  assert.equal(s.inventory.itemIds.includes('lobby.employee-card'),false);assert.equal(s.puzzles['exit.final'].restored,false);assert.equal(s.puzzles['production.color-sequence'].restored,true);
  const bad=structuredClone(old);bad.flashlight.charge=999;assert.equal(l.parseChapterSave(JSON.stringify(bad)).status,'invalid');
 });
+test('密碼控制器不能堵住通往走廊或列車的門洞',()=>{
+ const s=ready();s.puzzles['production.color-sequence']={restored:true};s.puzzles['exit.final']={restored:true};s.foundClueIds=['production.color-clue','corridor.color-key','exit.reverse-clue'];
+ for(const p of [{x:20.8,z:-6.5},{x:51.6,z:-17.5}])assert.ok(!l.getGeometry(s).collisionBoxes.some(b=>l.circleOverlapsBox(p.x,p.z,b)),`${p.x},${p.z} 必須可通行`);
+});
