@@ -31,7 +31,7 @@ export const PRODUCTION = {
       doorYaw:Math.PI,inside:{x:19.5,z:-11.75},exitCandidates:[{x:19.5,z:-10.3},{x:19.5,z:-10.6}],
       panelThickness:0.025,peek:{minY:1.54,maxY:1.66,width:0.6}},
         ...COLOR_SEQUENCE.buttons.map((color,i)=>({id:`production.button-${color}`,kind:'sequenceButton',puzzleId:COLOR_SEQUENCE.id,color,name:`${['紅1','黃2','綠3','藍4'][i]} 復位按鈕`,bounds:{minX:20.7,maxX:21,minY:1.35,maxY:1.85,minZ:-1.6-i*.9,maxZ:-1.2-i*.9}})),
-    {id:'production.sequence-keypad',kind:'keypad',name:'裝配線控制器',puzzleId:'production.sequence',bounds:{minX:20.55,maxX:21.1,minY:1,maxY:1.65,minZ:-6.95,maxZ:-6.05}},
+    {id:'production.sequence-keypad',kind:'keypad',name:'裝配線控制器',puzzleId:'production.sequence',bounds:{minX:20.55,maxX:21.1,minY:1,maxY:1.65,minZ:-8.45,maxZ:-7.55}},
   ],
   lights:[
     {id:'production.ceiling-light',position:{x:14.2,y:3.1,z:-6.5},powerPuzzleId:'power.main',offIntensity:7,onIntensity:26,color:0xc5d6bf,distance:18},
