@@ -50,3 +50,19 @@ Ryan 鎖定 fc603adece9baf554cdbd87d291b9d21ba7e3954，相對 main 0fab5ef 有 6
 ## LOG-08 再核對
 
 本輪再次核對main=0fab5ef、Ryan=fc603ad；git merge-base --is-ancestor確認兩者與上輪8dfc46f均在最新分支歷史。Ryan67筆提交未重寫；shuoen88以本人的既有Git身分新增S2／S3、測試與文件提交。仍走PR #2上傳，不直接推main、不squash、不force push。本輪未代表Ryan／Eric認可新的驗收含義，也沒有代發訊息要求其驗收；待owner merge後才核對main三人歷史。
+
+## 2026-11-01 owner 審查與整合
+
+[PR #4](https://github.com/EricRose043/escape-room-game/pull/4) 納入本輪檢查時的三個來源 HEAD：
+
+| 原始分支 | HEAD | 整合版祖先核對 |
+|---|---|---|
+| shuoen/team-roles-and-test-plan | 3072dfa | PASS |
+| shuoen/save-playtest-and-audio | 42d8357 | PASS |
+| ryan/color-puzzle | 05b290b | PASS |
+
+65ed422 為真正 merge commit，保留 Ryan 新增 R1／R2／STORY 及既有劇情全部提交，也保留 shuoen 的分工、測試、音效、設定與走廊成果。owner 的 270de89／e6a8a53／107609f 等提交記錄實際串接與修復，不將別人工作改寫為 owner 作者。
+
+核對方法：`git merge-base --is-ancestor <來源完整SHA> <整合HEAD>`；三者成功。main 的最後追溯以 PR #4 合併後對其 merge SHA 執行同一命令為準。原分支與 PR #1／#2／#3 均不刪除、不改寫；不製造 Ryan／shuoen 的新 commit 或共同作者宣告。
+
+本輪與原 main 的作者差異可由 `git shortlog -s origin/main..codex/github-team-integration` 重現；不把尚未進 main 的歷史冒稱已在 main。PR 即時狀態是合併與交付狀態的依據。

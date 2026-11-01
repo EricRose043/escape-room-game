@@ -222,3 +222,14 @@
 已驗：220項、Windows220項、3項選定突變、S2真瀏覽器鍵盤與模擬手把、設定真關頁保留、S3獨立3門、文件53條追溯。未驗：實體Xbox／PS、學校舊電腦、真人完整章節、S3正式整合、完整聽感與未抽樣突變。Pointer Lock受內建環境限制，備援與main輸入已分開驗。原要求／新版玩法差異仍見Q-004。
 
 證據：[完整套件](evidence/2026-10-29/assignment-completion/full-suite.tap)、[Windows](evidence/2026-10-29/assignment-completion/windows-suite.tap)、[突變摘要](evidence/2026-10-29/assignment-completion/mutation-summary.json)、[模擬手把前](evidence/2026-10-29/assignment-completion/settings-gamepad-before-close.txt)、[返回](evidence/2026-10-29/assignment-completion/settings-gamepad-return.txt)、[真關頁讀回](evidence/2026-10-29/assignment-completion/settings-after-reopen.txt)、[鍵盤設定畫面](evidence/2026-10-29/assignment-completion/settings-keyboard.jpg)、[S3完成畫面](evidence/2026-10-29/assignment-completion/corridor-preview.jpg)。同目錄保留各輪紅／綠TAP及console清單，僅正規化換行與行尾空白。
+
+## LOG-20261101-OWNER：新版分工正式接入
+
+- 操作者：EricRose043 授權的 Codex；日期 2026-11-01（Asia/Taipei）。
+- 原始來源：shuoen `42d8357`、Ryan `05b290b`，merge `65ed422` 保留原始 SHA 與作者。owner 核心整合 `270de89`，門洞修復 `e6a8a53`，結局跨面板按鍵／焦點修復 `107609f`，CI `0ae1d67`。
+- Node：`npm test` **235/235 PASS，0 skipped**；增加的 owner 整合與結局操作回歸均先紅後綠。僅因加入正式走廊／出口而更新四區、三存檔點、獨立未註冊等舊範圍斷言；保留碰撞、遮擋、存檔保護、失焦與輸入斷言。
+- 正式瀏覽器：已安裝的 Google Chrome、真 WebGL，分別以鍵鼠事件、模擬 Xbox、模擬 DualSense 驅動實際 main；不是直接灌入完成狀態。每條從正式辦公室走到列車結局，包含故意錯序警報、實際被抓回復、全部謎題及三張線索，並在出口做真正頁面 reload 後繼續。
+- 操作整合：三條路線均檢查遊戲中設定、普通地圖、結局收藏地圖與重玩確認；原生 Pointer Lock 在 Chrome 鍵鼠路線確認可用。三次 console **0 errors**。
+- 新增可重現整合缺陷：控制器放在門洞會擋住通路；結局元件先讀 A、main 再讀相同 A，曾立即關閉收藏圖或取消重玩確認；鍵盤 Tab 焦點曾與 selected 不同步。皆已修復並以相同路線複測。
+- 證據：[owner-integration](evidence/2026-11-01/owner-integration/)，含 node-tests.txt、三份 browser-verification.json 及開始／設定／生產線／走廊／結局截圖。完整來源與邊界見 [INTEGRATION_STATUS](INTEGRATION_STATUS.md)。
+- 界線：動畫時鐘可控、手把為模擬 API，不能把截圖 FPS 或模擬通關當成學校硬體或實體 Xbox／PS 結果。真人聽感、實體設備及其他瀏覽器未代填；既有歷史 Windows 220 項結果不等於當前整合版的 Windows 結果，當前以 PR #4 CI 為準。

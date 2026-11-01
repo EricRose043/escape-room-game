@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-01",
+  "inputDevice": "keyboard",
+  "receipts": [
+    "Pointer Lock start, Xbox/PS settings, settings persistence",
+    "Full keyboard route: UV, power, alarm, caught/restore, R1 color puzzle, S3 corridor chase",
+    "Page reload continuation, R2 three-clue code, train escape, ending and elapsed time"
+  ],
+  "errors": [],
+  "limitations": [
+    "Deterministic browser clock and simulated controllers; not physical Xbox/PS or school PC performance."
+  ]
+}
