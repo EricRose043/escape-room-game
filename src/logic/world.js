@@ -1,8 +1,9 @@
 import { LOBBY } from './areas/lobby.js';
 import { POWER_ROOM } from './areas/power-room.js';
 import { PRODUCTION } from './areas/production.js';
+import {INTEGRATED_CORRIDOR,INTEGRATED_EXIT,INTEGRATED_LOADING_BAY} from './areas/connected-chapter.js';
 
-export const WORLD = { spawn: LOBBY.spawn, areas: [LOBBY, POWER_ROOM, PRODUCTION] };
+export const WORLD = { spawn: LOBBY.spawn, areas: [LOBBY, POWER_ROOM, PRODUCTION, INTEGRATED_CORRIDOR,INTEGRATED_EXIT,INTEGRATED_LOADING_BAY] };
 export const ITEMS = WORLD.areas.flatMap(a => a.items);
 export const CLUES = WORLD.areas.flatMap(a => a.clues);
 export const DOORS = WORLD.areas.flatMap(a => a.doors);
@@ -16,6 +17,9 @@ const doorBoxes = new Map(DOORS.map(d => [d.id,{...d.bounds,id:d.id,kind:'door'}
 
 export function isDoorOpen(door, state) {
   const rule = door.openWhen;
+  if(door.id==='production.east-door'&&state.corridor?.active)return false;
+  if(rule.type==='corridorExit')return state.puzzles?.['production.sequence']?.restored===true&&!state.corridor?.complete;
+  if(rule.type==='corridorGate')return state.puzzles?.['production.color-sequence']?.restored===true&&state.foundClueIds?.includes('corridor.color-key')===true&&!state.corridor?.gates.closedIds.includes(door.id);
   if (rule.type === 'hasItem') return Boolean(state.inventory?.itemIds.includes(rule.itemId));
   if (rule.type === 'puzzleSolved') return state.puzzles?.[rule.puzzleId]?.restored === true;
   return false;
@@ -87,7 +91,7 @@ export function validateWorld(world = WORLD) {
     for(const d of a.doors) {
       record(d);bounds(d.bounds,d.id);
       const r=d.openWhen;
-      if(r.type==='hasItem'?!hasItem(r.itemId):r.type==='puzzleSolved'?!hasPuzzle(r.puzzleId):true) errors.push(`門條件引用無效：${d.id}`);
+      if(r.type==='hasItem'?!hasItem(r.itemId):r.type==='puzzleSolved'?!hasPuzzle(r.puzzleId):!['corridorGate','corridorExit'].includes(r.type)) errors.push(`門條件引用無效：${d.id}`);
       if(d.destination.type==='area' && !world.areas.some(other=>other.id===d.destination.areaId)) errors.push(`門目的地無效：${d.id}`);
       if(!['area','reserved'].includes(d.destination.type)) errors.push(`門目的地種類無效：${d.id}`);
     }

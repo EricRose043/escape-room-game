@@ -1,0 +1,1074 @@
+TAP version 13
+# Subtest: 被抓期間移動轉頭互動裝備與場景計時停止
+ok 1 - 被抓期間移動轉頭互動裝備與場景計時停止
+  ---
+  duration_ms: 12.0323
+  type: 'test'
+  ...
+# Subtest: 暫停失焦拔除與繼續不跳進被抓計時或洩漏輸入
+ok 2 - 暫停失焦拔除與繼續不跳進被抓計時或洩漏輸入
+  ---
+  duration_ms: 237.5921
+  type: 'test'
+  ...
+# Subtest: 成功進櫃與密碼鎖流程不被舊接觸打斷
+ok 3 - 成功進櫃與密碼鎖流程不被舊接觸打斷
+  ---
+  duration_ms: 2.5842
+  type: 'test'
+  ...
+# Subtest: 近景關閉或中途關閉時不顯示殘留嚇人畫面
+ok 4 - 近景關閉或中途關閉時不顯示殘留嚇人畫面
+  ---
+  duration_ms: 5.023
+  type: 'test'
+  ...
+# Subtest: 本幀接觸只啟動一次被抓流程，舊事件不重播
+ok 5 - 本幀接觸只啟動一次被抓流程，舊事件不重播
+  ---
+  duration_ms: 14.0467
+  type: 'test'
+  ...
+# Subtest: 開關兩種流程均先黑畫面，只有開啟分支顯示近景
+ok 6 - 開關兩種流程均先黑畫面，只有開啟分支顯示近景
+  ---
+  duration_ms: 5.6579
+  type: 'test'
+  ...
+# Subtest: 被抓滿指定模擬時間回復最近存檔點
+ok 7 - 被抓滿指定模擬時間回復最近存檔點
+  ---
+  duration_ms: 4.295
+  type: 'test'
+  ...
+# Subtest: 回復清除接觸遲滯，重新進區可再次被抓
+ok 8 - 回復清除接觸遲滯，重新進區可再次被抓
+  ---
+  duration_ms: 96.0896
+  type: 'test'
+  ...
+# Subtest: 缺保險絲時即使提交正確碼仍不能供電
+ok 9 - 缺保險絲時即使提交正確碼仍不能供電
+  ---
+  duration_ms: 5.6448
+  type: 'test'
+  ...
+# Subtest: 錯碼不供電不開門，之後仍可重試
+ok 10 - 錯碼不供電不開門，之後仍可重試
+  ---
+  duration_ms: 27.1983
+  type: 'test'
+  ...
+# Subtest: 正確碼恢復電力並只開啟對應生產線門
+ok 11 - 正確碼恢復電力並只開啟對應生產線門
+  ---
+  duration_ms: 82.8646
+  type: 'test'
+  ...
+# Subtest: 恢復供電後重複互動不重播供電轉換
+ok 12 - 恢復供電後重複互動不重播供電轉換
+  ---
+  duration_ms: 16.2056
+  type: 'test'
+  ...
+# Subtest: 使用正式資料從出生點完成取得安裝輸入與通過出口
+ok 13 - 使用正式資料從出生點完成取得安裝輸入與通過出口
+  ---
+  duration_ms: 12.6395
+  type: 'test'
+  ...
+# Subtest: 版本一存檔只包含必要進度且往返一致
+ok 14 - 版本一存檔只包含必要進度且往返一致
+  ---
+  duration_ms: 5.0572
+  type: 'test'
+  ...
+# Subtest: 壞 JSON 舊版本未知 ID 與矛盾進度不能載入
+ok 15 - 壞 JSON 舊版本未知 ID 與矛盾進度不能載入
+  ---
+  duration_ms: 29.9256
+  type: 'test'
+  ...
+# Subtest: 三個存檔點 ID 前置條件與玩家半徑位置有效
+ok 16 - 三個存檔點 ID 前置條件與玩家半徑位置有效
+  ---
+  duration_ms: 41.4878
+  type: 'test'
+  ...
+# Subtest: 首次完整進區啟用存檔點，回頭不降級或重複啟用
+ok 17 - 首次完整進區啟用存檔點，回頭不降級或重複啟用
+  ---
+  duration_ms: 2.8809
+  type: 'test'
+  ...
+# Subtest: 恢復供電不提前取得尚未到達的生產線存檔點
+ok 18 - 恢復供電不提前取得尚未到達的生產線存檔點
+  ---
+  duration_ms: 3.762
+  type: 'test'
+  ...
+# Subtest: 回復保留最新物品安裝與已解謎題，電池不重新出現
+ok 19 - 回復保留最新物品安裝與已解謎題，電池不重新出現
+  ---
+  duration_ms: 1.5608
+  type: 'test'
+  ...
+# Subtest: 回復保留電量模式並關燈，門與供電狀態一致
+ok 20 - 回復保留電量模式並關燈，門與供電狀態一致
+  ---
+  duration_ms: 4.3379
+  type: 'test'
+  ...
+# Subtest: 回復清除櫃子密碼鎖事件與怪物追逐記憶
+ok 21 - 回復清除櫃子密碼鎖事件與怪物追逐記憶
+  ---
+  duration_ms: 1.9175
+  type: 'test'
+  ...
+# Subtest: 普通離區不重置怪物，回復時按進度重建啟動狀態
+ok 22 - 普通離區不重置怪物，回復時按進度重建啟動狀態
+  ---
+  duration_ms: 2.7427
+  type: 'test'
+  ...
+# Subtest: 平台回復位置安全，重新進區仍可被發現與接觸
+ok 23 - 平台回復位置安全，重新進區仍可被發現與接觸
+  ---
+  duration_ms: 216.4198
+  type: 'test'
+  ...
+# Subtest: 裝配線密碼開啟玩具列車貨運區
+ok 24 - 裝配線密碼開啟玩具列車貨運區
+  ---
+  duration_ms: 3.7662
+  type: 'test'
+  ...
+# Subtest: 啟動列車後登車完成逃脫，沒啟動前不能通關
+not ok 25 - 啟動列車後登車完成逃脫，沒啟動前不能通關
+  ---
+  duration_ms: 5.2237
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game-story-review\\tests\\factory-ending.test.js:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game-story-review/tests/factory-ending.test.js:29:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: 玩具工廠地圖放在辦公室前段且可從出生點取得
+ok 26 - 玩具工廠地圖放在辦公室前段且可從出生點取得
+  ---
+  duration_ms: 2.3847
+  type: 'test'
+  ...
+# Subtest: 員工卡在早期可取得，且單靠手電筒不能打開控制室
+ok 27 - 員工卡在早期可取得，且單靠手電筒不能打開控制室
+  ---
+  duration_ms: 0.5112
+  type: 'test'
+  ...
+# Subtest: 第一章區域名稱已採玩具工廠設定
+ok 28 - 第一章區域名稱已採玩具工廠設定
+  ---
+  duration_ms: 0.4945
+  type: 'test'
+  ...
+# Subtest: F 與 RB／R1 產生相同開關動作
+ok 29 - F 與 RB／R1 產生相同開關動作
+  ---
+  duration_ms: 63.3767
+  type: 'test'
+  ...
+# Subtest: R 與 LB／L1 產生相同模式動作
+ok 30 - R 與 LB／L1 產生相同模式動作
+  ---
+  duration_ms: 1.0778
+  type: 'test'
+  ...
+# Subtest: 長按不重複，放開再按才再次觸發
+ok 31 - 長按不重複，放開再按才再次觸發
+  ---
+  duration_ms: 1.4203
+  type: 'test'
+  ...
+# Subtest: 鍵鼠與手把同時按同一動作只切換一次
+ok 32 - 鍵鼠與手把同時按同一動作只切換一次
+  ---
+  duration_ms: 28.7641
+  type: 'test'
+  ...
+# Subtest: 開始繼續暫停失焦時忽略裝備動作且不延後執行
+ok 33 - 開始繼續暫停失焦時忽略裝備動作且不延後執行
+  ---
+  duration_ms: 1.483
+  type: 'test'
+  ...
+# Subtest: 裝備提示沿用按鍵名稱表與既有裝置切換規則
+ok 34 - 裝備提示沿用按鍵名稱表與既有裝置切換規則
+  ---
+  duration_ms: 1.1248
+  type: 'test'
+  ...
+# Subtest: 手電筒初始滿電、關閉且為一般光
+ok 35 - 手電筒初始滿電、關閉且為一般光
+  ---
+  duration_ms: 36.4925
+  type: 'test'
+  ...
+# Subtest: 有電時開關可切換，關閉時不耗電
+ok 36 - 有電時開關可切換，關閉時不耗電
+  ---
+  duration_ms: 0.9748
+  type: 'test'
+  ...
+# Subtest: 兩種模式依經過秒數等速耗電，分幀結果一致
+ok 37 - 兩種模式依經過秒數等速耗電，分幀結果一致
+  ---
+  duration_ms: 1.2916
+  type: 'test'
+  ...
+# Subtest: 耗盡時電量不小於零並自動關閉，零電量不能開啟
+ok 38 - 耗盡時電量不小於零並自動關閉，零電量不能開啟
+  ---
+  duration_ms: 0.5902
+  type: 'test'
+  ...
+# Subtest: 模式可往返切換，關閉時切換不會開燈
+ok 39 - 模式可往返切換，關閉時切換不會開燈
+  ---
+  duration_ms: 0.6199
+  type: 'test'
+  ...
+# Subtest: 暫停失焦時狀態不變，開始繼續當幀不耗電
+ok 40 - 暫停失焦時狀態不變，開始繼續當幀不耗電
+  ---
+  duration_ms: 0.9076
+  type: 'test'
+  ...
+# Subtest: 無效時間不耗電或增加電量
+ok 41 - 無效時間不耗電或增加電量
+  ---
+  duration_ms: 0.7349
+  type: 'test'
+  ...
+# Subtest: 電池補充 25 且不超過 100，補電不自動開燈
+ok 42 - 電池補充 25 且不超過 100，補電不自動開燈
+  ---
+  duration_ms: 13.7631
+  type: 'test'
+  ...
+# Subtest: 沿用 collectItem 撿到電池才補電，同一電池只生效一次
+ok 43 - 沿用 collectItem 撿到電池才補電，同一電池只生效一次
+  ---
+  duration_ms: 29.8525
+  type: 'test'
+  ...
+# Subtest: 普通物品不補電，超距或隔牆撿取不補電
+ok 44 - 普通物品不補電，超距或隔牆撿取不補電
+  ---
+  duration_ms: 1.2524
+  type: 'test'
+  ...
+# Subtest: 兩顆示範電池保留唯一 ID，所有物品三邊至少 0.25 公尺
+ok 45 - 兩顆示範電池保留唯一 ID，所有物品三邊至少 0.25 公尺
+  ---
+  duration_ms: 4.1477
+  type: 'test'
+  ...
+# Subtest: 真實 Chrome PS4 廠商欄位與 Firefox PS 格式可辨識
+ok 46 - 真實 Chrome PS4 廠商欄位與 Firefox PS 格式可辨識
+  ---
+  duration_ms: 11.4266
+  type: 'test'
+  ...
+# Subtest: Chrome 與 Firefox Xbox 廠商格式可辨識
+ok 47 - Chrome 與 Firefox Xbox 廠商格式可辨識
+  ---
+  duration_ms: 0.7202
+  type: 'test'
+  ...
+# Subtest: 產品編號或名稱裡的廠商碼片段不會誤判
+ok 48 - 產品編號或名稱裡的廠商碼片段不會誤判
+  ---
+  duration_ms: 0.8488
+  type: 'test'
+  ...
+# Subtest: 無廠商欄位時用名稱辨識，大小寫不影響
+ok 49 - 無廠商欄位時用名稱辨識，大小寫不影響
+  ---
+  duration_ms: 0.71
+  type: 'test'
+  ...
+# Subtest: 按鍵名稱表完整覆蓋 BRIEF 操作，unknown 使用 Xbox 名稱
+ok 50 - 按鍵名稱表完整覆蓋 BRIEF 操作，unknown 使用 Xbox 名稱
+  ---
+  duration_ms: 0.7456
+  type: 'test'
+  ...
+# Subtest: 徑向死區內與邊界的雜訊都歸零
+ok 51 - 徑向死區內與邊界的雜訊都歸零
+  ---
+  duration_ms: 3.074
+  type: 'test'
+  ...
+# Subtest: 搖桿重新映射與 1.5 次方曲線保留方向、類比與最大值
+ok 52 - 搖桿重新映射與 1.5 次方曲線保留方向、類比與最大值
+  ---
+  duration_ms: 0.8303
+  type: 'test'
+  ...
+# Subtest: standard 軸轉為 move 與 look，右搖桿和滑鼠方向一致
+ok 53 - standard 軸轉為 move 與 look，右搖桿和滑鼠方向一致
+  ---
+  duration_ms: 1.4961
+  type: 'test'
+  ...
+# Subtest: 死區雜訊不算使用手把，按鍵或有效搖桿才算
+ok 54 - 死區雜訊不算使用手把，按鍵或有效搖桿才算
+  ---
+  duration_ms: 0.9371
+  type: 'test'
+  ...
+# Subtest: 暫停與確認鍵只在按下邊緣觸發，長按不重複切換
+ok 55 - 暫停與確認鍵只在按下邊緣觸發，長按不重複切換
+  ---
+  duration_ms: 1.0491
+  type: 'test'
+  ...
+# Subtest: 非 standard、斷線、缺值的手把不產生動作
+ok 56 - 非 standard、斷線、缺值的手把不產生動作
+  ---
+  duration_ms: 0.7244
+  type: 'test'
+  ...
+# Subtest: 鍵盤與左搖桿同時推時移動速度不超過單一來源
+ok 57 - 鍵盤與左搖桿同時推時移動速度不超過單一來源
+  ---
+  duration_ms: 1.0493
+  type: 'test'
+  ...
+# Subtest: 滑鼠位移與搖桿角速度分開保留並交給既有移動 logic
+ok 58 - 滑鼠位移與搖桿角速度分開保留並交給既有移動 logic
+  ---
+  duration_ms: 2.0077
+  type: 'test'
+  ...
+# Subtest: 提示裝置切換後 0.5 秒內不會再切回
+ok 59 - 提示裝置切換後 0.5 秒內不會再切回
+  ---
+  duration_ms: 0.6227
+  type: 'test'
+  ...
+# Subtest: 沒有有意義輸入時不切換提示，持續同一裝置不重設停留時間
+ok 60 - 沒有有意義輸入時不切換提示，持續同一裝置不重設停留時間
+  ---
+  duration_ms: 0.4209
+  type: 'test'
+  ...
+# Subtest: 只在拔除最後使用的手把時要求暫停
+ok 61 - 只在拔除最後使用的手把時要求暫停
+  ---
+  duration_ms: 0.4007
+  type: 'test'
+  ...
+# Subtest: 手把確認開始、Start 暫停與繼續，不需要 Pointer Lock 資料
+ok 62 - 手把確認開始、Start 暫停與繼續，不需要 Pointer Lock 資料
+  ---
+  duration_ms: 0.8134
+  type: 'test'
+  ...
+# Subtest: 開始前失焦保留開始狀態，遊戲中失焦才暫停，失焦不能由手把開始
+ok 63 - 開始前失焦保留開始狀態，遊戲中失焦才暫停，失焦不能由手把開始
+  ---
+  duration_ms: 1.0529
+  type: 'test'
+  ...
+# Subtest: 鍵鼠Xbox與PS進出等效，長按及切換當幀不洩漏操作
+ok 64 - 鍵鼠Xbox與PS進出等效，長按及切換當幀不洩漏操作
+  ---
+  duration_ms: 45.0009
+  type: 'test'
+  ...
+# Subtest: 躲藏暫停失焦拔除及密碼鎖流程互不干擾
+ok 65 - 躲藏暫停失焦拔除及密碼鎖流程互不干擾
+  ---
+  duration_ms: 2.4284
+  type: 'test'
+  ...
+# Subtest: 置物櫃沿用中央射線兩公尺遮擋與最近目標
+ok 66 - 置物櫃沿用中央射線兩公尺遮擋與最近目標
+  ---
+  duration_ms: 26.5112
+  type: 'test'
+  ...
+# Subtest: 只有櫃門正面可以進入，進出不穿牆或重複觸發
+ok 67 - 只有櫃門正面可以進入，進出不穿牆或重複觸發
+  ---
+  duration_ms: 12.3463
+  type: 'test'
+  ...
+# Subtest: 躲藏時禁止移動互動及裝備動作，視角限於窺視範圍
+ok 68 - 躲藏時禁止移動互動及裝備動作，視角限於窺視範圍
+  ---
+  duration_ms: 17.1484
+  type: 'test'
+  ...
+# Subtest: 出口被占用時留在櫃內，安全後可以離開
+ok 69 - 出口被占用時留在櫃內，安全後可以離開
+  ---
+  duration_ms: 3.0247
+  type: 'test'
+  ...
+# Subtest: 有電且開啟紫外光時，光錐內的正面文字可見
+ok 70 - 有電且開啟紫外光時，光錐內的正面文字可見
+  ---
+  duration_ms: 33.6783
+  type: 'test'
+  ...
+# Subtest: 一般光、關閉或零電量時隱藏字不可見
+ok 71 - 一般光、關閉或零電量時隱藏字不可見
+  ---
+  duration_ms: 0.6474
+  type: 'test'
+  ...
+# Subtest: 距離與角度邊界可見，超出邊界或位於背後不可見
+ok 72 - 距離與角度邊界可見，超出邊界或位於背後不可見
+  ---
+  duration_ms: 0.6906
+  type: 'test'
+  ...
+# Subtest: 文字背面不可見，轉頭與抬低頭會改變照射結果
+ok 73 - 文字背面不可見，轉頭與抬低頭會改變照射結果
+  ---
+  duration_ms: 0.8317
+  type: 'test'
+  ...
+# Subtest: 牆壁隔板桌子地板天花板均可遮擋文字
+ok 74 - 牆壁隔板桌子地板天花板均可遮擋文字
+  ---
+  duration_ms: 1.5018
+  type: 'test'
+  ...
+# Subtest: 同距離障礙物阻擋，文字後方障礙物不阻擋
+ok 75 - 同距離障礙物阻擋，文字後方障礙物不阻擋
+  ---
+  duration_ms: 0.4918
+  type: 'test'
+  ...
+# Subtest: 附著牆不誤擋外移文字，從牆另一側仍不可見
+ok 76 - 附著牆不誤擋外移文字，從牆另一側仍不可見
+  ---
+  duration_ms: 2.5846
+  type: 'test'
+  ...
+# Subtest: E 與手把按鈕 0 產生相同 interactPressed
+ok 77 - E 與手把按鈕 0 產生相同 interactPressed
+  ---
+  duration_ms: 30.2033
+  type: 'test'
+  ...
+# Subtest: 長按不重複互動，放開再按才再次觸發
+ok 78 - 長按不重複互動，放開再按才再次觸發
+  ---
+  duration_ms: 3.2685
+  type: 'test'
+  ...
+# Subtest: 兩種來源同時互動只執行一次
+ok 79 - 兩種來源同時互動只執行一次
+  ---
+  duration_ms: 72.086
+  type: 'test'
+  ...
+# Subtest: 開始或繼續當幀不觸發撿取，暫停輸入不延後執行
+ok 80 - 開始或繼續當幀不觸發撿取，暫停輸入不延後執行
+  ---
+  duration_ms: 0.9477
+  type: 'test'
+  ...
+# Subtest: 中央射線命中 2 公尺內物品時可選取
+ok 81 - 中央射線命中 2 公尺內物品時可選取
+  ---
+  duration_ms: 39.6213
+  type: 'test'
+  ...
+# Subtest: 恰好 2 公尺可選取，超過 2 公尺不可選取
+ok 82 - 恰好 2 公尺可選取，超過 2 公尺不可選取
+  ---
+  duration_ms: 0.7373
+  type: 'test'
+  ...
+# Subtest: 背後或未被中央射線命中的物品不可選取
+ok 83 - 背後或未被中央射線命中的物品不可選取
+  ---
+  duration_ms: 0.6801
+  type: 'test'
+  ...
+# Subtest: 水平轉向與抬頭低頭的視線方向符合相機
+ok 84 - 水平轉向與抬頭低頭的視線方向符合相機
+  ---
+  duration_ms: 0.6812
+  type: 'test'
+  ...
+# Subtest: 多個物品重疊時只選最近的未撿物品
+ok 85 - 多個物品重疊時只選最近的未撿物品
+  ---
+  duration_ms: 0.6039
+  type: 'test'
+  ...
+# Subtest: 牆壁或隔板位於物品前方時不可選取
+ok 86 - 牆壁或隔板位於物品前方時不可選取
+  ---
+  duration_ms: 0.6887
+  type: 'test'
+  ...
+# Subtest: 障礙物在物品後方不阻擋，與物品同距離時阻擋
+ok 87 - 障礙物在物品後方不阻擋，與物品同距離時阻擋
+  ---
+  duration_ms: 0.6036
+  type: 'test'
+  ...
+# Subtest: 平行射線、擦邊與薄牆的遮擋判斷正確
+ok 88 - 平行射線、擦邊與薄牆的遮擋判斷正確
+  ---
+  duration_ms: 0.6582
+  type: 'test'
+  ...
+# Subtest: 桌子遮擋生效，但視線高於桌面可選取桌上物品
+ok 89 - 桌子遮擋生效，但視線高於桌面可選取桌上物品
+  ---
+  duration_ms: 0.6002
+  type: 'test'
+  ...
+# Subtest: 互動成功加入背包，重複互動不重複加入且不改寫原狀態
+ok 90 - 互動成功加入背包，重複互動不重複加入且不改寫原狀態
+  ---
+  duration_ms: 2.0447
+  type: 'test'
+  ...
+# Subtest: 超距、遮擋、無目標或暫停時互動不改變背包
+ok 91 - 超距、遮擋、無目標或暫停時互動不改變背包
+  ---
+  duration_ms: 0.7549
+  type: 'test'
+  ...
+# Subtest: 示範資料具唯一 ID，隔板後物品可被擋住且繞行後可取得
+ok 92 - 示範資料具唯一 ID，隔板後物品可被擋住且繞行後可取得
+  ---
+  duration_ms: 2.8386
+  type: 'test'
+  ...
+# Subtest: 每個物品的判定方塊三邊都至少 0.25 公尺
+ok 93 - 每個物品的判定方塊三邊都至少 0.25 公尺
+  ---
+  duration_ms: 0.8946
+  type: 'test'
+  ...
+# Subtest: 鍵鼠與 Xbox／PS 產生相同密碼鎖命令
+ok 94 - 鍵鼠與 Xbox／PS 產生相同密碼鎖命令
+  ---
+  duration_ms: 44.0116
+  type: 'test'
+  ...
+# Subtest: 長按不重複，開關介面當幀不洩漏操作
+ok 95 - 長按不重複，開關介面當幀不洩漏操作
+  ---
+  duration_ms: 6.7865
+  type: 'test'
+  ...
+# Subtest: 密碼鎖開啟時移動轉頭互動及耗電停止
+ok 96 - 密碼鎖開啟時移動轉頭互動及耗電停止
+  ---
+  duration_ms: 1.6773
+  type: 'test'
+  ...
+# Subtest: 返回後正常探索，取消不誤觸暫停或場景互動
+ok 97 - 返回後正常探索，取消不誤觸暫停或場景互動
+  ---
+  duration_ms: 2.9607
+  type: 'test'
+  ...
+# Subtest: 失焦拔除與 Start／Options 暫停不提交密碼
+ok 98 - 失焦拔除與 Start／Options 暫停不提交密碼
+  ---
+  duration_ms: 1.77
+  type: 'test'
+  ...
+# Subtest: 數字最多四位，刪除與返回符合規則
+ok 99 - 數字最多四位，刪除與返回符合規則
+  ---
+  duration_ms: 3.5112
+  type: 'test'
+  ...
+# Subtest: 十字鍵按指定方向移動選取且不越界
+ok 100 - 十字鍵按指定方向移動選取且不越界
+  ---
+  duration_ms: 0.8846
+  type: 'test'
+  ...
+# Subtest: 近距光強補償連續、有上限且遠距不變
+ok 101 - 近距光強補償連續、有上限且遠距不變
+  ---
+  duration_ms: 4.5589
+  type: 'test'
+  ...
+# Subtest: 開場未持有手電筒，開關及模式輸入不生效
+ok 102 - 開場未持有手電筒，開關及模式輸入不生效
+  ---
+  duration_ms: 49.2219
+  type: 'test'
+  ...
+# Subtest: 未取得員工卡時辦公室門阻擋玩家
+ok 103 - 未取得員工卡時辦公室門阻擋玩家
+  ---
+  duration_ms: 10.6537
+  type: 'test'
+  ...
+# Subtest: 員工卡解鎖控制室；手電筒仍可正常取得與使用
+ok 104 - 員工卡解鎖控制室；手電筒仍可正常取得與使用
+  ---
+  duration_ms: 4.4198
+  type: 'test'
+  ...
+# Subtest: 邊界檢查會攔截 three 的各種匯入寫法
+ok 105 - 邊界檢查會攔截 three 的各種匯入寫法
+  ---
+  duration_ms: 3.0818
+  type: 'test'
+  ...
+# Subtest: 遞迴掃描 src/logic 的所有 .js，禁止匯入 three
+ok 106 - 遞迴掃描 src/logic 的所有 .js，禁止匯入 three
+  ---
+  duration_ms: 504.0625
+  type: 'test'
+  ...
+# Subtest: logic 入口可以在沒有瀏覽器環境的 Node 中單獨載入
+ok 107 - logic 入口可以在沒有瀏覽器環境的 Node 中單獨載入
+  ---
+  duration_ms: 57.7849
+  type: 'test'
+  ...
+# Subtest: 有效視線立即追逐，追逐會繞過機台
+ok 108 - 有效視線立即追逐，追逐會繞過機台
+  ---
+  duration_ms: 23.5785
+  type: 'test'
+  ...
+# Subtest: 失去視線後不更新目標，逾時搜尋再返回巡邏
+ok 109 - 失去視線後不更新目標，逾時搜尋再返回巡邏
+  ---
+  duration_ms: 20.3438
+  type: 'test'
+  ...
+# Subtest: 搜尋與返回途中重新看見玩家會再次追逐
+ok 110 - 搜尋與返回途中重新看見玩家會再次追逐
+  ---
+  duration_ms: 1.607
+  type: 'test'
+  ...
+# Subtest: 追逐最多每 0.25 秒重算路徑，仍逐幀更新可見位置
+ok 111 - 追逐最多每 0.25 秒重算路徑，仍逐幀更新可見位置
+  ---
+  duration_ms: 6.9177
+  type: 'test'
+  ...
+# Subtest: 接觸只發一次事件且不重疊，離開後可再次接觸
+ok 112 - 接觸只發一次事件且不重疊，離開後可再次接觸
+  ---
+  duration_ms: 42.5346
+  type: 'test'
+  ...
+# Subtest: 玩家不能穿過怪物身體，接觸觸發被抓並保留進度
+ok 113 - 玩家不能穿過怪物身體，接觸觸發被抓並保留進度
+  ---
+  duration_ms: 7.9355
+  type: 'test'
+  ...
+# Subtest: 接觸 0.8 m 含邊界，未到 1.0 m 不重置
+ok 114 - 接觸 0.8 m 含邊界，未到 1.0 m 不重置
+  ---
+  duration_ms: 1.6805
+  type: 'test'
+  ...
+# Subtest: 離開活動區及暫停介面不造成透視追逐或計時跳進
+ok 115 - 離開活動區及暫停介面不造成透視追逐或計時跳進
+  ---
+  duration_ms: 38.8176
+  type: 'test'
+  ...
+# Subtest: 無路徑先搜尋再返回，全程不穿牆不瞬移
+ok 116 - 無路徑先搜尋再返回，全程不穿牆不瞬移
+  ---
+  duration_ms: 4.9903
+  type: 'test'
+  ...
+# Subtest: 靠牆可見目標仍走向區內安全位置，不越過邊界
+ok 117 - 靠牆可見目標仍走向區內安全位置，不越過邊界
+  ---
+  duration_ms: 4.906
+  type: 'test'
+  ...
+# Subtest: 搜尋轉向有上限，返回使用 1.2 m/s 且結果可重播
+ok 118 - 搜尋轉向有上限，返回使用 1.2 m/s 且結果可重播
+  ---
+  duration_ms: 14.392
+  type: 'test'
+  ...
+# Subtest: 被目擊進櫃仍立即失去目標，搜尋後回到巡邏
+ok 119 - 被目擊進櫃仍立即失去目標，搜尋後回到巡邏
+  ---
+  duration_ms: 47.2492
+  type: 'test'
+  ...
+# Subtest: 正式資料從出生點完成供電進區發現躲藏等待與出櫃
+ok 120 - 正式資料從出生點完成供電進區發現躲藏等待與出櫃
+  ---
+  duration_ms: 88.6063
+  type: 'test'
+  ...
+# Subtest: 首次進入生產線才啟動怪物，離區不重置且活動限區內
+ok 121 - 首次進入生產線才啟動怪物，離區不重置且活動限區內
+  ---
+  duration_ms: 30.1521
+  type: 'test'
+  ...
+# Subtest: 巡邏按 B C D A B 固定順序完成兩圈並每點停一秒
+ok 122 - 巡邏按 B C D A B 固定順序完成兩圈並每點停一秒
+  ---
+  duration_ms: 165.1647
+  type: 'test'
+  ...
+# Subtest: 暫停失焦開始繼續及密碼鎖開關提交當幀，怪物與計時全停
+ok 123 - 暫停失焦開始繼續及密碼鎖開關提交當幀，怪物與計時全停
+  ---
+  duration_ms: 6.8815
+  type: 'test'
+  ...
+# Subtest: 巡邏不讀真實時間或亂數，無效 dt 不推進且長幀上限 0.1 秒
+ok 124 - 巡邏不讀真實時間或亂數，無效 dt 不推進且長幀上限 0.1 秒
+  ---
+  duration_ms: 69.2605
+  type: 'test'
+  ...
+# Subtest: 巡邏必要路徑受阻時停止，不穿牆或瞬移
+ok 125 - 巡邏必要路徑受阻時停止，不穿牆或瞬移
+  ---
+  duration_ms: 8.6702
+  type: 'test'
+  ...
+# Subtest: 距離與視角邊界可發現，超界及背後不能新發現
+ok 126 - 距離與視角邊界可發現，超界及背後不能新發現
+  ---
+  duration_ms: 7.8719
+  type: 'test'
+  ...
+# Subtest: 牆機台櫃體與關門遮擋視線，後方障礙物不誤擋
+ok 127 - 牆機台櫃體與關門遮擋視線，後方障礙物不誤擋
+  ---
+  duration_ms: 2.4504
+  type: 'test'
+  ...
+# Subtest: 手電筒開關與模式不改變怪物發現規則
+ok 128 - 手電筒開關與模式不改變怪物發現規則
+  ---
+  duration_ms: 0.8931
+  type: 'test'
+  ...
+# Subtest: 每次有效視覺判斷最多一條射線，未啟動躲藏或離區時不射線
+ok 129 - 每次有效視覺判斷最多一條射線，未啟動躲藏或離區時不射線
+  ---
+  duration_ms: 0.6002
+  type: 'test'
+  ...
+# Subtest: 怪物在生產線內看不到電力室內的玩家
+ok 130 - 怪物在生產線內看不到電力室內的玩家
+  ---
+  duration_ms: 2.3169
+  type: 'test'
+  ...
+# Subtest: 使用移動動作時會依 dt 與速度更新位置
+ok 131 - 使用移動動作時會依 dt 與速度更新位置
+  ---
+  duration_ms: 19.6739
+  type: 'test'
+  ...
+# Subtest: 斜向移動不會比單方向移動更快，類比半推仍保留半速
+ok 132 - 斜向移動不會比單方向移動更快，類比半推仍保留半速
+  ---
+  duration_ms: 0.7088
+  type: 'test'
+  ...
+# Subtest: 移動方向跟隨水平視角，抬頭不影響走路速度
+ok 133 - 移動方向跟隨水平視角，抬頭不影響走路速度
+  ---
+  duration_ms: 0.5427
+  type: 'test'
+  ...
+# Subtest: look 角速度會依 dt 更新視角
+ok 134 - look 角速度會依 dt 更新視角
+  ---
+  duration_ms: 0.4714
+  type: 'test'
+  ...
+# Subtest: 視角仰俯限制在正負 85 度，不會翻轉
+ok 135 - 視角仰俯限制在正負 85 度，不會翻轉
+  ---
+  duration_ms: 0.5543
+  type: 'test'
+  ...
+# Subtest: 玩家不會穿過房間牆壁，包含長時間持續前進
+ok 136 - 玩家不會穿過房間牆壁，包含長時間持續前進
+  ---
+  duration_ms: 4.7131
+  type: 'test'
+  ...
+# Subtest: 玩家不會穿過桌子或薄方塊
+ok 137 - 玩家不會穿過桌子或薄方塊
+  ---
+  duration_ms: 0.882
+  type: 'test'
+  ...
+# Subtest: 碰撞後玩家仍可沿障礙物邊緣移動
+ok 138 - 碰撞後玩家仍可沿障礙物邊緣移動
+  ---
+  duration_ms: 0.701
+  type: 'test'
+  ...
+# Subtest: 圓形碰撞不會把家具角落當成方形玩家
+ok 139 - 圓形碰撞不會把家具角落當成方形玩家
+  ---
+  duration_ms: 0.7285
+  type: 'test'
+  ...
+# Subtest: 暫停時移動與轉頭都不生效，pausePressed 當幀即停止
+ok 140 - 暫停時移動與轉頭都不生效，pausePressed 當幀即停止
+  ---
+  duration_ms: 4.4648
+  type: 'test'
+  ...
+# Subtest: dt 超過上限時只照上限移動，負 dt 不倒退
+ok 141 - dt 超過上限時只照上限移動，負 dt 不倒退
+  ---
+  duration_ms: 0.7881
+  type: 'test'
+  ...
+# Subtest: 滑鼠角度位移不受 dt 影響且不截斷快速甩動
+ok 142 - 滑鼠角度位移不受 dt 影響且不截斷快速甩動
+  ---
+  duration_ms: 0.9905
+  type: 'test'
+  ...
+# Subtest: 搖桿轉頭量照 dt 與轉頭速度換算，並與滑鼠位移相加
+ok 143 - 搖桿轉頭量照 dt 與轉頭速度換算，並與滑鼠位移相加
+  ---
+  duration_ms: 0.9918
+  type: 'test'
+  ...
+# Subtest: level 清單裡的每個牆壁與家具方塊都能擋住玩家
+ok 144 - level 清單裡的每個牆壁與家具方塊都能擋住玩家
+  ---
+  duration_ms: 1.8561
+  type: 'test'
+  ...
+# Subtest: 移動模組與關卡可在沒有瀏覽器的 Node 單獨載入，常數符合規格
+ok 145 - 移動模組與關卡可在沒有瀏覽器的 Node 單獨載入，常數符合規格
+  ---
+  duration_ms: 2.2704
+  type: 'test'
+  ...
+# Subtest: 路點與連線保留怪物半徑及安全間距
+ok 146 - 路點與連線保留怪物半徑及安全間距
+  ---
+  duration_ms: 7.7126
+  type: 'test'
+  ...
+# Subtest: 圖路徑能繞過機台，無路徑時不穿牆
+ok 147 - 圖路徑能繞過機台，無路徑時不穿牆
+  ---
+  duration_ms: 4.8823
+  type: 'test'
+  ...
+# Subtest: Dijkstra 選擇最短加權路線且相同輸入結果固定
+ok 148 - Dijkstra 選擇最短加權路線且相同輸入結果固定
+  ---
+  duration_ms: 1.5271
+  type: 'test'
+  ...
+# Subtest: 路徑跟隨限速轉向，無路徑與動態阻擋都停止
+ok 149 - 路徑跟隨限速轉向，無路徑與動態阻擋都停止
+  ---
+  duration_ms: 0.9719
+  type: 'test'
+  ...
+# Subtest: 圖只保留安全邊，重建反映門狀態且不污染先前圖
+ok 150 - 圖只保留安全邊，重建反映門狀態且不污染先前圖
+  ---
+  duration_ms: 0.6417
+  type: 'test'
+  ...
+# Subtest: 設備互動沿用 2 公尺中央射線及遮擋規則
+ok 151 - 設備互動沿用 2 公尺中央射線及遮擋規則
+  ---
+  duration_ms: 3.1745
+  type: 'test'
+  ...
+# Subtest: 物品與設備只選最近可命中的目標
+ok 152 - 物品與設備只選最近可命中的目標
+  ---
+  duration_ms: 0.8635
+  type: 'test'
+  ...
+# Subtest: 缺少保險絲不能啟動電箱
+ok 153 - 缺少保險絲不能啟動電箱
+  ---
+  duration_ms: 4.2127
+  type: 'test'
+  ...
+# Subtest: 取得保險絲後可安裝，不能重複安裝或重新撿取
+ok 154 - 取得保險絲後可安裝，不能重複安裝或重新撿取
+  ---
+  duration_ms: 5.0591
+  type: 'test'
+  ...
+# Subtest: 安裝後只亮控制指示燈，尚未恢復主電力
+ok 155 - 安裝後只亮控制指示燈，尚未恢復主電力
+  ---
+  duration_ms: 1.3037
+  type: 'test'
+  ...
+# Subtest: 未安裝保險絲時密碼鎖不可輸入或提交
+ok 156 - 未安裝保險絲時密碼鎖不可輸入或提交
+  ---
+  duration_ms: 2.1467
+  type: 'test'
+  ...
+# Subtest: 正式隱藏碼只在紫外光有效照射時可見
+ok 157 - 正式隱藏碼只在紫外光有效照射時可見
+  ---
+  duration_ms: 21.9822
+  type: 'test'
+  ...
+# Subtest: 隱藏碼顯示與驗證引用同一份密碼資料
+ok 158 - 隱藏碼顯示與驗證引用同一份密碼資料
+  ---
+  duration_ms: 3.4823
+  type: 'test'
+  ...
+# Subtest: 第三區 ID 與導航引用唯一且有效
+ok 159 - 第三區 ID 與導航引用唯一且有效
+  ---
+  duration_ms: 28.866
+  type: 'test'
+  ...
+# Subtest: 未恢復供電不能進生產線，恢復後可經平台進入
+ok 160 - 未恢復供電不能進生產線，恢復後可經平台進入
+  ---
+  duration_ms: 16.5956
+  type: 'test'
+  ...
+# Subtest: 新區牆機台與櫃體阻擋移動，必要通道可通行
+ok 161 - 新區牆機台與櫃體阻擋移動，必要通道可通行
+  ---
+  duration_ms: 11.8672
+  type: 'test'
+  ...
+# Subtest: 下一區門保持關閉且同時阻擋移動與視線
+ok 162 - 下一區門保持關閉且同時阻擋移動與視線
+  ---
+  duration_ms: 1.7999
+  type: 'test'
+  ...
+# Subtest: 玩具工廠前區物品與既有密碼有效；櫃子可躲藏，照明沿用兩盞固定池
+ok 163 - 玩具工廠前區物品與既有密碼有效；櫃子可躲藏，照明沿用兩盞固定池
+  ---
+  duration_ms: 1.8445
+  type: 'test'
+  ...
+# Subtest: 櫃內密碼鎖與被抓中存檔只回復固定安全點
+ok 164 - 櫃內密碼鎖與被抓中存檔只回復固定安全點
+  ---
+  duration_ms: 143.9164
+  type: 'test'
+  ...
+# Subtest: 繼續後物品門燈光與怪物同步，重新開始恢復物品模型
+ok 165 - 繼續後物品門燈光與怪物同步，重新開始恢復物品模型
+  ---
+  duration_ms: 14.5671
+  type: 'test'
+  ...
+# Subtest: 正式流程供電進區被抓關頁繼續後保留進度且仍可再被抓
+ok 166 - 正式流程供電進區被抓關頁繼續後保留進度且仍可再被抓
+  ---
+  duration_ms: 98.6914
+  type: 'test'
+  ...
+# Subtest: 儲存讀寫失敗不崩潰不刪舊檔且回報未儲存
+ok 167 - 儲存讀寫失敗不崩潰不刪舊檔且回報未儲存
+  ---
+  duration_ms: 4.5252
+  type: 'test'
+  ...
+# Subtest: 取得解題與存檔點立即寫入，耗電節流且離頁補寫
+ok 168 - 取得解題與存檔點立即寫入，耗電節流且離頁補寫
+  ---
+  duration_ms: 2.6304
+  type: 'test'
+  ...
+# Subtest: 鍵鼠Xbox與PS可繼續重新開始及取消，長按不重複確認
+ok 169 - 鍵鼠Xbox與PS可繼續重新開始及取消，長按不重複確認
+  ---
+  duration_ms: 10.311
+  type: 'test'
+  ...
+# Subtest: 正式關卡所有 ID 唯一且引用有效
+ok 170 - 正式關卡所有 ID 唯一且引用有效
+  ---
+  duration_ms: 9.0699
+  type: 'test'
+  ...
+# Subtest: 出生點與必要通道可通行，物品可從走道接近
+ok 171 - 出生點與必要通道可通行，物品可從走道接近
+  ---
+  duration_ms: 21.66
+  type: 'test'
+  ...
+# Subtest: 所有正式物品三邊至少 0.25 公尺
+ok 172 - 所有正式物品三邊至少 0.25 公尺
+  ---
+  duration_ms: 0.9217
+  type: 'test'
+  ...
+# Subtest: 關門同時遮擋撿取與紫外光，開門後三者同步解除
+ok 173 - 關門同時遮擋撿取與紫外光，開門後三者同步解除
+  ---
+  duration_ms: 4.3367
+  type: 'test'
+  ...
+# Subtest: 正式靜態牆及家具仍會擋住玩家
+ok 174 - 正式靜態牆及家具仍會擋住玩家
+  ---
+  duration_ms: 7.8364
+  type: 'test'
+  ...
+1..174
+# tests 174
+# suites 0
+# pass 173
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1560.7587

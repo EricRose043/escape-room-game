@@ -33,7 +33,7 @@ test('取得解題與存檔點立即寫入，耗電節流且離頁補寫',()=>{
   let s=logic.createChapter();assert.equal(store.restart(s),true);
   const writes=()=>storage.calls.filter(c=>c[0]==='set').length;
   const step=(next,dt=0.1)=>{const before=writes();store.observe(s,next,dt);s=next;return writes()-before;};
-  assert.equal(step({...s,player:{...s.player,paused:false},inventory:{itemIds:['lobby.flashlight']}}),1);
+  assert.equal(step({...s,player:{...s.player,paused:false},inventory:{itemIds:['lobby.employee-card','lobby.flashlight']}}),1);
   assert.equal(step({...s,checkpointId:'power.checkpoint'}),1);
   assert.equal(step({...s,inventory:{itemIds:[...s.inventory.itemIds,'power.fuse']}}),1);
   assert.equal(step({...s,puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:false}}}),1);
@@ -56,3 +56,4 @@ test('取得解題與存檔點立即寫入，耗電節流且離頁補寫',()=>{
     assert.equal(writes(),before+1,'無進度變更不重寫');
   } finally {JSON.stringify=originalStringify;}
 });
+

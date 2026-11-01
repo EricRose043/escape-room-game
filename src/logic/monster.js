@@ -148,13 +148,13 @@ export function updateMonster(state,definition,area,player,dt,boxes,context={}) 
   next.visionRaycasts=visible.raycasts;
   if(visible.visible) {
     next.lastSeen={x:player.x,z:player.z};next.lostSightSeconds=0;
-    if(next.mode!=='chase') next={...next,mode:'chase',waitRemaining:0,searchElapsed:0};
+    if(next.mode!=='chase') next={...next,mode:'chase',waitRemaining:0,searchElapsed:0,investigate:false};
   } else if(next.mode==='chase') {
     next.lostSightSeconds+=time;
     if(context.hidden || !inMonsterArea(player,area) || next.lostSightSeconds>=definition.lostSightSeconds-EPS) next=enterSearch(next);
   }
   if(next.mode==='search') {
-    next.searchElapsed=Math.min(definition.searchSeconds,next.searchElapsed+time);
+    if(!next.investigate||(next.lastSeen&&distance(next,next.lastSeen)<=.6)||next.navigationBlocked) next.searchElapsed=Math.min(definition.searchSeconds,next.searchElapsed+time);
     if(next.searchElapsed>=definition.searchSeconds-EPS) next=enterReturn(next,definition,area);
   }
   const key=geometryKey(boxes),radius=definition.radius+definition.clearance;

@@ -1,0 +1,185 @@
+TAP version 13
+# Subtest: S3 獨立區域符合 D010 與全域 ID／引用，尚未加入正式地圖
+ok 1 - S3 獨立區域符合 D010 與全域 ID／引用，尚未加入正式地圖
+  ---
+  duration_ms: 2.7209
+  type: 'test'
+  ...
+# Subtest: 能走過轉彎與三道門，門只在身後關上且不夾住玩家
+not ok 2 - 能走過轉彎與三道門，門只在身後關上且不夾住玩家
+  ---
+  duration_ms: 2.8664
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-assignment-win-yrspga2r\\repo\\tests\\chase-corridor.test.js:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + []
+    - [
+    -   'corridor.door-1',
+    -   'corridor.door-2',
+    -   'corridor.door-3'
+    - ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'corridor.door-1'
+    1: 'corridor.door-2'
+    2: 'corridor.door-3'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-assignment-win-yrspga2r/repo/tests/chase-corridor.test.js:29:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: 同一份門狀態控制碰撞與遮擋，關門後無法走回
+ok 3 - 同一份門狀態控制碰撞與遮擋，關門後無法走回
+  ---
+  duration_ms: 1.7267
+  type: 'test'
+  ...
+# Subtest: 走廊門需要實際越過正向觸發線，未通過不關閉
+not ok 4 - 走廊門需要實際越過正向觸發線，未通過不關閉
+  ---
+  duration_ms: 2.661
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-assignment-win-yrspga2r\\repo\\tests\\corridor-doors.test.js:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + []
+    - [
+    -   'corridor.a'
+    - ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'corridor.a'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-assignment-win-yrspga2r/repo/tests/corridor-doors.test.js:9:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+# Subtest: 逆向與門寬外越線不關；首筆已在另一側不憑空關門
+not ok 5 - 逆向與門寬外越線不關；首筆已在另一側不憑空關門
+  ---
+  duration_ms: 0.4074
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-assignment-win-yrspga2r\\repo\\tests\\corridor-doors.test.js:11:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + [
+    +   'corridor.a'
+    + ]
+    - []
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0: 'corridor.a'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-assignment-win-yrspga2r/repo/tests/corridor-doors.test.js:12:112)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: 轉彎後負方向門可關閉，已關閉不因回頭重開或重複
+not ok 6 - 轉彎後負方向門可關閉，已關閉不因回頭重開或重複
+  ---
+  duration_ms: 0.2389
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-assignment-win-yrspga2r\\repo\\tests\\corridor-doors.test.js:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + []
+    - [
+    -   'corridor.b'
+    - ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'corridor.b'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-assignment-win-yrspga2r/repo/tests/corridor-doors.test.js:17:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: 用移動線段與門寬交點檢查，不能只憑終點位於門另一側
+not ok 7 - 用移動線段與門寬交點檢查，不能只憑終點位於門另一側
+  ---
+  duration_ms: 0.2358
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-assignment-win-yrspga2r\\repo\\tests\\corridor-doors.test.js:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + []
+    - [
+    -   'corridor.a'
+    - ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'corridor.a'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-assignment-win-yrspga2r/repo/tests/corridor-doors.test.js:24:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: 無效位置不改狀態也不產生誤觸發
+ok 8 - 無效位置不改狀態也不產生誤觸發
+  ---
+  duration_ms: 0.3944
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 3
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 134.5013

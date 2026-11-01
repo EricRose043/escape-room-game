@@ -15,6 +15,12 @@ export * from './monster-vision.js';
 export * from './hiding.js';
 export * from './checkpoints.js';
 export * from './capture.js';
+export * from './story-beats.js';
 export * from './chapter-save.js';
 export * from './save-storage.js';
 export * from './start-menu.js';
+export * from './settings.js';
+
+export * from './corridor-chase.js';
+export * from './ending.js';
+export * from './chapter-guidance.js';

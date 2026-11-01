@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: 心跳在近距為一、遠距為零，範圍內隨距離增加而下降
+ok 1 - 心跳在近距為一、遠距為零，範圍內隨距離增加而下降
+  ---
+  duration_ms: 1.0528
+  type: 'test'
+  ...
+# Subtest: 心跳無效或負距離不產生突然滿強度
+ok 2 - 心跳無效或負距離不產生突然滿強度
+  ---
+  duration_ms: 1.0703
+  type: 'test'
+  ...
+# Subtest: 走路越快腳步間隔越短，但不超過安全節奏上下限
+ok 3 - 走路越快腳步間隔越短，但不超過安全節奏上下限
+  ---
+  duration_ms: 0.2656
+  type: 'test'
+  ...
+# Subtest: 停下及無效速度以 Infinity 表示不安排腳步
+ok 4 - 停下及無效速度以 Infinity 表示不安排腳步
+  ---
+  duration_ms: 0.1785
+  type: 'test'
+  ...
+# Subtest: 相同輸入可重播，混音常數不會被呼叫改寫
+ok 5 - 相同輸入可重播，混音常數不會被呼叫改寫
+  ---
+  duration_ms: 1.0629
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 101.3997

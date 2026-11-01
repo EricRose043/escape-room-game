@@ -50,6 +50,7 @@ test('被目擊進櫃仍立即失去目標，搜尋後回到巡邏',()=>{
 
 test('正式資料從出生點完成供電進區發現躲藏等待與出櫃',()=>{
   let s=logic.createChapter();s={...s,player:logic.setPaused(s.player,false)};
+  s=take(walk(s,0,5.5),'lobby.factory-map');s=take(walk(s,0.5,4.95),'lobby.employee-card');
   s=take(walk(s,-1.5,5.5),'lobby.flashlight');s=logic.updateChapter(s,{flashlightPressed:true});
   s=take(walk(walk(walk(s,0,5.5),0,-4.6),-3,-4.6),'power.fuse');
   s=walk(walk(s,0,-4.6),3,-3);s=aim(s,4.5,1.4,-3);s=logic.updateChapter(s,{interactPressed:true});
@@ -77,3 +78,4 @@ test('正式資料從出生點完成供電進區發現躲藏等待與出櫃',()=
   s=logic.updateChapter(s,{interactPressed:true},0.1);assert.equal(s.ui.mode,'explore');assert.equal(s.flashlight.enabled,false);
   assert.equal(s.player.x,8.5);assert.equal(s.player.z,-1.2);assert.equal(s.puzzles['power.main'].restored,true);
 });
+

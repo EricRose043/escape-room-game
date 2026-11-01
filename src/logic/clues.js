@@ -4,4 +4,4 @@ import { WORLD, CLUES as clues } from './world.js';
 export function getPuzzle(puzzleId) {
   return WORLD.areas.flatMap(area => area.puzzles).find(puzzle => puzzle.id === puzzleId);
 }
-export const CLUES = clues.map(clue => ({...clue, text:`檢修碼：${getPuzzle(clue.puzzleId).code}`}));
+export const CLUES = clues.map(clue => ({...clue, text:clue.alwaysVisible?clue.text:`檢修碼：${getPuzzle(clue.puzzleId).code}`}));

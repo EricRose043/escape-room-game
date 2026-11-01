@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import * as logic from '../src/logic/index.js';
+import {createFactoryAudio} from '../src/game/audio.js';
 
 function memory() {
   const values=new Map();return {values,getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),
@@ -37,7 +38,7 @@ async function runtime(storage,seed) {
   const source=(await readFile(new URL('../src/game/main.js',import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?from '[^']+';\n/gm,'')+'\nreturn {state:()=>chapter,setChapter:value=>{chapter=value;}};';
   const values={...logic,createChapter:options=>seed?{...structuredClone(seed),jumpScare:options?.jumpScare===true}:logic.createChapter(options)};
-  const dependencies={THREE,document,window,navigator:{getGamepads:()=>pads},requestAnimationFrame:fn=>{frame=fn;},
+  const dependencies={THREE,document,window,navigator:{getGamepads:()=>pads},createFactoryAudio,requestAnimationFrame:fn=>{frame=fn;},
     createWorldView:()=>({sync(){}}),createMonsterView:()=>({sync(){}}),createKeypadView:()=>({sync(){}}),
     createStartMenuView,createCaptureView,compensatedIntensity:()=>35,...values};
   const app=new Function(...Object.keys(dependencies),source)(...Object.values(dependencies));
@@ -45,7 +46,7 @@ async function runtime(storage,seed) {
 }
 function progressed() {
   const s=logic.createChapter();return {...s,checkpointId:'production.checkpoint',
-    inventory:{itemIds:['lobby.flashlight','power.fuse','power.battery']},flashlight:{charge:41,mode:'uv',enabled:true},
+    inventory:{itemIds:['lobby.employee-card','lobby.flashlight','power.fuse','power.battery']},flashlight:{charge:41,mode:'uv',enabled:true},
     puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:true}}};
 }
 test('櫃內密碼鎖與被抓中存檔只回復固定安全點',async()=>{
@@ -67,9 +68,9 @@ test('繼續後物品門燈光與怪物同步，重新開始恢復物品模型',
   const storage=memory();storage.setItem('settings','keep');
   storage.setItem(logic.CHAPTER_SAVE_KEY,logic.serializeChapterSave(progressed()));
   const app=await runtime(storage);app.get('#start-continue').emit('click');app.frame(0);
-  const items=app.meshes.filter(m=>m.geometry.dimensions.length===3);assert.equal(items.length,4);
+  const items=app.meshes.filter(m=>m.geometry.dimensions.length===3);assert.equal(items.length,6);
   const count=app.meshes.length;
-  assert.equal(items.filter(m=>m.visible).length,1);
+  assert.equal(items.filter(m=>m.visible).length,2);
   assert.equal(logic.powerProgress(app.state(),'power.main'),1);
   assert.equal(app.state().monsters[logic.MONSTERS[0].id].mode,'patrol');
   assert.equal(logic.getGeometry(app.state()).collisionBoxes.some(b=>b.id==='power.production-door'),false);
@@ -78,7 +79,7 @@ test('繼續後物品門燈光與怪物同步，重新開始恢復物品模型',
   assert.equal(storage.getItem(logic.CHAPTER_SAVE_KEY),saved);
   app.get('#start-new').emit('click');app.get('#start-confirm').emit('click');app.frame(100);
   assert.equal(app.state().checkpointId,'lobby.checkpoint');assert.deepEqual(app.state().inventory.itemIds,[]);
-  assert.equal(items.filter(m=>m.visible).length,4);assert.equal(app.meshes.length,count);
+  assert.equal(items.filter(m=>m.visible).length,6);assert.equal(app.meshes.length,count);
   assert.equal(logic.getGeometry(app.state()).collisionBoxes.some(b=>b.id==='lobby.power-door'),true);
   assert.equal(storage.getItem('settings'),'keep');
   const bad=memory();bad.setItem(logic.CHAPTER_SAVE_KEY,'{broken');const protectedApp=await runtime(bad);
@@ -100,6 +101,7 @@ test('正式流程供電進區被抓關頁繼續後保留進度且仍可再被�
     assert.fail('路線超時');
   }
   function take(id) {const i=logic.ITEMS.find(i=>i.id===id);aim((i.minX+i.maxX)/2,(i.minY+i.maxY)/2,(i.minZ+i.maxZ)/2);step({interactPressed:true});assert.ok(s.inventory.itemIds.includes(id));}
+  walk(0,5.5);take('lobby.factory-map');walk(0.5,4.95);take('lobby.employee-card');
   walk(-1.5,5.5);take('lobby.flashlight');step({flashlightPressed:true});walk(0,5.5);walk(0,-4.6);walk(-3,-4.6);take('power.fuse');
   walk(0,-4.6);walk(3,-3);aim(4.25,1.4,-3);step({interactPressed:true});walk(3,-5.2);aim(4.5,1.4,-5.2);step({interactPressed:true});
   for(const value of logic.getPuzzle('power.main').code) step({keypadCommands:[{type:'digit',value}]});
@@ -116,7 +118,7 @@ test('正式流程供電進區被抓關頁繼續後保留進度且仍可再被�
   s=app.state();s={...s,player:{...s.player,x:8.2,z:-6.5}};
   for(let i=0;i<600 && s.ui.mode!=='caught';i++) step({},0.1);
   assert.equal(s.ui.mode,'caught');for(let i=0;i<12;i++) step({},0.1);
-  assert.equal(s.ui.mode,'explore');assert.equal(s.player.x,6.5);assert.deepEqual(logic.createChapterSave(s),progress);
+  assert.equal(s.ui.mode,'explore');assert.equal(s.player.x,6.5);assert.ok(s.elapsedSeconds>=progress.elapsedSeconds);assert.deepEqual(logic.createChapterSave(s),{...progress,elapsedSeconds:s.elapsedSeconds});
   app.setChapter({...s,flashlight:{...s.flashlight,enabled:true}});
   app.pads([pad([])]);app.frame(200);const pending=app.state();app.window.emit('pagehide');
   assert.equal(JSON.parse(storage.getItem(logic.CHAPTER_SAVE_KEY)).flashlight.charge,pending.flashlight.charge);

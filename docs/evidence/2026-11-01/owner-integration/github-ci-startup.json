@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-01",
+  "head": "3943d9ca38ab65eee812d844a13b23278de6518b",
+  "run_id": 41320466639,
+  "url": "https://github.com/EricRose043/escape-room-game/actions/runs/41320466639",
+  "status": "completed",
+  "conclusion": "startup_failure",
+  "jobs_started": 0,
+  "message": "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings.",
+  "source": "GitHub run Summary / Annotations, read through native Chrome; REST diagnostic returned no annotations",
+  "local_node_tests": 235,
+  "local_node_pass": 235,
+  "remote_windows_result": "NOT_RUN",
+  "billing_modified": false
+}

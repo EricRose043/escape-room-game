@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: 新版存檔保存裝配線與列車，序列化往返不改原狀態
+not ok 1 - 新版存檔保存裝配線與列車，序列化往返不改原狀態
+  ---
+  duration_ms: 3.3248
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-save-mutation-jmojzpya\\repo\\tests\\save-progress-v2.test.js:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-save-mutation-jmojzpya/repo/tests/save-progress-v2.test.js:8:76)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+# Subtest: 舊版存檔仍可載入，不補造從未保存的列車進度
+ok 2 - 舊版存檔仍可載入，不補造從未保存的列車進度
+  ---
+  duration_ms: 1.1292
+  type: 'test'
+  ...
+# Subtest: 裝配線解開與列車啟動當幀各自立即存檔，不等離頁
+not ok 3 - 裝配線解開與列車啟動當幀各自立即存檔，不等離頁
+  ---
+  duration_ms: 0.788
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-save-mutation-jmojzpya\\repo\\tests\\save-progress-v2.test.js:18:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-save-mutation-jmojzpya/repo/tests/save-progress-v2.test.js:24:9)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: 新版拒絕遺漏欄位、未知版本及矛盾列車進度
+not ok 4 - 新版拒絕遺漏欄位、未知版本及矛盾列車進度
+  ---
+  duration_ms: 1.4248
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-save-mutation-jmojzpya\\repo\\tests\\save-progress-v2.test.js:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    'valid' !== 'invalid'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'invalid'
+  actual: 'valid'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-save-mutation-jmojzpya/repo/tests/save-progress-v2.test.js:29:62)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: 新版寫入失敗保留舊檔，重試可保存列車新進度
+not ok 5 - 新版寫入失敗保留舊檔，重試可保存列車新進度
+  ---
+  duration_ms: 0.5804
+  type: 'test'
+  location: 'C:\\Users\\user\\AppData\\Local\\Temp\\escape-save-mutation-jmojzpya\\repo\\tests\\save-progress-v2.test.js:32:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/escape-save-mutation-jmojzpya/repo/tests/save-progress-v2.test.js:36:53)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 1
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 168.3008

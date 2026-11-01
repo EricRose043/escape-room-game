@@ -1,0 +1,78 @@
+TAP version 13
+# Subtest: 正式 main 載入設定、即時關閉驚嚇、更新靈敏度並保持暫停
+not ok 1 - 正式 main 載入設定、即時關閉驚嚇、更新靈敏度並保持暫停
+  ---
+  duration_ms: 15.5398
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-settings.test.js:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-settings.test.js:12:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: 工廠音量在開始／靜音切換後保留設定值與零音量
+not ok 2 - 工廠音量在開始／靜音切換後保留設定值與零音量
+  ---
+  duration_ms: 0.9934
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-settings.test.js:19:1'
+  failureType: 'testCodeFailure'
+  error: 'audio.setMasterVolume is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-settings.test.js:23:9)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: Xbox Y／PS三角形開設定採按下邊緣，長按不重複
+not ok 3 - Xbox Y／PS三角形開設定採按下邊緣，長按不重複
+  ---
+  duration_ms: 2.6621
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-settings.test.js:27:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + undefined
+    - true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-settings.test.js:30:41)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 0
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 161.1326

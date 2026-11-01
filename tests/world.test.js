@@ -4,7 +4,7 @@ import { createPlayer, updatePlayer, PLAYER_RADIUS } from '../src/logic/movement
 import { selectItem } from '../src/logic/interaction.js';
 import { isClueVisible } from '../src/logic/illumination.js';
 const load = () => import('../src/logic/world.js');
-const state = (torch = false, power = false) => ({ inventory: { itemIds: torch ? ['lobby.flashlight'] : [] }, puzzles: { 'power.main': { restored: power } } });
+const state = (access = false, power = false) => ({ inventory: { itemIds: access ? ['lobby.flashlight','lobby.employee-card'] : [] }, puzzles: { 'power.main': { restored: power } } });
 const rect = (x, y, z, sx = 0.5, sy = 0.5, sz = 0.5) => ({ minX: x-sx/2, maxX: x+sx/2, minY: y-sy/2, maxY: y+sy/2, minZ: z-sz/2, maxZ: z+sz/2 });
 
 function reachable(boxes, spawn) {
@@ -28,7 +28,7 @@ function reachable(boxes, spawn) {
 test('正式關卡所有 ID 唯一且引用有效', async () => {
   const { WORLD, validateWorld } = await load();
   assert.deepEqual(validateWorld(WORLD), []);
-  assert.deepEqual(WORLD.areas.map(a=>a.id), ['lobby','power-room','production']);
+  assert.deepEqual(WORLD.areas.map(a=>a.id), ['lobby','power-room','production','chase-corridor','exit','loading-bay']);
   const duplicate = structuredClone(WORLD); duplicate.areas[1].items[0].id=duplicate.areas[0].items[0].id;
   assert.ok(validateWorld(duplicate).length > 0, '重複 ID 必須報錯');
   const invalid = structuredClone(WORLD); invalid.areas[0].doors[0].openWhen.itemId='missing';
@@ -41,7 +41,7 @@ test('出生點與必要通道可通行，物品可從走道接近', async () =>
   const { WORLD, getGeometry, ITEMS } = await load();
   assert.deepEqual(WORLD.spawn, {x:0,z:6,yaw:0,pitch:0});
   const closed=reachable(getGeometry(state()).collisionBoxes,WORLD.spawn);
-  assert.ok(closed.every(p=>p.z >= 0.3), '未拿手電筒不可繞過大廳門');
+  assert.ok(closed.every(p=>p.z >= 0.3), '未取得員工卡不可繞過辦公室門');
   const open=reachable(getGeometry(state(true)).collisionBoxes,WORLD.spawn);
   assert.ok(open.some(p=>p.z < -7), '大廳門開後必須能探索電力室');
   assert.ok(open.every(p=>p.x < 5), '生產線門仍關閉');
@@ -57,7 +57,7 @@ test('出生點與必要通道可通行，物品可從走道接近', async () =>
 });
 test('所有正式物品三邊至少 0.25 公尺', async () => {
   const { ITEMS }=await load();
-  assert.deepEqual(ITEMS.map(i=>i.kind).sort(),['battery','battery','flashlight','fuse']);
+  assert.deepEqual(ITEMS.map(i=>i.kind).sort(),['battery','battery','flashlight','fuse','keycard','map']);
   for(const item of ITEMS) for(const axis of ['X','Y','Z']) assert.ok(item[`max${axis}`]-item[`min${axis}`]>=0.25,item.id);
 });
 test('關門同時遮擋撿取與紫外光，開門後三者同步解除', async () => {

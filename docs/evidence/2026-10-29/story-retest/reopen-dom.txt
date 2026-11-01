@@ -1,0 +1,15 @@
+- generic "每秒畫格數": "FPS: 300"
+- paragraph: WASD 走路 · 滑鼠／方向鍵轉頭 · Esc 暫停 · 請領取巡檢燈
+- paragraph
+- paragraph: 按手把任一鍵喚醒。
+- status: 進度已儲存
+- region "失落玩具工廠":
+  - heading "失落玩具工廠" [level=1]
+  - paragraph: 鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。
+  - button "開始（鍵盤滑鼠）"
+  - status: 無法鎖定滑鼠，請再點一次畫面，或使用鍵盤滑鼠的開始／繼續按鈕。
+- button "查看工廠地圖（M）" [active]
+- dialog:
+  - heading "員工手繪平面圖" [level=2]
+  - generic: 辦公室 ─ 控制室 ─ 裝配線 ─ 貨運月台 入口 電力紀錄 置物櫃 玩具列車 ※ 圖上未標記的區域仍可能有危險。
+  - button "收起地圖"

@@ -1,0 +1,40 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S1 聲音試聽</title>
+<style>body{font:17px/1.6 system-ui;background:#f3f2e9;color:#183b32;max-width:900px;margin:24px auto;padding:0 16px}button{font:inherit;min-height:44px;padding:10px 16px;margin:4px;background:#214e40;color:white;border:0;border-radius:5px}button:focus-visible,input:focus-visible{outline:3px solid #a86c00;outline-offset:3px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#e2e8df;padding:12px}input{min-height:44px;max-width:100%}</style>
+<h1>S1 聲音試聽</h1><p>原創程式合成聲音，尚未接入遊戲。先按啟用，再逐項試聽；建議先調低裝置音量。停止會清除所有循環，離開頁面會釋放音訊。</p>
+<button id="unlock">啟用聲音</button><button data-action="foot">腳步聲</button><button data-action="walk">連續步行</button><button data-action="door">門聲</button><button data-action="alarm">警報</button><button data-action="ambience">生產線環境聲</button><button data-action="heart-low">較遠心跳</button><button data-action="heart-high">靠近心跳</button><button id="stop">全部停止</button>
+<p><label>主音量 <input id="volume" type="range" min="0" max="1" value="0.35" step="0.01"></label><output id="volume-text">35%</output></p>
+<p id="status" role="status">尚未啟用，未建立 AudioContext。</p><h2>瀏覽器測量紀錄</h2><p>訊號峰值只驗證有輸出；是否好聽、音量是否舒適仍需真人試聽。</p><pre id="measure" role="log"></pre><pre id="state"></pre>
+<script type="module">
+import { createAudio } from '../src/game/audio.js';
+import { footstepInterval, heartbeatIntensity } from '../src/logic/audio-mix.js';
+const Native=window.AudioContext??window.webkitAudioContext;let probe=null,walking=null,measurement=null;
+class Probe extends (Native??class{}) {
+ constructor(){super();probe=this;}
+ createGain(){const node=super.createGain();if(!this.qaMaster){this.qaMaster=node;this.qaAnalyser=this.createAnalyser();this.qaAnalyser.fftSize=2048;const mute=super.createGain();mute.gain.value=0;node.connect(this.qaAnalyser);this.qaAnalyser.connect(mute);mute.connect(this.destination);}return node;}
+}
+const audio=createAudio({AudioContext:Native?Probe:null});
+const status=document.querySelector('#status'),log=document.querySelector('#measure'),state=document.querySelector('#state');
+function clearWalk(){if(walking!==null)clearInterval(walking);walking=null;}
+function stop(){clearWalk();audio.stop();}
+function measure(label,action){
+ stop();measurement={label,peak:0,end:performance.now()+1800};const played=action();status.textContent=played===false?'尚未啟用或瀏覽器未允許聲音。':'正在試聽：'+label;
+}
+document.querySelector('#unlock').onclick=async()=>{const ok=await audio.unlock();status.textContent=ok?'聲音已啟用，可逐項試聽。':'瀏覽器不支援或尚未允許，請再點啟用。';};
+const actions={
+ foot:()=>audio.playFootstep(),door:()=>audio.playDoor(),alarm:()=>audio.playAlarm(),
+ walk:()=>{audio.playFootstep();walking=setInterval(()=>audio.playFootstep(),footstepInterval(2.5)*1000);},
+ ambience:()=>audio.setAmbience('production'),
+ 'heart-low':()=>audio.setHeartbeat(heartbeatIntensity(11)),
+ 'heart-high':()=>audio.setHeartbeat(heartbeatIntensity(2)),
+};
+for(const button of document.querySelectorAll('[data-action]'))button.onclick=()=>measure(button.textContent,actions[button.dataset.action]);
+document.querySelector('#stop').onclick=()=>{stop();measurement={label:'全部停止',peak:0,end:performance.now()+1800};status.textContent='全部停止';};
+document.querySelector('#volume').oninput=event=>{const value=Number(event.target.value);audio.setMasterVolume(value);document.querySelector('#volume-text').textContent=Math.round(value*100)+'%';};
+const samples=new Float32Array(2048);
+const monitor=setInterval(()=>{
+ state.textContent=JSON.stringify(audio.getStatus(),null,2);
+ if(measurement && probe?.qaAnalyser){probe.qaAnalyser.getFloatTimeDomainData(samples);let peak=0;for(const sample of samples)peak=Math.max(peak,Math.abs(sample));measurement.peak=Math.max(measurement.peak,peak);
+  if(performance.now()>=measurement.end){log.textContent+=measurement.label+' 峰值='+measurement.peak.toFixed(6)+'；context='+audio.getStatus().contextState+'\n';measurement=null;}}
+},30);
+window.addEventListener('pagehide',()=>{clearWalk();clearInterval(monitor);audio.dispose();});
+</script></html>

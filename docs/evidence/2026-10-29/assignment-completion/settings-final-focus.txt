@@ -1,0 +1,34 @@
+Browser tab: 6, Title: "失落玩具工廠 — 恐怖密室逃脫", URL: "http://127.0.0.1:8788/index.html".
+1 AXWebArea 失落玩具工廠 — 恐怖密室逃脫, URL: 127.0.0.1:8788/index.html
+	8 container Description: 每秒畫格數, ID: fps
+		25 text FPS: 84
+	10 container input-hud
+		11 text WASD 走路 · 滑鼠／方向鍵轉頭 · Esc 暫停 · 請領取巡檢燈
+		12 text 按手把任一鍵喚醒。
+		13 text 進度已儲存
+	14 container 失落玩具工廠
+		15 heading 失落玩具工廠, Value: 1, ID: start-title
+			16 text 失落玩具工廠
+		46 text 選擇繼續或重新開始。
+		18 text 進度已儲存
+		19 checkbox 繼續, Value: 1, ID: start-continue
+		20 checkbox 重新開始, Value: 0, ID: start-new
+		47 text 滑鼠點擊／方向鍵選擇 · Enter 確認 · Esc 取消。手把先按任一鍵喚醒。
+	22 button 音效：開啟, ID: audio-toggle
+	23 image
+	24 button 設定（O／Y／△）, ID: settings-button
+	28 container 設定, ID: settings-panel
+		29 heading 設定, Value: 2, ID: settings-title
+			30 text 設定
+		31 container
+			32 text 主音量
+			33 slider (settable, integer) 主音量, Value: 42, ID: setting-volume
+			43 text 42% 驚嚇近景
+			35 switch Description: 驚嚇近景, Value: 0, ID: setting-jumpScare
+			44 text 被抓時僅顯示黑畫面 滑鼠靈敏度
+			37 slider (settable, integer) 滑鼠靈敏度, Value: 1, ID: setting-mouseSensitivity
+			45 text 1 倍
+			39 button 返回遊戲選單
+			40 text 方向鍵／十字鍵：上下選擇、左右調整；Enter／A／✕ 切換；Esc／B／○ 返回。
+
+The focused UI element is 33 slider (settable, integer) 主音量, Value: 42, ID: setting-volume

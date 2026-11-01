@@ -5,7 +5,7 @@ export const CHECKPOINTS = WORLD.areas.flatMap(area => area.checkpoint
   ? [{...area.checkpoint,areaId:area.id}] : []).sort((a,b)=>a.order-b.order);
 
 export function checkpointReady(state, checkpoint) {
-  return checkpoint.requires.itemIds.every(id=>state.inventory.itemIds.includes(id))
+  return (!checkpoint.requires.corridorComplete || state.corridor?.complete===true) && checkpoint.requires.itemIds.every(id=>state.inventory.itemIds.includes(id))
     && checkpoint.requires.puzzleIds.every(id=>state.puzzles[id]?.restored===true);
 }
 

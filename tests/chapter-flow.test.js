@@ -30,6 +30,8 @@ function journey() {
   s={...s,player:logic.setPaused(s.player,false)};
   assert.equal(s.player.x,logic.WORLD.spawn.x); assert.equal(s.player.z,logic.WORLD.spawn.z);
   assert.equal(logic.hasFlashlight(s),false);
+  s=take(walk(s,0,5.5),'lobby.factory-map');
+  s=take(walk(s,0.5,4.95),'lobby.employee-card');
   s=take(walk(s,-1.5,5.5),'lobby.flashlight');
   s=logic.updateChapter(s,{flashlightPressed:true});
   s=walk(walk(walk(s,0,5.5),0,-4.6),-3,-4.6);
@@ -110,6 +112,7 @@ test('使用正式資料從出生點完成取得安裝輸入與通過出口',()=
   s=walk(walk(s,3,-6.5),6.5,-6.5);
   assert.ok(s.player.x>5.5); assert.equal(s.puzzles[puzzleId].restored,true);
   assert.equal(logic.powerProgress(s,puzzleId),1);
-  assert.deepEqual(s.inventory.itemIds,['lobby.flashlight','power.fuse']);
+  assert.deepEqual(s.inventory.itemIds,['lobby.factory-map','lobby.employee-card','lobby.flashlight','power.fuse']);
   assert.ok(s.flashlight.charge>80);
 });
+

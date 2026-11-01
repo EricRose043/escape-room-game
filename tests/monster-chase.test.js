@@ -9,7 +9,7 @@ const step=(m,p=player(),dt=0.1,g=geometry(),options={})=>logic.updateMonster(m,
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 function chapter(m=active(),p=player()) {
   const s=logic.createChapter();
-  return {...s,player:p,monsters:{[id]:m},inventory:{itemIds:['lobby.flashlight','power.fuse']},
+  return {...s,player:p,monsters:{[id]:m},inventory:{itemIds:['lobby.employee-card','lobby.flashlight','power.fuse']},
     puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:true}}};
 }
 
@@ -137,3 +137,4 @@ test('搜尋轉向有上限，返回使用 1.2 m/s 且結果可重播', () => {
   }
   assert.equal(a.mode,'patrol');assert.ok(a.searchElapsed<=4);
 });
+

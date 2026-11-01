@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>星星糖果樂園 — 密室逃脫</title>
+    <link rel="icon" href="data:,">
+    <title>棉花糖工坊：閉館之後 — 恐怖密室逃脫</title>
     <style>
       html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0c1015; }
       canvas { display: block; width: 100%; height: 100%; }
@@ -11,6 +12,8 @@
       #crosshair { left: 50%; top: 50%; transform: translate(-50%, -50%); font: 22px monospace; text-shadow: 0 0 3px #000; }
       #interaction-hint { left: 50%; top: calc(50% + 24px); transform: translateX(-50%); padding: 5px 9px; background: #000b; font: 16px system-ui, sans-serif; white-space: nowrap; }
       #crosshair[hidden], #interaction-hint[hidden] { display: none; }
+      #story-caption { position:fixed;left:50%;bottom:128px;transform:translateX(-50%);width:min(760px,calc(100vw - 32px));box-sizing:border-box;padding:12px 16px;background:#070c12df;border-left:4px solid #bd914e;color:#f0e6d2;text-align:center;font:16px/1.5 system-ui,sans-serif;z-index:2;pointer-events:none; }
+      #story-caption[hidden] { display:none; }
       #fps {
         position: fixed; top: 8px; left: 8px; padding: 4px 6px;
         color: #dbe6de; background: #0009; font: 12px monospace;
@@ -30,6 +33,7 @@
         padding: 8px; color: #dbe6de; background: #0009;
         font: 13px system-ui, sans-serif; pointer-events: none;
       }
+      #objective {max-width:55rem;color:#efda9d;line-height:1.5;}
       #input-hud p { margin: 4px 0; }
       #contact-hint { color: #c7c8b8; }
       #hiding-hint { color: #d5e6c6; }
@@ -62,6 +66,28 @@
       #start-menu button[hidden], #start-open[hidden] { display: none; }
       #start-open { pointer-events: auto; }
       #save-status { color: #f4cf94; }
+      #factory-map-button { position:fixed;right:16px;top:16px;z-index:3;padding:9px 15px;background:#1b2529ef;color:#eee0bc;border:1px solid #b08c49;font:inherit;cursor:pointer; }
+      #factory-map-button[hidden], #factory-map[hidden], #ending-screen[hidden], #story-intro[hidden] { display:none; }
+      #factory-map, #ending-screen, #story-intro { position:fixed;inset:0;z-index:8;display:grid;place-items:center;background:#080b10ee;color:#eee8d7;font:16px system-ui,sans-serif; }
+      #factory-map section,#ending-screen section,#story-intro section { width:min(620px,calc(100vw - 48px));padding:26px;background:#172025;border:1px solid #b08c49;text-align:center; }
+      #factory-map pre { text-align:left;display:inline-block;padding:14px;background:#111719;color:#e8d8a8;font:16px/1.7 monospace; }
+      #factory-map button,#story-intro button,#ending-screen button { padding:10px 24px;color:#eee;background:#29363c;border:1px solid #b08c49;font:inherit;cursor:pointer; }
+      #story-intro { z-index:10;background:radial-gradient(ellipse,#293339,#030506 75%); }
+      #story-intro::before { content:"";position:absolute;left:50%;bottom:18vh;width:min(38vw,330px);height:48vh;transform:translateX(-50%);border-radius:46% 46% 22% 22%;opacity:.24;filter:blur(13px);background:radial-gradient(ellipse at 50% 17%,#3582ad 0 17%,transparent 18%),linear-gradient(90deg,transparent 0 14%,#286c91 15% 30%,transparent 31% 69%,#286c91 70% 85%,transparent 86%),linear-gradient(#286c91,#163c55);animation:intro-drift 5s ease-in-out infinite alternate;pointer-events:none; }
+      #story-intro::after { content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 3px,#b4d3df0a 4px);pointer-events:none; }
+      #story-intro[data-scene="1"] { background:radial-gradient(ellipse,#3a3129,#030506 75%); }
+      #story-intro[data-scene="2"] { background:radial-gradient(ellipse,#122633,#030506 75%); }
+      #story-intro[data-scene="3"] { background:radial-gradient(ellipse,#263c46,#030506 75%); }
+      #story-intro[data-scene="4"] { background:radial-gradient(ellipse,#11191d,#030506 75%); }
+      @keyframes intro-drift { from {transform:translate(-50%,5px) scale(.97);opacity:.16;} to {transform:translate(-50%,-8px) scale(1.03);opacity:.3;} }
+      #story-intro h1 { letter-spacing:.18em;color:#e2b65c; }
+      #story-intro section { position:relative;z-index:1;background:#172025b8; }
+      #intro-copy { min-height:5em;font-size:1.2rem;line-height:1.8; }
+      #story-intro #intro-copy { position:fixed;left:50%;bottom:7vh;transform:translateX(-50%);width:min(880px,calc(100vw - 40px));min-height:0;margin:0;padding:18px 24px;background:#05090dcc;border-top:2px solid #b08c49;border-bottom:1px solid #657078;box-sizing:border-box;font-size:clamp(16px,2vw,22px); }
+      #ending-stinger { color:#d8c7a1;opacity:0;animation:ending-reveal .8s ease 1.4s forwards; }
+      @keyframes ending-reveal { to { opacity:1; } }
+      #audio-toggle { position:fixed;right:16px;bottom:16px;z-index:3;padding:8px 13px;background:#1b2529ef;color:#eee0bc;border:1px solid #71827d;font:inherit;cursor:pointer; }
+      #audio-toggle[hidden] { display:none; }
     </style>
     <script type="importmap">
       {
@@ -72,11 +98,14 @@
     </script>
   </head>
   <body>
+    <div id="story-intro"><section><p>舊檔案｜60 秒</p><h1>棉花糖工坊：閉館之後</h1><p id="intro-copy" aria-live="polite" aria-atomic="true">這間玩具工廠曾風靡全城。藍色迎賓玩偶是招牌，廣告裡總說：「最好的朋友，陪你直到回家。」</p><button id="intro-skip" type="button">跳過劇情</button></section></div>
     <div id="crosshair" hidden aria-hidden="true">+</div>
     <div id="interaction-hint" hidden role="status"></div>
+    <div id="story-caption" hidden role="status" aria-live="polite" aria-atomic="true"></div>
     <div id="fps" aria-label="每秒畫格數">FPS: —</div>
     <div id="input-hud">
-      <p id="controls-hint">WASD 走路 · 滑鼠轉頭 · Esc 暫停</p>
+      <p id="objective" role="status"></p>
+      <p id="controls-hint">WASD 走路 · 滑鼠／方向鍵轉頭 · Esc 暫停</p>
       <p id="input-hint"></p>
       <p id="contact-hint" hidden role="status" aria-live="polite"></p>
       <p id="hiding-hint" hidden role="status" aria-live="polite"></p>
@@ -86,7 +115,7 @@
     </div>
     <div id="pause-screen">
       <section aria-labelledby="pause-title">
-        <h1 id="pause-title">星星糖果樂園</h1>
+        <h1 id="pause-title">棉花糖工坊：閉館之後</h1>
         <p id="pause-instructions">按手把任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。</p>
         <button id="resume" type="button">開始（鍵盤滑鼠）</button>
         <button id="start-open" type="button" hidden>返回開始選單</button>
@@ -119,7 +148,7 @@
     <div id="capture-screen" hidden aria-hidden="true"><canvas id="capture-canvas" hidden></canvas></div>
     <div id="start-menu" hidden>
       <section role="dialog" aria-modal="true" aria-labelledby="start-title" aria-describedby="start-message start-hint">
-        <h1 id="start-title">星星糖果樂園</h1>
+        <h1 id="start-title">棉花糖工坊：閉館之後</h1>
         <p id="start-message" role="status"></p>
         <p id="start-save-status" role="status" aria-live="polite"></p>
         <button id="start-continue" type="button">繼續</button>
@@ -130,6 +159,15 @@
         <p id="start-hint">手把先按任一鍵喚醒，十字鍵選擇，A／✕ 確認。</p>
       </section>
     </div>
+    <button id="factory-map-button" type="button" hidden>查看工廠地圖（M）</button>
+    <button id="audio-toggle" type="button">音效：開啟</button>
+    <div id="factory-map" hidden><section role="dialog" aria-modal="true"><h2 id="map-title">員工手繪平面圖</h2><pre id="map-content">辦公室 ─ 控制室 ─ 裝配線 ─ 貨運月台
+ 入口      電力紀錄   置物櫃     玩具列車
+
+※ 圖上未標記的區域仍可能有危險。</pre><button id="map-close" type="button">收起地圖</button></section></div>
+    <div id="ending-screen" hidden><section role="status"><h1>你逃出了玩具工廠</h1><p>列車穿過封鎖大門，你終於逃出工廠。控制室的紀錄證實：復電接通展示區備援線路，玩偶隨後開始追你。</p><p>可是備援監視器拍到它在停電時已離開展示台。它為什麼能動，仍沒有答案。</p><p>匿名訊息的警告再次浮現：「不要重啟主電源。」這一次，你知道那不是例行提醒。</p><p id="ending-stinger">尾端空車廂的斷電廣播，忽然播出那句熟悉的廣告詞：「最好的朋友，陪你直到回家。」接著，車廂門從裡面輕輕扣上了。</p><p id="ending-reward">已解鎖完整工廠地圖。</p><button id="ending-close" type="button">查看完整地圖</button></section></div>
+    <link rel="stylesheet" href="./src/game/settings.css">
     <script type="module" src="./src/game/main.js"></script>
+    <script type="module" src="./src/game/settings-entry.js"></script>
   </body>
 </html>
