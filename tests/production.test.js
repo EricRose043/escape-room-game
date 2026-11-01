@@ -80,7 +80,7 @@ test('下一區門保持關閉且同時阻擋移動與視線', () => {
   const p=area(); assert.ok(p);
   const s=state(),door=p.doors[0],g=logic.getGeometry(s);
   assert.equal(door.openWhen.puzzleId,'production.sequence');
-  assert.deepEqual(door.destination,{type:'area',areaId:'loading-bay'});
+  assert.deepEqual(door.destination,{type:'area',areaId:'chase-corridor'});
   assert.equal(s.puzzles['production.sequence'].restored,false);
   assert.equal(logic.isDoorOpen(door,s),false);
   for(const list of [g.collisionBoxes,g.occluderBoxes]) assert.ok(list.some(b=>b.id===door.id));
@@ -93,7 +93,7 @@ test('下一區門保持關閉且同時阻擋移動與視線', () => {
 test('玩具工廠前區物品與既有密碼有效；櫃子可躲藏，照明沿用兩盞固定池', () => {
   const p=area(); assert.ok(p);
   assert.equal(logic.ITEMS.length,6);
-  assert.equal(logic.WORLD.areas.flatMap(a=>a.puzzles).filter(p=>p.code).length,2);
+  assert.equal(logic.WORLD.areas.flatMap(a=>a.puzzles).filter(p=>p.code).length,3);
   let s=state(); s.player={...s.player,x:8.5,z:-1.2,yaw:0,pitch:0};
   const locker=p.devices.find(d=>d.id==='production.locker-l1');
   const target=logic.selectChapterTarget(s);

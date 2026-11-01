@@ -118,7 +118,7 @@ test('正式流程供電進區被抓關頁繼續後保留進度且仍可再被�
   s=app.state();s={...s,player:{...s.player,x:8.2,z:-6.5}};
   for(let i=0;i<600 && s.ui.mode!=='caught';i++) step({},0.1);
   assert.equal(s.ui.mode,'caught');for(let i=0;i<12;i++) step({},0.1);
-  assert.equal(s.ui.mode,'explore');assert.equal(s.player.x,6.5);assert.deepEqual(logic.createChapterSave(s),progress);
+  assert.equal(s.ui.mode,'explore');assert.equal(s.player.x,6.5);assert.ok(s.elapsedSeconds>=progress.elapsedSeconds);assert.deepEqual(logic.createChapterSave(s),{...progress,elapsedSeconds:s.elapsedSeconds});
   app.setChapter({...s,flashlight:{...s.flashlight,enabled:true}});
   app.pads([pad([])]);app.frame(200);const pending=app.state();app.window.emit('pagehide');
   assert.equal(JSON.parse(storage.getItem(logic.CHAPTER_SAVE_KEY)).flashlight.charge,pending.flashlight.charge);

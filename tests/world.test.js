@@ -28,7 +28,7 @@ function reachable(boxes, spawn) {
 test('正式關卡所有 ID 唯一且引用有效', async () => {
   const { WORLD, validateWorld } = await load();
   assert.deepEqual(validateWorld(WORLD), []);
-  assert.deepEqual(WORLD.areas.map(a=>a.id), ['lobby','power-room','production','loading-bay']);
+  assert.deepEqual(WORLD.areas.map(a=>a.id), ['lobby','power-room','production','chase-corridor','exit','loading-bay']);
   const duplicate = structuredClone(WORLD); duplicate.areas[1].items[0].id=duplicate.areas[0].items[0].id;
   assert.ok(validateWorld(duplicate).length > 0, '重複 ID 必須報錯');
   const invalid = structuredClone(WORLD); invalid.areas[0].doors[0].openWhen.itemId='missing';

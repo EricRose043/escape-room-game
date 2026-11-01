@@ -7,7 +7,7 @@ test('裝配線密碼開啟玩具列車貨運區',()=>{
   const bay=logic.WORLD.areas.find(area=>area.id==='loading-bay');
   assert.ok(bay,'最後一區應是列車裝卸區');
   const door=production.doors.find(entry=>entry.id==='production.east-door');
-  assert.deepEqual(door.destination,{type:'area',areaId:'loading-bay'});
+  assert.deepEqual(door.destination,{type:'area',areaId:'chase-corridor'});
   const s=logic.createChapter();
   assert.equal(logic.isDoorOpen(door,s),false);
   const solved={...s,puzzles:{...s.puzzles,'production.sequence':{installedItemId:null,restored:true,restoreElapsed:1}}};
@@ -24,7 +24,8 @@ test('啟動列車後登車完成逃脫，沒啟動前不能通關',()=>{
   s={...s,player:{...s.player,paused:false,x:console.bounds.minX-0.5,z:(console.bounds.minZ+console.bounds.maxZ)/2,yaw:-Math.PI/2,pitch:-0.55},
     inventory:{itemIds:['lobby.flashlight','lobby.employee-card']},
     puzzles:{...s.puzzles,'power.main':{installedItemId:'power.fuse',restored:true,restoreElapsed:0.6},
-      'production.sequence':{installedItemId:null,restored:true,restoreElapsed:0.6}}};
+      'production.sequence':{installedItemId:null,restored:true,restoreElapsed:0.6},'production.color-sequence':{installedItemId:null,restored:true},'exit.final':{installedItemId:null,restored:true}},
+    foundClueIds:['production.color-clue','corridor.color-key','exit.reverse-clue'],corridor:{...s.corridor,complete:true}};
   s=logic.updateChapter(s,{interactPressed:true});
   assert.equal(s.trainStarted,true);
   s={...s,player:{...s.player,x:boarding.bounds.minX-0.5,z:(boarding.bounds.minZ+boarding.bounds.maxZ)/2,yaw:-Math.PI/2}};

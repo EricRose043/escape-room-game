@@ -4,9 +4,9 @@ import {CHASE_CORRIDOR,getCorridorGeometry} from '../src/logic/areas/chase-corri
 import {createCorridorDoors,updateCorridorDoors} from '../src/logic/corridor-doors.js';
 import {WORLD,validateWorld} from '../src/logic/world.js';
 import {createPlayer,updatePlayer,circleOverlapsBox,PLAYER_RADIUS} from '../src/logic/movement.js';
-test('S3 獨立區域符合 D010 與全域 ID／引用，尚未加入正式地圖',()=>{
-  assert.deepEqual(validateWorld({...WORLD,areas:[...WORLD.areas,CHASE_CORRIDOR]}),[]);
-  assert.equal(WORLD.areas.some(a=>a.id===CHASE_CORRIDOR.id),false);
+test('S3 獨立區域符合 D010 與全域 ID／引用，獨立資料與正式放置都有效',()=>{
+  assert.deepEqual(validateWorld({...WORLD,areas:[...WORLD.areas.filter(a=>a.id!==CHASE_CORRIDOR.id),CHASE_CORRIDOR]}),[]);
+  assert.equal(WORLD.areas.some(a=>a.id===CHASE_CORRIDOR.id),true);
   assert.ok(CHASE_CORRIDOR.doors.length>=3);assert.ok(CHASE_CORRIDOR.route.length>=4);
   for(const d of CHASE_CORRIDOR.doors) {
     const t=d.trigger,b=d.bounds;

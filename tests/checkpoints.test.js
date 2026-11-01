@@ -20,11 +20,11 @@ function assertPose(s,id) {
   assert.equal(logic.EYE_HEIGHT,1.6);
 }
 
-test('三個存檔點 ID 前置條件與玩家半徑位置有效',()=>{
-  assert.deepEqual(logic.CHECKPOINTS.map(c=>c.id),[lobbyId,powerId,productionId]);
-  assert.deepEqual(logic.CHECKPOINTS.map(c=>c.order),[0,1,2]);
+test('四個存檔點 ID 前置條件與玩家半徑位置有效',()=>{
+  assert.deepEqual(logic.CHECKPOINTS.map(c=>c.id),[lobbyId,powerId,productionId,'exit.checkpoint']);
+  assert.deepEqual(logic.CHECKPOINTS.map(c=>c.order),[0,1,2,3]);
   assert.deepEqual(logic.CHECKPOINTS.map(c=>c.spawn),[
-    {x:0,z:6,yaw:0,pitch:0},{x:0,z:-1.2,yaw:0,pitch:0},{x:6.5,z:-6.5,yaw:-Math.PI/2,pitch:0},
+    {x:0,z:6,yaw:0,pitch:0},{x:0,z:-1.2,yaw:0,pitch:0},{x:6.5,z:-6.5,yaw:-Math.PI/2,pitch:0},{x:41.2,z:-17.5,yaw:-Math.PI/2,pitch:0},
   ]);
   for(const checkpoint of logic.CHECKPOINTS) {
     const s=checkpoint.id===lobbyId?logic.createChapter():powered();
