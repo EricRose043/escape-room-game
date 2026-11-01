@@ -41,7 +41,7 @@ const saveStorage=createSaveStorage({
   setItem:(key,value)=>window.localStorage.setItem(key,value),
   removeItem:key=>window.localStorage.removeItem(key),
 });
-let startMenu=createStartMenu(saveStorage.load());
+let startMenu=createStartMenu(saveStorage.load()),startMenuAwaitRelease=false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0c1015);
@@ -235,9 +235,9 @@ function syncUI() {
     ? (pointerLockFailed ? lockMessage.textContent : '點一下畫面以啟用滑鼠轉頭') : '');
 }
 
-let mapReturnToGame=false;
-function openMap(){mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=factoryMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
-function closeMap(){mapPanel.hidden=true;endingMapOpen=false;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}clearInput();syncUI();}
+let mapReturnToGame=false,mapAwaitRelease=false;
+function openMap(){mapAwaitRelease=true;mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=factoryMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
+function closeMap(){mapPanel.hidden=true;endingMapOpen=false;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}clearInput();syncUI();if(chapter.ui.mode==='complete')document.querySelector('[data-ending-action="map"]')?.focus();}
 window.addEventListener('factory-settings-open',()=>{
   settingsOpen=true;mapPanel.hidden=true;mapReturnToGame=false;
   applySession({forcePause:true});clearInput();audio.stop?.();releasePointer('settings');
@@ -251,7 +251,7 @@ window.addEventListener('factory-settings-close',()=>{settingsOpen=false;clearIn
 document.querySelector('#factory-map-button').addEventListener('click',openMap);
 document.querySelector('#map-close').addEventListener('click',closeMap);
 document.querySelector('#ending-close').addEventListener('click',openMap);
-function restartFromEnding(){applySession({forcePause:true});openStartMenu();startMenu=updateStartMenu(startMenu,{type:'new'});syncUI();}
+function restartFromEnding(){startMenuAwaitRelease=true;applySession({forcePause:true});openStartMenu();startMenu=updateStartMenu(startMenu,{type:'new'});syncUI();}
 function mountEnding(){if(endingDispose)return;endingDispose=showEnding(document.querySelector('#ending-screen'),chapter.endingResult??finishChapter(0,chapter.elapsedSeconds??0),restartFromEnding,{title:'你逃出了棉花糖工坊',onMap:openMap,ignoreHeld:true,storyText:'列車穿過封鎖的大門。尾端空車廂的斷電廣播卻重播：「最好的朋友，陪你直到回家。」隨後，車門從裡面輕輕扣上了。'});}
 function clearInput() {
   keys.clear();
@@ -511,7 +511,7 @@ function readActions(time) {
 
   const before = session;
   if(!intro.hidden){if(pad?.actions.confirmPressed||pad?.actions.cancelPressed||pad?.actions.pausePressed)finishIntro();return {...mergeActions(),gameplayActive:false};}
-  if(!mapPanel.hidden){if(pad?.actions.cancelPressed||pad?.actions.confirmPressed||pad?.actions.pausePressed||pad?.actions.mapPressed)closeMap();return {...mergeActions(),gameplayActive:false};}
+  if(!mapPanel.hidden){if(mapAwaitRelease){if(![0,1,8,9].some(i=>pad?.buttons?.[i]))mapAwaitRelease=false;return {...mergeActions(),gameplayActive:false};}if(pad?.actions.cancelPressed||pad?.actions.confirmPressed||pad?.actions.pausePressed||pad?.actions.mapPressed)closeMap();return {...mergeActions(),gameplayActive:false};}
   if(settingsOpen) {
     window.dispatchEvent?.(new CustomEvent('factory-settings-gamepad',{detail:pad?.actions??{}}));
     syncUI();return {...mergeActions(),gameplayActive:false};
@@ -523,6 +523,7 @@ function readActions(time) {
   if(pad?.actions.mapPressed&&(chapter.inventory.itemIds.includes('lobby.factory-map')||chapter.completed)){openMap();return {...mergeActions(),gameplayActive:false};}
   if(chapter.ui.mode==='complete'&&startMenu.mode==='closed')return {...mergeActions(),gameplayActive:false};
   if(startMenu.mode!=='closed') {
+    if(startMenuAwaitRelease){if(!pad?.buttons?.some(Boolean))startMenuAwaitRelease=false;return {...mergeActions(),gameplayActive:false};}
     const command=startMenuGamepadCommand(pad?.actions);
     if(command) handleStartCommand(command,'gamepad');
     syncUI();return {...mergeActions(),gameplayActive:false};

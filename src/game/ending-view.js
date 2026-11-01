@@ -9,9 +9,10 @@ export function showEnding(container,result,onRestart,options={}) {
   restart.type='button';restart.textContent='重新開始';restart.dataset.endingAction='restart';
   section.append(title,time,restart);container.append(section);restart.focus();restart.addEventListener('click',()=>onRestart?.());
   const actions=[()=>onRestart?.()],buttons=[restart];let selected=0;
+  restart.addEventListener('focus',()=>{selected=0;});
   if(options.storyText){const story=doc.createElement('p');story.textContent=options.storyText;section.append(story);}
-  if(options.onMap){const map=doc.createElement('button');map.type='button';map.textContent='查看完整收藏地圖';map.addEventListener('click',options.onMap);section.append(map);actions.push(options.onMap);buttons.push(map);}
-  let disposed=false,frame=0,previousButtons=[];
+  if(options.onMap){const map=doc.createElement('button');map.type='button';map.dataset.endingAction='map';map.addEventListener('focus',()=>{selected=1;});map.textContent='查看完整收藏地圖';map.addEventListener('click',options.onMap);section.append(map);actions.push(options.onMap);buttons.push(map);}
+  let disposed=false,frame=0,previousButtons=[],awaitRelease=options.ignoreHeld===true;
   if(options.ignoreHeld)try{previousButtons=Array.from(doc.defaultView.navigator.getGamepads()).find(p=>p?.connected)?.buttons.map(b=>Boolean(b?.pressed))??[];}catch{}
   const select=direction=>{selected=(selected+direction+buttons.length)%buttons.length;buttons[selected].focus();};
   const activate=()=>{if(!disposed)actions[selected]();};
@@ -29,8 +30,9 @@ export function showEnding(container,result,onRestart,options={}) {
       const pad=Array.from(pads).find(candidate=>candidate?.connected);
       const padButtons=pad?.buttons??[];
       const confirm=Boolean(padButtons[0]?.pressed),dpad=Boolean(padButtons[12]?.pressed||padButtons[13]?.pressed||padButtons[14]?.pressed||padButtons[15]?.pressed);
-      if(!container.hidden&&confirm&&!previousButtons[0]) activate();
-      if(!container.hidden&&dpad&&!previousButtons[12]&&!previousButtons[13]&&!previousButtons[14]&&!previousButtons[15])select(padButtons[12]?.pressed||padButtons[14]?.pressed?-1:1);
+      if(container.hidden)awaitRelease=true;else if(!padButtons.some(b=>b?.pressed))awaitRelease=false;
+      if(!awaitRelease&&!container.hidden&&confirm&&!previousButtons[0]) activate();
+      if(!awaitRelease&&!container.hidden&&dpad&&!previousButtons[12]&&!previousButtons[13]&&!previousButtons[14]&&!previousButtons[15])select(padButtons[12]?.pressed||padButtons[14]?.pressed?-1:1);
       previousButtons=padButtons.map(button=>Boolean(button?.pressed));
     } catch {previousButtons=[];}
     if(doc.defaultView?.requestAnimationFrame) frame=doc.defaultView.requestAnimationFrame(pollGamepad);
