@@ -20,3 +20,7 @@ export * from './chapter-save.js';
 export * from './save-storage.js';
 export * from './start-menu.js';
 export * from './settings.js';
+
+export * from './corridor-chase.js';
+export * from './ending.js';
+export * from './chapter-guidance.js';

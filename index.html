@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>失落玩具工廠 — 恐怖密室逃脫</title>
+    <link rel="icon" href="data:,">
+    <title>棉花糖工坊：閉館之後 — 恐怖密室逃脫</title>
     <style>
       html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0c1015; }
       canvas { display: block; width: 100%; height: 100%; }
@@ -32,6 +33,7 @@
         padding: 8px; color: #dbe6de; background: #0009;
         font: 13px system-ui, sans-serif; pointer-events: none;
       }
+      #objective {max-width:55rem;color:#efda9d;line-height:1.5;}
       #input-hud p { margin: 4px 0; }
       #contact-hint { color: #c7c8b8; }
       #hiding-hint { color: #d5e6c6; }
@@ -96,12 +98,13 @@
     </script>
   </head>
   <body>
-    <div id="story-intro"><section><p>舊檔案｜60 秒</p><h1>失落玩具工廠</h1><p id="intro-copy" aria-live="polite" aria-atomic="true">這間玩具工廠曾風靡全城。藍色迎賓玩偶是招牌，廣告裡總說：「最好的朋友，陪你直到回家。」</p><button id="intro-skip" type="button">跳過劇情</button></section></div>
+    <div id="story-intro"><section><p>舊檔案｜60 秒</p><h1>棉花糖工坊：閉館之後</h1><p id="intro-copy" aria-live="polite" aria-atomic="true">這間玩具工廠曾風靡全城。藍色迎賓玩偶是招牌，廣告裡總說：「最好的朋友，陪你直到回家。」</p><button id="intro-skip" type="button">跳過劇情</button></section></div>
     <div id="crosshair" hidden aria-hidden="true">+</div>
     <div id="interaction-hint" hidden role="status"></div>
     <div id="story-caption" hidden role="status" aria-live="polite" aria-atomic="true"></div>
     <div id="fps" aria-label="每秒畫格數">FPS: —</div>
     <div id="input-hud">
+      <p id="objective" role="status"></p>
       <p id="controls-hint">WASD 走路 · 滑鼠／方向鍵轉頭 · Esc 暫停</p>
       <p id="input-hint"></p>
       <p id="contact-hint" hidden role="status" aria-live="polite"></p>
@@ -112,7 +115,7 @@
     </div>
     <div id="pause-screen">
       <section aria-labelledby="pause-title">
-        <h1 id="pause-title">失落玩具工廠</h1>
+        <h1 id="pause-title">棉花糖工坊：閉館之後</h1>
         <p id="pause-instructions">按手把任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。</p>
         <button id="resume" type="button">開始（鍵盤滑鼠）</button>
         <button id="start-open" type="button" hidden>返回開始選單</button>
@@ -145,7 +148,7 @@
     <div id="capture-screen" hidden aria-hidden="true"><canvas id="capture-canvas" hidden></canvas></div>
     <div id="start-menu" hidden>
       <section role="dialog" aria-modal="true" aria-labelledby="start-title" aria-describedby="start-message start-hint">
-        <h1 id="start-title">失落玩具工廠</h1>
+        <h1 id="start-title">棉花糖工坊：閉館之後</h1>
         <p id="start-message" role="status"></p>
         <p id="start-save-status" role="status" aria-live="polite"></p>
         <button id="start-continue" type="button">繼續</button>

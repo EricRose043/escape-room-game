@@ -8,7 +8,7 @@ import {
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
   keyboardStartMenuCommand, startMenuGamepadCommand,
-  createSettings, createSettingsStorage, deserialize,
+  createSettings, createSettingsStorage, deserialize,finishChapter,chapterObjective,factoryMapText,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
@@ -17,6 +17,7 @@ import { createCaptureView } from './capture-view.js';
 import { createStartMenuView } from './start-menu-view.js';
 import { compensatedIntensity } from './lighting.js';
 import { createFactoryAudio } from './audio.js';
+import {showEnding} from './ending-view.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
 // 驚嚇預設關閉（使用者已確認）；保留既有 ?jumpscare=1 驗收入口。
@@ -24,7 +25,7 @@ const settingsDefaults=createSettings(false);
 const settingsStorage=createSettingsStorage({getItem:key=>window.localStorage.getItem(key)},settingsDefaults);
 let settings=settingsStorage.load();
 const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'||settings.jumpScare};
-let settingsOpen=false;
+let settingsOpen=false,endingDispose=null,endingMapOpen=false;
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
 const introSlides=['這間玩具工廠曾風靡全城。藍色迎賓玩偶是招牌，廣告裡總說：「最好的朋友，陪你直到回家。」','封廠那夜，生產線全停，員工被緊急撤出。公司只留下「設備故障」四個字，沒有事故報告。','多年後，你收到匿名訊息：「真正的夜班維修紀錄還在辦公室。無論如何，別重啟主電源。」','為查明真相，你依訊息來到工廠。身後大門鎖上的瞬間，辦公室陷入昏暗；遠處似乎掠過一道藍影。','手電筒、地圖和員工卡都在辦公室裡。員工卡能打開控制室；你必須找到出口，也查明那一夜發生了什麼。'];
@@ -121,7 +122,7 @@ function syncLighting() {
   torch.visible = hasFlashlight(chapter) && chapter.flashlight.enabled && chapter.flashlight.charge > 0;
   torch.color.setHex(chapter.flashlight.mode === 'uv' ? 0x9977ff : 0xffeed0);
   for (const clue of CLUES) {
-    clueMeshes.get(clue.id).visible = isClueVisible(chapter.player, chapter.flashlight, clue, geometry.occluderBoxes);
+    clueMeshes.get(clue.id).visible = clue.alwaysVisible||isClueVisible(chapter.player, chapter.flashlight, clue, geometry.occluderBoxes);
   }
 }
 
@@ -190,8 +191,11 @@ function showStoryBeat(beat) {
   storyCaption.textContent=message;storyCaption.hidden=false;storyCaptionRemaining=6.5;
 }
 
+const mapPanel=document.querySelector('#factory-map');
 function syncUI() {
-  pauseScreen.hidden = !session.paused || startMenu.mode!=='closed';
+  pauseScreen.hidden = !session.paused || startMenu.mode!=='closed' || ['ending','complete'].includes(chapter.ui.mode) || !mapPanel.hidden || settingsOpen;
+  setText(document.querySelector('#objective'),chapterObjective(chapter));
+  setText(document.querySelector('#keypad-title'),chapter.ui.deviceId==='exit.final-keypad'?'出口控制板':chapter.ui.deviceId==='production.sequence-keypad'?'裝配線控制器':'電力控制器');
   startMenuView.sync(startMenu,prompt.device);
   startOpen.hidden=!session.hasStarted;
   setText(saveStatus,saveStorage.status().message);
@@ -201,7 +205,7 @@ function syncUI() {
   let completed=false;try {completed=window.localStorage.getItem('toy-factory-complete')==='true';} catch {}
   const hasMap=chapter.inventory.itemIds.includes('lobby.factory-map') || completed;
   document.querySelector('#factory-map-button').hidden=!hasMap || chapter.ui.mode==='complete';
-  document.querySelector('#ending-screen').hidden=chapter.ui.mode!=='complete';
+  document.querySelector('#ending-screen').hidden=chapter.ui.mode!=='complete'||endingMapOpen||startMenu.mode!=='closed';
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
   const target = selectChapterTarget(chapter);
   interactionHint.hidden = !target;
@@ -213,7 +217,7 @@ function syncUI() {
   const hiding=chapter.ui.mode==='hiding';
   hidingHint.hidden=session.paused || !hiding;
   setText(hidingHint,hiding?`${chapter.ui.message || '躲藏中'} · ${buttonLabel('interact',prompt.device)} 出櫃`:'');
-  setText(pauseTitle, session.hasStarted ? '已暫停' : '失落玩具工廠');
+  setText(pauseTitle, session.hasStarted ? '已暫停' : '棉花糖工坊：閉館之後');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
   chargeRow.hidden = !hasFlashlight(chapter);
   chargeMeter.value = chapter.flashlight.charge;
@@ -227,14 +231,13 @@ function syncUI() {
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，${buttonLabel('cancel',device)} 返回開始選單，或使用下方按鈕切換鍵盤滑鼠。`
       : `按 ${buttonLabel('confirm', device)} 開始（不需要鎖定滑鼠）。`);
-  setText(inputHint, !session.paused && !['keypad','caught'].includes(chapter.ui.mode) && device === 'keyboard' && document.pointerLockElement !== renderer.domElement
+  setText(inputHint, !session.paused && !['keypad','caught','ending','complete'].includes(chapter.ui.mode) && device === 'keyboard' && document.pointerLockElement !== renderer.domElement
     ? (pointerLockFailed ? lockMessage.textContent : '點一下畫面以啟用滑鼠轉頭') : '');
 }
 
-const mapPanel=document.querySelector('#factory-map');
 let mapReturnToGame=false;
-function openMap(){mapPanel.hidden=false;mapReturnToGame=!session.paused;if(mapReturnToGame)applySession({forcePause:true});}
-function closeMap(){mapPanel.hidden=true;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}}
+function openMap(){mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=factoryMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
+function closeMap(){mapPanel.hidden=true;endingMapOpen=false;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}clearInput();syncUI();}
 window.addEventListener('factory-settings-open',()=>{
   settingsOpen=true;mapPanel.hidden=true;mapReturnToGame=false;
   applySession({forcePause:true});clearInput();audio.stop?.();releasePointer('settings');
@@ -247,7 +250,9 @@ window.addEventListener('factory-settings-change',event=>{
 window.addEventListener('factory-settings-close',()=>{settingsOpen=false;clearInput();syncUI();});
 document.querySelector('#factory-map-button').addEventListener('click',openMap);
 document.querySelector('#map-close').addEventListener('click',closeMap);
-document.querySelector('#ending-close').addEventListener('click',()=>{document.querySelector('#ending-screen').hidden=true;mapPanel.hidden=false;});
+document.querySelector('#ending-close').addEventListener('click',openMap);
+function restartFromEnding(){applySession({forcePause:true});openStartMenu();startMenu=updateStartMenu(startMenu,{type:'new'});syncUI();}
+function mountEnding(){if(endingDispose)return;endingDispose=showEnding(document.querySelector('#ending-screen'),chapter.endingResult??finishChapter(0,chapter.elapsedSeconds??0),restartFromEnding,{title:'你逃出了棉花糖工坊',onMap:openMap,ignoreHeld:true,storyText:'列車穿過封鎖的大門。尾端空車廂的斷電廣播卻重播：「最好的朋友，陪你直到回家。」隨後，車門從裡面輕輕扣上了。'});}
 function clearInput() {
   keys.clear();
   interactPending = false;
@@ -279,7 +284,9 @@ function handleStartCommand(command,source='keyboard') {
       const result=saveStorage.load();next=result.status==='valid'?restoreChapterSave(result.data,chapterOptions):null;
       if(!next) {startMenu=createStartMenu(result,{hasCurrent:session.hasStarted});syncUI();return;}
     } else {next=createChapter(chapterOptions);saveStorage.restart(next);}
+    if(endingDispose){endingDispose();endingDispose=null;}endingMapOpen=false;
     chapter=next;session=createSession();clearInput();
+    if(chapter.ui.mode==='complete'){session={hasStarted:true,paused:true};mountEnding();syncUI();return;}
     if(source==='keyboard') requestLock();
     else {applySession({confirmPressed:true});releasePointer('gamepad');}
   }
@@ -309,7 +316,7 @@ function lockFailed() {
 }
 
 async function requestLock() {
-  if (startMenu.mode!=='closed' || ['keypad','caught'].includes(chapter.ui.mode) || requestingLock || document.pointerLockElement === renderer.domElement) return;
+  if (startMenu.mode!=='closed' || ['keypad','caught','ending','complete'].includes(chapter.ui.mode) || requestingLock || document.pointerLockElement === renderer.domElement) return;
   requestingLock = true;
   try {
     await renderer.domElement.requestPointerLock();
@@ -337,7 +344,7 @@ document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === renderer.domElement;
   if (locked) {
     if(startMenu.mode!=='closed') {releasePointer('menu');return;}
-    if (['keypad','caught'].includes(chapter.ui.mode)) { releasePointer(chapter.ui.mode); return; }
+    if (['keypad','caught','ending','complete'].includes(chapter.ui.mode)) { releasePointer(chapter.ui.mode); return; }
     unlockReason = null;
     pointerLockFailed = false;
     clearInput();
@@ -367,6 +374,7 @@ document.addEventListener('keydown', (event) => {
     if(command) {keyboardActivity=true;handleStartCommand(command,'keyboard');}
     return;
   }
+  if(chapter.ui.mode==='complete'||chapter.ui.mode==='ending')return;
   if(chapter.ui.mode==='caught') {
     if(event.code==='Escape' && !event.repeat) applySession({forcePause:true});
     if(['KeyW','KeyA','KeyS','KeyD','KeyE','KeyF','KeyR','Escape','Enter','Space'].includes(event.code)) event.preventDefault();
@@ -412,7 +420,7 @@ document.addEventListener('keyup', (event) => keys.delete(event.code));
 document.addEventListener('mousemove', (event) => {
   if (!event.movementX && !event.movementY) return;
   keyboardActivity = true;
-  if (session.paused || ['keypad','caught'].includes(chapter.ui.mode) || (document.pointerLockElement !== renderer.domElement && !dragLooking)) return;
+  if (session.paused || ['keypad','caught','ending','complete'].includes(chapter.ui.mode) || (document.pointerLockElement !== renderer.domElement && !dragLooking)) return;
   dYaw -= event.movementX * MOUSE_SENSITIVITY * settings.mouseSensitivity;
   dPitch -= event.movementY * MOUSE_SENSITIVITY * settings.mouseSensitivity;
 });
@@ -502,6 +510,8 @@ function readActions(time) {
   keyboardActivity = false;
 
   const before = session;
+  if(!intro.hidden){if(pad?.actions.confirmPressed||pad?.actions.cancelPressed||pad?.actions.pausePressed)finishIntro();return {...mergeActions(),gameplayActive:false};}
+  if(!mapPanel.hidden){if(pad?.actions.cancelPressed||pad?.actions.confirmPressed||pad?.actions.pausePressed||pad?.actions.mapPressed)closeMap();return {...mergeActions(),gameplayActive:false};}
   if(settingsOpen) {
     window.dispatchEvent?.(new CustomEvent('factory-settings-gamepad',{detail:pad?.actions??{}}));
     syncUI();return {...mergeActions(),gameplayActive:false};
@@ -510,6 +520,8 @@ function readActions(time) {
     window.dispatchEvent?.(new CustomEvent('factory-settings-toggle'));
     clearInput();return {...mergeActions(),gameplayActive:false};
   }
+  if(pad?.actions.mapPressed&&(chapter.inventory.itemIds.includes('lobby.factory-map')||chapter.completed)){openMap();return {...mergeActions(),gameplayActive:false};}
+  if(chapter.ui.mode==='complete'&&startMenu.mode==='closed')return {...mergeActions(),gameplayActive:false};
   if(startMenu.mode!=='closed') {
     const command=startMenuGamepadCommand(pad?.actions);
     if(command) handleStartCommand(command,'gamepad');
@@ -548,7 +560,7 @@ let sampleStart;
 
 function animate(time) {
   if (sampleStart === undefined) sampleStart = time;
-  const dt = previousTime === undefined ? 0 : (time - previousTime) / 1000;
+  const dt = previousTime === undefined ? 0 : Math.min(.1,Math.max(0,(time - previousTime) / 1000));
   previousTime = time;
   const actions = readActions(time);
   const beforeChapter=chapter;
@@ -563,12 +575,12 @@ function animate(time) {
   if(beforeMode!=='complete' && chapter.ui.mode==='complete') {
     try { localStorage.setItem('toy-factory-complete','true'); } catch {}
     document.querySelector('#map-title').textContent='完整工廠地圖｜通關解鎖';
-    document.querySelector('#map-content').textContent='辦公室 ─ 控制室 ─ 裝配線 ─ 貨運月台\n入口      電力紀錄   置物櫃     玩具列車\n\n完整巡檢路線與月台出口已標記。';
+    document.querySelector('#map-content').textContent=factoryMapText(chapter,true);mountEnding();
   }
   if(session.hasStarted && startMenu.mode==='closed') saveStorage.observe(beforeChapter,chapter,actions.gameplayActive?dt:0);
   if (beforeMode!==chapter.ui.mode) {
     clearInput();
-    if (['keypad','caught'].includes(chapter.ui.mode)) releasePointer(chapter.ui.mode);
+    if (['keypad','caught','ending','complete'].includes(chapter.ui.mode)) releasePointer(chapter.ui.mode);
   }
   worldView.sync(chapter);
   monsterView.sync(chapter);

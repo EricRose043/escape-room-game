@@ -55,7 +55,7 @@ export function createMonsterView(scene) {
   }));
   return {sync(state){
     for(const [id,model] of models) {
-      const monster=state.monsters[id];model.group.visible=monster.mode!=='inactive';
+      const monster=state.corridor?.active?{...state.monsters[id],...state.corridor.chaser,mode:'chase',walkDistance:state.corridor.distance}:state.monsters[id];model.group.visible=monster.mode!=='inactive';
       const chasing=monster.mode==='chase',searching=monster.mode==='search';
       const phase=monster.walkDistance*5,swing=Math.sin(phase)*(chasing?0.38:0.22);
       model.group.position.set(monster.x,0.008*(1-Math.cos(phase*2)),monster.z);

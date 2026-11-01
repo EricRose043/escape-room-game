@@ -38,8 +38,9 @@ export function createSaveStorage(storage) {
         || before.puzzles[id]?.restored!==after.puzzles[id]?.restored);
       const immediate=before.checkpointId!==after.checkpointId || !sameItems(before.inventory.itemIds,after.inventory.itemIds)
         || puzzleChanged || before.trainStarted!==after.trainStarted
+        || !sameItems(before.foundClueIds??[],after.foundClueIds??[]) || before.corridor?.complete!==after.corridor?.complete || before.completed!==after.completed
         || before.flashlight.mode!==after.flashlight.mode || (before.ui.mode==='caught' && after.ui.mode==='explore');
-      const changed=immediate || before.flashlight.charge!==after.flashlight.charge;
+      const changed=immediate || before.flashlight.charge!==after.flashlight.charge || before.elapsedSeconds!==after.elapsedSeconds;
       if(!before.player.paused && before.ui.mode==='explore' && Number.isFinite(dt) && dt>0) elapsed+=dt;
       if(changed) {pending=after;dirty=true;if(status.state!=='error') status={state:'pending',message:'進度尚未儲存'};}
       else if(dirty) pending=after;

@@ -60,6 +60,7 @@ export function readGamepad(pad, previousButtons = []) {
   result.actions.flashlightPressed = Boolean(result.buttons[5] && !previousButtons[5]);
   result.actions.uvPressed = Boolean(result.buttons[4] && !previousButtons[4]);
   result.actions.cancelPressed = Boolean(result.buttons[1] && !previousButtons[1]);
+  result.actions.mapPressed=Boolean(result.buttons[8]&&!previousButtons[8]);
   result.actions.settingsPressed = Boolean(result.buttons[3] && !previousButtons[3]);
   result.actions.menuDirection = [[12,'up'],[13,'down'],[14,'left'],[15,'right']]
     .find(([index])=>result.buttons[index] && !previousButtons[index])?.[1] ?? null;

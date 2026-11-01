@@ -4,6 +4,7 @@ import { WORLD } from '../logic/world.js';
 export { createAudio };
 
 export function audioCueFor(previous,next) {
+  if(next?.events!==previous?.events&&next?.events?.some(e=>e.type==='alarm'))return 'alarm';
   if(!previous?.trainStarted&&next?.trainStarted) return 'train';
   if(next?.ui?.mode==='ending' && previous?.ui?.mode!=='ending') return 'escape';
   if(next?.ui?.mode==='caught' && previous?.ui?.mode!=='caught') return 'caught';
@@ -29,7 +30,7 @@ export function createFactoryAudio({contextFactory,audioFactory=createAudio}={})
   function stop(){untilStep=0;pendingCue=null;engine.stop();}
   function flushCue(){
     if(pendingCue && !muted && !disposed && engine.getStatus().contextState==='running') {
-      const cue=pendingCue;pendingCue=null;engine.playCue(cue);
+      const cue=pendingCue;pendingCue=null;if(cue==='alarm')engine.playAlarm();else engine.playCue(cue);
     }
   }
   function start(){
@@ -50,7 +51,7 @@ export function createFactoryAudio({contextFactory,audioFactory=createAudio}={})
     const area=WORLD.areas.find(a=>next?.player?.x>=a.bounds.minX && next.player.x<=a.bounds.maxX
       &&next.player.z>=a.bounds.minZ&&next.player.z<=a.bounds.maxZ);
     engine.setAmbience(exploring?(area?.id??'lobby'):null);
-    const distances=Object.values(next?.monsters??{}).filter(m=>m.mode!=='inactive')
+    const distances=(next?.corridor?.active?[{...next.corridor.chaser,mode:'chase'}]:Object.values(next?.monsters??{})).filter(m=>m.mode!=='inactive')
       .map(m=>Math.hypot(m.x-next.player.x,m.z-next.player.z)).filter(Number.isFinite);
     engine.setHeartbeat(exploring && distances.length?heartbeatIntensity(Math.min(...distances)):0);
     const cue=audioCueFor(previous,next);if(cue)pendingCue=cue;flushCue();
