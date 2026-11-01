@@ -32,3 +32,11 @@ test('版本三保存色序、線索、走廊、出口、時間與列車，舊�
  for(const version of [1,2]){const old={version,chapterId:'chapter-1',checkpointId:'production.checkpoint',itemIds:s.inventory.itemIds,puzzles:{'power.main':{installedItemId:'power.fuse',restored:true}},flashlight:{charge:83,mode:'uv'}};if(version===2){old.puzzles['production.sequence']={installedItemId:null,restored:true};old.trainStarted=true;}assert.equal(l.parseChapterSave(JSON.stringify(old)).status,'valid');}
  for(const change of [d=>d.elapsedSeconds=-1,d=>d.foundClueIds.push('missing'),d=>d.puzzles['production.color-sequence'].restored=false]){const bad=structuredClone(data);change(bad);assert.ok(l.validateChapterSave(bad).length);}
 });
+test('上一版本地糖果存檔可保留電力道具與時間，不偽造新版員工卡和線索',()=>{
+ const old={version:2,chapterId:'chapter-1',checkpointId:'production.checkpoint',itemIds:['lobby.flashlight','power.fuse','production.exit-clue'],
+ puzzles:{'power.main':{installedItemId:'power.fuse',restored:true},'production.sequence':{restored:true},'exit.code':{restored:false}},flashlight:{charge:42,mode:'uv'},elapsedSeconds:65,corridorComplete:false};
+ const parsed=l.parseChapterSave(JSON.stringify(old));assert.equal(parsed.status,'valid');
+ const s=l.restoreChapterSave(parsed.data);assert.equal(s.elapsedSeconds,65);assert.equal(s.puzzles['power.main'].restored,true);assert.equal(s.flashlight.charge,42);
+ assert.equal(s.inventory.itemIds.includes('lobby.employee-card'),false);assert.equal(s.puzzles['exit.final'].restored,false);assert.equal(s.puzzles['production.color-sequence'].restored,true);
+ const bad=structuredClone(old);bad.flashlight.charge=999;assert.equal(l.parseChapterSave(JSON.stringify(bad)).status,'invalid');
+});
