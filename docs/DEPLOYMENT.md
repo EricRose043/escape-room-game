@@ -48,3 +48,9 @@ INPUT_DEVICE=ps node tools/browser-verify.mjs
 ```
 
 `PLAYWRIGHT_MODULE` 可指向已安裝的 Playwright `index.mjs`，`CHROME_PATH` 指向 Chrome，`GAME_URL` 指向本機或待驗網站。此工具不會替你變更主機／GitHub Pages 的公開設定，也不會部署網站。
+
+## GitHub Actions 啟動限制（2026-11-01）
+
+[run 41320466639](https://github.com/EricRose043/escape-room-game/actions/runs/41320466639) 的 GitHub Summary／Annotations 明確顯示帳戶近期付款失敗或支出上限需要調整，沒有啟動任何 job。GitHub API 未提供該註解，已用原生 Chrome 讀取確認；詳 [原始狀態](evidence/2026-11-01/owner-integration/github-ci-startup.json)。
+
+工作流程 YAML 已本機解析；本機235項及三條Chrome路線通過。但 Linux／Windows × Node22／24 的遠端CI **NOT_RUN，不是 PASS**，也不以歷史220項Windows結果代替。沒有更改付款、預算、Actions權限或分支保護；只有帳戶持有人可處理帳務限制，解除後再重跑CI。

@@ -13,3 +13,7 @@
 詳細來源、目前證據及需求對照：`docs/INTEGRATION_STATUS.md`。部署：`docs/DEPLOYMENT.md`。本機預覽使用 `python3 -m http.server 8778 --bind 127.0.0.1`。
 
 目前沒有等待軟體機關施工的項目。實體 Xbox／PS、學校舊電腦 30 fps、真人試聽與其他瀏覽器仍由具備設備的實際操作者驗收，不把模擬結果或歷史 Windows 結果當成當前硬體通過。原 TESTS／VERIFY 的人類追溯與歷史記錄保留。
+
+## 遠端 CI 尚未執行
+
+GitHub run 41320466639 startup_failure，0 jobs。原生 GitHub 頁面註解確認是帳戶付款／支出上限限制；沒有更改帳務或權限。YAML解析通過，本機235過、三條Chrome過，遠端Linux／Windows結果仍為NOT_RUN。原始訊息見 docs/evidence/2026-11-01/owner-integration/github-ci-startup.json。

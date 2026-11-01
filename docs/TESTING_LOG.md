@@ -233,3 +233,9 @@
 - 新增可重現整合缺陷：控制器放在門洞會擋住通路；結局元件先讀 A、main 再讀相同 A，曾立即關閉收藏圖或取消重玩確認；鍵盤 Tab 焦點曾與 selected 不同步。皆已修復並以相同路線複測。
 - 證據：[owner-integration](evidence/2026-11-01/owner-integration/)，含 node-tests.txt、三份 browser-verification.json 及開始／設定／生產線／走廊／結局截圖。完整來源與邊界見 [INTEGRATION_STATUS](INTEGRATION_STATUS.md)。
 - 界線：動畫時鐘可控、手把為模擬 API，不能把截圖 FPS 或模擬通關當成學校硬體或實體 Xbox／PS 結果。真人聽感、實體設備及其他瀏覽器未代填；既有歷史 Windows 220 項結果不等於當前整合版的 Windows 結果，當前以 PR #4 CI 為準。
+
+## GitHub Actions 啟動限制（2026-11-01）
+
+[run 41320466639](https://github.com/EricRose043/escape-room-game/actions/runs/41320466639) 的 GitHub Summary／Annotations 明確顯示帳戶近期付款失敗或支出上限需要調整，沒有啟動任何 job。GitHub API 未提供該註解，已用原生 Chrome 讀取確認；詳 [原始狀態](evidence/2026-11-01/owner-integration/github-ci-startup.json)。
+
+工作流程 YAML 已本機解析；本機235項及三條Chrome路線通過。但 Linux／Windows × Node22／24 的遠端CI **NOT_RUN，不是 PASS**，也不以歷史220項Windows結果代替。沒有更改付款、預算、Actions權限或分支保護；只有帳戶持有人可處理帳務限制，解除後再重跑CI。

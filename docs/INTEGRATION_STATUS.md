@@ -44,3 +44,9 @@ Node 及瀏覽器的測試輸出、截圖在 [owner-integration](evidence/2026-1
 原 `VERIFY.md` 沒有被改寫。按新版 GitHub BRIEF／劇情保留員工卡門禁和列車逃生，同時補回原 STEP 7 的四色警報與 STEP 9 的三線索出口；原 T4.01「只提拿手電筒才離開」與員工卡門禁的文字差異仍保留在驗收追溯，不宣稱舊 53 條全部人類通過。
 
 實體 Xbox／PS、學校舊電腦全螢幕 30 fps、真人音色舒適度、Safari／Firefox 仍需實際設備及操作者。沒有把自動通關、歷史 Windows 結果或內建瀏覽器 FPS 代填成實體設備結果。交接清單沿用 [HUMAN_TEST_CHECKLIST](HUMAN_TEST_CHECKLIST.md)。
+
+## GitHub Actions 啟動限制（2026-11-01）
+
+[run 41320466639](https://github.com/EricRose043/escape-room-game/actions/runs/41320466639) 的 GitHub Summary／Annotations 明確顯示帳戶近期付款失敗或支出上限需要調整，沒有啟動任何 job。GitHub API 未提供該註解，已用原生 Chrome 讀取確認；詳 [原始狀態](evidence/2026-11-01/owner-integration/github-ci-startup.json)。
+
+工作流程 YAML 已本機解析；本機235項及三條Chrome路線通過。但 Linux／Windows × Node22／24 的遠端CI **NOT_RUN，不是 PASS**，也不以歷史220項Windows結果代替。沒有更改付款、預算、Actions權限或分支保護；只有帳戶持有人可處理帳務限制，解除後再重跑CI。
