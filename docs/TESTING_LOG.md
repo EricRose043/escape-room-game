@@ -419,3 +419,29 @@ shuoen88要求整體／腳步更大聲、靈敏度降低及改善轉頭卡頓、
 Three.js可見性測試是真正模型群組的CPU檢查，沒有新GPU截圖／FPS、實體Xbox／PS或真人緊張感結果；未重試／繞過之前瀏覽器安全停止。舊電腦仍依使用者選擇暫緩。沒有push、PR修改、Site保存／部署或正式ZIP更新，不把本機提交當作已發布。
 
 操作與第二關明碼計算表：[STAY_RECOVERY](STAY_RECOVERY.md)。原53條驗收中的回存檔文字不擅改成已全數人類通過，本輪變更有使用者獨立決定。
+
+## LOG-20261105-FINAL：使用者確認後正式交付
+
+shuoen88明確要求公開網址、備份、報告介紹講稿，以及上傳前面所有改動，記S-D037，解除前輪本機暫緩。重新git ls-remote及明確fetch全部分支，main仍fffe647、已為本分支祖先；沒有用舊快照覆蓋其他人更新。77213c2正常push原分支，包含所有試玩提交與PRESENTATION_SCRIPT，原PR #6維持Eric審查合併，三人作者／commit不重寫。
+
+### 公開網站
+
+使用Sites技能及既有project_id appgprj_6aeb59e36838819198e5559bd6813b97。get_site確認現有public與owner權限；source helper先開啟既有來源再更新dist，所有執行檔逐位元等同已測的runtime c90483f。helper推送site source **1cafeaf675c043254cfbcc20f8bb5903b87ddc45**，封裝84檔、3942400 bytes的tar。save回傳版本2，部署 **appgdep_6aebc28e7a1481919474c0f935cdd129** 原生succeeded，網址仍 https://shuoen-toy-factory-demo.breathtakingchair.chatgpt.site ，未更改受眾。
+
+沒有重試之前被拒絕的自動HTTP／瀏覽器路徑。公開可用性根據Sites原生成功與public設定，沒有偽稱新的真瀏覽器GPU／老師現場網路實測。open_in_codex已回queued交付連結，不將queued當頁面載入證據。
+
+### 正式備份與講稿
+
+建立專案同層escape-room-demo-2026-11-05-final及ZIP，保留前輪舊備份。內容含同版index／src／assets／vendor、四個啟動檔、預覽、操作說明、CONTRIBUTORS／授權、VERSION及報告講稿；沒有Git、登入憑證或瀏覽器／預製測試存檔。
+
+ZIP CRC通過，真正解壓到暫存位置後，prepare_assets不改入口內容。用本輪專用臨時埠啟動解壓後伺服器，80個入口／執行資源皆200且位元一致，最後只關掉此測試程序，未接替使用者8778。最後文書更新後重新封裝並核對全部runtime仍與來源一致；大小、SHA256與檔數以final-delivery/package.json為準。
+
+PRESENTATION_SCRIPT有3～4分鐘主稿、1分鐘短版、60～90秒示範順序、三人分工／AI使用／測試限制備答。GitHub保留Markdown來源；ZIP內另附UTF-8記事本版「報告介紹講稿.txt」，逐字內容與來源核對。
+
+### 自動驗證與CI狀態
+
+遊戲與原測試自c90483f後未再改動，沿用Node323/323、乾淨Windows323/323、Python8/8及出生點至END邏輯1/1；本輪新增的是交付包、資源一致性與來源追溯檢查，不為文書捏造紅燈測試。
+
+本輪推送的Actions run41935825920實際回傳failure，但4個jobs的steps皆空。Ubuntu／Windows annotation均明示「The job was not started because your account is locked due to a billing issue.」因此這是帳戶端未啟動，不是測試斷言執行失敗，也不列為CI通過；未改付款／Actions設定或嘗試繞過。原生Sites交付已成功，GitHub程式已上傳。證據ci-blocker.json及PR描述分開列明。
+
+實體Xbox／PS、新GPU／FPS與真人完整通關的未知結果仍保留，舊電腦依使用者要求暫緩。使用者同意發布不代替這些測試結果。最終可操作交付見DEMO_READY.md，版本／保存／部署與ZIP證據在evidence/2026-11-05/final-delivery。

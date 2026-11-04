@@ -82,3 +82,5 @@ git shortlog -sn origin/main當時為RyanDing1010 95、EricRose043 81、shuoen88
 同日追加S-D035：20d8260→9d1ed9c聲音、b0ac7e2→33e3474整章推理、2a218fe→96ab393紙張互動，皆以shuoen88真實身分保留先紅再綠歷史；038b9ad更新本機入口版本。Ryan原故事／答案及Eric已整合場景的來源不改，main fffe647與五個過往團隊來源仍是祖先。本輪依使用者試玩流程繼續只留本機，不把這些提交寫成遠端已合併。
 
 同日S-D036：依shuoen最新文字改玩家原位／玩偶消失，917d3df先紅、bf5d041實作、c90483f入口版本，皆維持shuoen88真實作者。這是使用者本輪玩法調整，保留Eric原checkpoint API與Ryan／shuoen既有關卡進度及所有祖先；不改寫原貢獻，也未上傳／發布。
+
+同日S-D037解除發布暫緩後，77213c2已正常推送至原分支，包含前面所有試玩修改與講稿，未改寫三人歷史。公開Sites版2保留CREDITS、Three.js MIT授權與原repo來源，備份另附CONTRIBUTORS.txt。這是已上傳分支及可公開試玩的交付；Eric對main的PR #6合併審查仍保留。最後交付證據／文書另隨提交推送，以PR實際head為準。

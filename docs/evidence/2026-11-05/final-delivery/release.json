@@ -1,0 +1,66 @@
+{
+  "releaseDate": "2026-11-05",
+  "userApproval": "S-D037",
+  "public": {
+    "project_id": "appgprj_6aeb59e36838819198e5559bd6813b97",
+    "url": "https://shuoen-toy-factory-demo.breathtakingchair.chatgpt.site",
+    "access": "public",
+    "version_number": 2,
+    "siteSourceCommit": "1cafeaf675c043254cfbcc20f8bb5903b87ddc45",
+    "version_id": "appgprj_6aeb59e36838819198e5559bd6813b97~appgver_1eaa7ebadf7c819181ec28acb1189197",
+    "deployment_id": "appgdep_6aebc28e7a1481919474c0f935cdd129",
+    "status": "succeeded",
+    "githubRuntimeCommit": "c90483fb3a40fbd4a26d615c588cf5e03300af07",
+    "githubUploadedSourceCommit": "77213c20f28f2ecca38b2ca7c41beaea4260f798",
+    "assetBuild": "359cf85415ed4b20",
+    "assetPreparation": "prepare_escape_room_assets.py",
+    "localUrl": "http://127.0.0.1:8778/index.html",
+    "publicVerification": "Native Site publication succeeded with current public audience; no new browser GPU check",
+    "archive_storage": {
+      "archive_format": "tar",
+      "sediment_file_id": "file_0000000045b08209bfaf2f237802106f",
+      "content_hash": "sha256:d6951f452b68d7677095422d60483639713cbaffaca42500a9cfde80990ba8ed",
+      "size_bytes": 3942400,
+      "file_count": 84
+    }
+  },
+  "backup": {
+    "releaseDate": "2026-11-05",
+    "build": "359cf85415ed4b20",
+    "githubRuntimeCommit": "c90483fb3a40fbd4a26d615c588cf5e03300af07",
+    "githubUploadedSourceCommit": "77213c20f28f2ecca38b2ca7c41beaea4260f798",
+    "githubPullRequest": "https://github.com/EricRose043/escape-room-game/pull/6",
+    "publicUrl": "https://shuoen-toy-factory-demo.breathtakingchair.chatgpt.site",
+    "publicVersion": 2,
+    "tests": {
+      "node": 323,
+      "windows": 323,
+      "launcher": 8
+    },
+    "hardwareResults": "not substituted by automated tests",
+    "folder": "C:\\Users\\user\\codex projects\\escape-room-demo-2026-11-05-final",
+    "zip": "C:\\Users\\user\\codex projects\\escape-room-demo-2026-11-05-final.zip",
+    "zipBytes": 2559580,
+    "zipSha256": "a00ae56f92f4ba4beb4ccb5931099c78c9610abefed0a3b71b0cda8e01c46a6a",
+    "zipCrc": "pass",
+    "zipFileCount": 94,
+    "runtimeMatchesSource": true,
+    "unpackedHttp200AndByteIdentical": 80,
+    "entryPreparationIdempotent": true,
+    "testPort": 58124,
+    "existing8778Untouched": true,
+    "documentationRefreshed": true,
+    "finalRuntimeByteComparison": "pass"
+  },
+  "githubPullRequest": "https://github.com/EricRose043/escape-room-game/pull/6",
+  "githubStatus": "all gameplay and presentation changes pushed; main merge pending owner review",
+  "ci": "run41935825920 not started due to explicit billing lock; not test execution failure",
+  "verification": {
+    "node": 323,
+    "windows": 323,
+    "launcher": 8,
+    "logicRoute": 1,
+    "packageRuntimeHttp": 80,
+    "packageCrc": "pass"
+  }
+}
