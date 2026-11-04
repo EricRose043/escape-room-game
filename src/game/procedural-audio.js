@@ -26,9 +26,10 @@ export function createAudio(options = {}) {
   const Context = Object.hasOwn(options, 'AudioContext') ? options.AudioContext : (globalThis.AudioContext ?? globalThis.webkitAudioContext);
   const later = options.setTimeout ?? globalThis.setTimeout;
   const cancel = options.clearTimeout ?? globalThis.clearTimeout;
-  let context = null, master = null, ready = false, disposed = false, pendingUnlock = null;
+  let context = null, master = null, outputBoost=null,limiter=null,ready = false, disposed = false, pendingUnlock = null;
   let volume = 0.35, ambience = null, intensity = 0, heartbeatTimer = null, noise = null;
   const voices = new Set(), ambient = new Map();
+  const ambientFilters=new Set();
   const canPlay = () => ready && !disposed && context?.state === 'running';
   function disconnect(node) { try { node.disconnect(); } catch { /* 已斷開可忽略。 */ } }
   function release(voice) {
@@ -80,6 +81,7 @@ export function createAudio(options = {}) {
   function stopAmbience() {
     for (const [source, gain] of ambient) { try { source.stop(); } catch { /* 已停止。 */ } disconnect(source); disconnect(gain); }
     ambient.clear();
+    for(const node of ambientFilters)disconnect(node);ambientFilters.clear();
   }
   function startAmbience() {
     if (!canPlay() || !ambience || ambient.size) return;
@@ -92,6 +94,13 @@ export function createAudio(options = {}) {
       source.connect(gain); gain.connect(master); ambient.set(source, gain);
       source.onended = () => { ambient.delete(source); disconnect(source); disconnect(gain); }; source.start();
     }
+    // 固定的低頻風道／電流底噪，隨區域改濾波，僅在換區時建立。
+    const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain();
+    const buffer=context.createBuffer(1,context.sampleRate*4,context.sampleRate),samples=buffer.getChannelData(0);let brown=0;
+    for(let i=0;i<samples.length;i++){brown=(brown+(Math.random()*2-1)*.03)/1.02;samples[i]=brown*3;}
+    source.buffer=buffer;source.loop=true;filter.type='lowpass';filter.frequency.setValueAtTime(frequency*5,context.currentTime);
+    gain.gain.setValueAtTime(0,context.currentTime);gain.gain.linearRampToValueAtTime(.045,context.currentTime+.7);
+    source.connect(filter);filter.connect(gain);gain.connect(master);ambient.set(source,gain);ambientFilters.add(filter);source.start();
   }
   function clearHeartbeat() { if (heartbeatTimer !== null) cancel(heartbeatTimer); heartbeatTimer = null; }
   function beat() {
@@ -125,7 +134,14 @@ export function createAudio(options = {}) {
     if (pendingUnlock) return pendingUnlock;
     pendingUnlock = (async () => {
       try {
-        if (!context) { context = new Context(); master = context.createGain(); master.gain.value = volume; master.connect(context.destination); }
+        if (!context) {
+          context = new Context(); master = context.createGain(); master.gain.value = volume;
+          outputBoost=context.createGain();outputBoost.gain.value=1.65;master.connect(outputBoost);
+          if(typeof context.createDynamicsCompressor==='function'){
+            limiter=context.createDynamicsCompressor();limiter.threshold.value=-3;limiter.knee.value=6;limiter.ratio.value=16;limiter.attack.value=.003;limiter.release.value=.16;
+            outputBoost.connect(limiter);limiter.connect(context.destination);
+          }else outputBoost.connect(context.destination);
+        }
         if (context.state !== 'running') await context.resume();
         ready = context.state === 'running' && !disposed;
         if (ready) { startAmbience(); if (intensity > 0 && heartbeatTimer === null) beat(); }
@@ -142,6 +158,7 @@ export function createAudio(options = {}) {
     if (disposed) return;
     stop(); disposed = true; ready = false; noise = null;
     if (master) disconnect(master);
+    if(outputBoost)disconnect(outputBoost);if(limiter)disconnect(limiter);
     try { if (context && context.state !== 'closed') await context.close(); } catch { /* 關閉失敗不阻擋離頁。 */ }
   }
   return {
@@ -153,7 +170,7 @@ export function createAudio(options = {}) {
       if(cue==='caught') played=rustle(.3,.12,1500)||played;
       return played;
     },
-    playFootstep: () => rustle(0.11, 0.1, 550),
+    playFootstep: () => {const played=rustle(.14,.17,1000);if(played)tone(92,.085,.085,{end:48,type:'triangle'});return played;},
     playAlarm: () => { if (!canPlay()) return false; const played = tone(440, 0.2, 0.075, { type: 'triangle', end: 660 }); if (played) tone(660, 0.2, 0.06, { delay: 0.25, type: 'triangle', end: 440 }); return played; },
     playDoor: () => { if (!canPlay()) return false; const played = rustle(0.45, 0.09, 800); if (played) tone(150, 0.4, 0.04, { end: 55 }); return played; },
     stop, dispose,
