@@ -7,7 +7,8 @@ import {createFactoryAudio} from '../../src/game/audio.js';
 export async function runtime(storage,seed) {
   const events=()=>({events:{},addEventListener(type,fn){(this.events[type]??=[]).push(fn);},
     emit(type,event={}){for(const fn of this.events[type]??[]) fn({preventDefault(){},...event});}});
-  const context=new Proxy({}, {get:(target,key)=>target[key]??(()=>{})});
+  const drawnText=[];
+  const context=new Proxy({fillText:text=>drawnText.push(text)}, {get:(target,key)=>target[key]??(()=>{})});
   const element=()=>({...events(),hidden:true,textContent:'',style:{},dataset:{},classList:{toggle(){}},
     setAttribute(){},focus(){},appendChild(){},getContext:()=>context});
   const elements=new Map(),get=key=>{if(!elements.has(key)) elements.set(key,element());return elements.get(key);};
@@ -38,5 +39,5 @@ export async function runtime(storage,seed) {
     createWorldView:()=>({sync(){}}),createMonsterView:()=>({sync(){}}),createKeypadView:()=>({sync(){}}),
     createStartMenuView,createCaptureView,compensatedIntensity:()=>35,...values};
   const app=new Function(...Object.keys(dependencies),source)(...Object.values(dependencies));
-  return {...app,get,window,document,meshes,frame:time=>frame(time),pads:value=>{pads=value;}};
+  return {...app,get,window,document,meshes,drawnText:()=>drawnText,frame:time=>frame(time),pads:value=>{pads=value;}};
 }
