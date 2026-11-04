@@ -1,0 +1,30 @@
+TAP version 13
+# Subtest: 加長的跨區文件有足夠紙面，上下邊緣可按互動鍵記錄且仍限制距離與遮擋
+not ok 1 - 加長的跨區文件有足夠紙面，上下邊緣可按互動鍵記錄且仍限制距離與遮擋
+  ---
+  duration_ms: 2.4674
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\reasoning-paper-target.test.js:5:1'
+  failureType: 'testCodeFailure'
+  error: '不能把整段文字塞進舊窄條'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/reasoning-paper-target.test.js:8:50)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 174.2425

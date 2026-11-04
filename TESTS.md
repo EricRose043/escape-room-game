@@ -256,3 +256,17 @@ TF 表是分支查核證據，玩法及驗收含義變更仍待人確認；Q-004
 | IM-06 | TG.03、S-D034卡頓回饋；integration-frame-budget.test.js | 低幀率下降、穩定後漸進恢復、上下限與無效量測，2項通過；不等於已量測實機FPS |
 
 總套件305/305，Windows乾淨clone305/305、啟動器Python8/8、本機77資源HTTP與位元核對。操作與證據見docs/IMMERSION_CANDIDATE.md；本輪未做新GPU／實體手把／真人聽感驗證，舊電腦依使用者要求暫緩。未上傳、未重發公開站或備份包，等使用者確認。
+
+## 2026-11-05 驚嚇音色與整章推理（S-D035）
+
+來源為使用者再次實玩回饋、明確選擇整章重做推理，以及BRIEF恐怖程度／玩法核心；沿用T1／T6／T7／T8／T9及TG的人類驗收，不改VERIFY。
+
+| 案例 | 測試與檢查內容 | 本輪結果 |
+|---|---|---|
+| HR-01 | horror-stinger.test.js、integration-scary-texture.test.js：原創紋理頻帶／峰值／衰減／立體聲，首次unlock預建、重用、音量與stop／dispose | 2項通過；不等於真人音色確認 |
+| HR-02 | reasoning-content.test.js：五階證據推導與原驗證一致、24種四色排列只有一解、原始讀數不是密碼、地圖按進度回看與存檔往返 | 3項通過 |
+| HR-03 | integration-main-reasoning.test.js、reasoning-guidance.test.js：正式main畫布無完整UV答案，鍵鼠／Xbox／PS指引及列車錯碼不洩漏校驗值 | 2項通過；模擬裝置而非實體手把 |
+| HR-04 | reasoning-reading.test.js、reasoning-paper-target.test.js：真Three.js文件掛面／字幕選讀、裝飾淨空、加高紙面與邊緣可互動、超距仍擋 | 2項通過；另Canvas文件輸出已目視檢查，非GPU場景 |
+| HR-05 | route-replay.mjs：出生點取物、安裝／復電、實際取得與還原裝配線存檔點，以新證據推導答案、最高錯誤壓力走到END | 1/1；獨立自動邏輯路線，非真人全章 |
+
+本輪總套件314/314，乾淨Windows clone314/314、Python啟動器8/8。證據在docs/evidence/2026-11-05/horror-reasoning；人類新謎題／音色、GPU及硬體仍待確認，公開站與ZIP維持舊版。

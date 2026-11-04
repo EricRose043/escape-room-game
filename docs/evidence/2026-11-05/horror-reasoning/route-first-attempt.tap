@@ -1,0 +1,36 @@
+TAP version 13
+# Subtest: 被看見必抓的新規則仍可潛行解裝配線並跑完走廊，解2123直到脫軌END
+not ok 1 - 被看見必抓的新規則仍可潛行解裝配線並跑完走廊，解2123直到脫軌END
+  ---
+  duration_ms: 54.2283
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\docs\\evidence\\2026-11-05\\horror-reasoning\\route-replay.mjs:84:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + 'power.checkpoint'
+    - 'production.checkpoint'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'production.checkpoint'
+  actual: 'power.checkpoint'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/docs/evidence/2026-11-05/horror-reasoning/route-replay.mjs:87:9)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 451.5307

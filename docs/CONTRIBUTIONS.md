@@ -78,3 +78,5 @@ git shortlog -sn origin/main當時為RyanDing1010 95、EricRose043 81、shuoen88
 依shuoen試玩回饋，本輪以shuoen88既有真實身分提交聲音、滑鼠、近景、材質、漸進難度、自動解析度及測試，六組TDD紅／綠提交見LOG-20261105-IMMERSION。da6f4e6以merge納入Eric的main fffe647啟動器修復，原main與Ryan／shuoen來源提交均保留祖先鏈；沒有force push、rebase或squash。新增整合與調整不改Ryan原劇情／謎題及Eric場景／抓捕設計的作者歸屬。
 
 這批候選目前**僅存在本機**；依S-D034，使用者確認順暢後才推送。不能將本機commit存在描述成已上GitHub或main已合併，也未替其他成員發訊息／宣告驗收。
+
+同日追加S-D035：20d8260→9d1ed9c聲音、b0ac7e2→33e3474整章推理、2a218fe→96ab393紙張互動，皆以shuoen88真實身分保留先紅再綠歷史；038b9ad更新本機入口版本。Ryan原故事／答案及Eric已整合場景的來源不改，main fffe647與五個過往團隊來源仍是祖先。本輪依使用者試玩流程繼續只留本機，不把這些提交寫成遠端已合併。

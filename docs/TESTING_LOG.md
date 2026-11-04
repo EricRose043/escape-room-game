@@ -350,3 +350,45 @@ shuoen88要求整體／腳步更大聲、靈敏度降低及改善轉頭卡頓、
 目前沒有新真瀏覽器GPU／shader、實機FPS、實體Xbox／PS或真人音色／完整首次解題的結果。先前瀏覽器自動操作因無法確定目前網址被安全機制停止，未另換工具繞過。新程式不代表實機已達固定60／120fps，也不代填「寫實／更恐怖」通過。舊電腦效能依使用者要求暫緩。實玩操作在[本機候選說明](IMMERSION_CANDIDATE.md)，用本機8778及Ctrl+F5更新；不要拿舊公開站／備份包評估本批修改。
 
 歷史編號澄清：本紀錄較早段落提及的shuoen決定D033／設定精度DEF-011，現在分別為S-D033／S-DEF-011；owner D033與DEF-011留給啟動器修復。
+
+## LOG-20261105-REASONING：傳統驚嚇音色與整章分散證據
+
+使用者再次實玩回報「驚嚇的聲音不像傳統的那種」及「只要一照紫外線就能破關」，要求上網找恐怖遊戲參考；詢問範圍後，明確選擇整章加深推理。決定S-D035。延續發布暫緩，不推送GitHub、不改PR、不保存Sites版本／部署、不重打正式ZIP。
+
+### 來源查找與版本
+
+查閱EA／Motive的Dead Space Intensity Director開發文章及Xbox Wire的Alien: Isolation主設計師訪談，採緊張／喘息、環境層次與集中爆發的設計思路。只讀設計說明，沒有下載／擷取其素材或聲稱實際聽過遊戲；網址與本專案推論分列在HORROR_AUDIO_AND_REASONING.md。
+
+開始與收尾的git ls-remote都確認main仍為fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8，已在本分支祖先；遠端本分支仍停在3d14735f，符合未上傳。程式完成96ab393，入口資源提交038b9ad；本機build **60ec1eb14a9a8e4b**。main與五個過往組員來源SHA的ancestor核對皆通過，BRIEF／VERIFY未改。
+
+### 實作與先紅後綠
+
+| 項目 | 紅燈提交／證據 | 綠燈提交／結果 |
+|---|---|---|
+| 原創非旋律驚嚇紋理與預建播放 | 20d8260、audio-red.tap：2失敗 | 9d1ed9c；新2項轉綠，當時完整307/307 |
+| 五階段分散證據、畫布與地圖防直接答案 | b0ac7e2、reasoning-red.tap：缺新模組及正式main未開啟 | 33e3474；當時完整313/313 |
+| 加高紙面與完整互動邊緣 | 2a218fe、paper-target-red.tap：紙條高度不足 | 96ab393；完整314/314 |
+
+聲音以程序氣流／共振／非諧和擦響及短反射建立1.65秒立體聲紋理，首次unlock預建並重用，配兩層低頻撞擊／下降尾音。共用主音量／限制器與stop／dispose，測試檢查有限值、相對頻帶紋理、峰值、衰減與生命週期；非真人試聽。
+
+控制室由未排序UV讀數配回路圖；裝配線由原始格數配設備單位及接線；四色由設備校正值配燈牌及三項條件，24個排列中只有1解；出口把校正值、燈序、移轉及反向規則跨區整合；列車再取早期照明校驗來源、三張卡、現場排序與軌道。保留原故事／答案／已解進度／存檔版本；已知答案仍可直接輸入，不聲稱有防猜碼或每輪隨機。
+
+查核發現舊color-order即使文字改了，renderer仍畫固定紅黃綠藍箭頭；正式reasoning呈現改文件而保留舊模組API相容。main畫布、閱讀字幕、目標、文件互動、地圖及列車錯碼同步採新內容；地圖只在相應控制器完成後保留紀錄，不自動發給尚未取得的列車卡／整套公式。
+
+### 實際執行
+
+- Node v24.22.1，`node --test --test-reporter=tap` **314/314**，0失敗／略過，完整TAP見full-suite.tap。
+- 乾淨Windows clone，以core.autocrlf=true從038b9ad重新取出，**314/314**，main.js CRLF=0；windows-suite.tap。沒有以本機結果冒稱GitHub CI已跑。
+- Python啟動器unittest discover **8/8**；launcher-tests.txt。
+- route-replay.mjs由既有chapter-flow取物／復電路線與stealth-route後半路線組成，真正從出生點走到裝配線並啟用存檔點，再還原此已取得存檔點，以最高壓力及reasoning=true前進至END，**1/1**。答案由新證據資料推導，沒有直接指定後段已解旗標。這是Node邏輯操作，非瀏覽器或真人全章。
+- 真Three.js建立新紙面並以室內視角選讀：6個關鍵文件可讀；兩張加高跨區紙張的上下邊緣可記錄，超距仍不可。裝飾模型使用同一文件淨空資料。
+- 使用本機@napi-rs/canvas及系統微軟正黑體執行真正sign-view，輸出並目視檢查10份文件；第一次發現舊窄紙條太擠、標題與本文距離不足，修正後重新渲染。reasoning-papers-before-size-fix.png／reasoning-papers.png；不是GPU場景截圖。
+- 本機8778入口與**79個**執行資源／預覽HTTP200且位元一致；local-http.json。build及祖先摘要見verification.json。
+
+新測試的兩項設定修正也保留紀錄：reasoning-first-green-attempt.tap的一個新fixture漏了已取得保險絲及已復位的前置旗標，補齊合法前置後存檔往返通過，未降低斷言；route-first-attempt.tap原將到達6.5m平台視為已進裝配線，實際需走入區域7.5m才啟用存檔點，改測試路線再還原，沒有直接設定checkpoint或改遊戲判定。
+
+### 待使用者與環境限制
+
+本輪未做新的真瀏覽器GPU／FPS或實體Xbox／PS；未重試先前被安全機制停止的瀏覽器操作，也沒有換工具繞過。新音色恐怖感、首次推理解題深度及整章人體操作仍待使用者；舊電腦效能依先前選擇暫緩。孤立WAV只是原創紋理層，實際混音請用immersion-preview或正式index試玩；不要把聲音訊號測試當成聽感通過。
+
+操作與完整來源：[本輪候選說明](HORROR_AUDIO_AND_REASONING.md)。本機與最終公開站／備份不同步是使用者明確要求的試玩流程。
