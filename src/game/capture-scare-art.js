@@ -11,14 +11,16 @@ export function captureScarePose(elapsed=0) {
     x:-16+attack*18+Math.sin(age*4.1)*3,y:30-attack*34-creep*8,
     z:95+attack*230+creep*28,scale:.84+attack*.19+creep*.025,
     tilt:-13+attack*18+Math.sin(age*3.2)*2.2,pitch:13-attack*19-creep*3,
-    yaw:-12+attack*9+Math.sin(age*2.8)*1.5,jawY:-64+jaw*142+creep*13,
+    yaw:-12+attack*9+Math.sin(age*2.8)*1.5,jawY:-64+jaw*142+creep*13+Math.sin(age*17)*creep*.9,
+    eyeShift:Math.sin(age*7.4)*creep*2.2,
     jawTilt:-5+jaw*10,handX:240-hands*190-creep*12,handZ:160+hands*230};
 }
 
 // Procedural original blue textile doll, painted once during view construction.
 // The separated layers form a perspective puppet rather than a zooming poster.
 export function paintCaptureLayer(canvas,context,layer='fallback') {
-  canvas.width=1024;canvas.height=1024;context.clearRect(0,0,1024,1024);
+  canvas.width=1536;canvas.height=1536;context.clearRect(0,0,1536,1536);
+  context.setTransform?.(1.5,0,0,1.5,0,0);
   let seed=5731;
   const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
   const gradient=(x,y,r,stops)=>{
