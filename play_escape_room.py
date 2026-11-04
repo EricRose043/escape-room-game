@@ -1,5 +1,8 @@
 """Start the downloaded game locally, reusing its fixed save origin."""
 from pathlib import Path
+import ctypes
+import hashlib
+import json
 import re
 import socket
 import subprocess
@@ -8,7 +11,7 @@ import time
 import urllib.request
 import webbrowser
 from prepare_escape_room_assets import prepare_assets
-from serve_escape_room import directory_identity
+from serve_escape_room import directory_identity, control_state_path
 
 ROOT = Path(__file__).resolve().parent
 # GitHub source ZIPs put the game beside this script; the desktop distribution
@@ -16,6 +19,120 @@ ROOT = Path(__file__).resolve().parent
 GAME = ROOT if (ROOT / "index.html").is_file() and (ROOT / "src/game/main.js").is_file() else ROOT / "escape-room-game"
 PORT = 8778
 URL = f"http://127.0.0.1:{PORT}/index.html"
+LEGACY_SERVER_SHA = '6213bd06978571bcb0d0f62a4a1d95aa6ed035f7'
+
+
+def _git_sha(path):
+    data = Path(path).read_bytes().replace(b'\r\n', b'\n')
+    return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+
+
+def trusted_legacy_command(args, executable, root_identity, port):
+    """Recognize only our published Python file server, never an arbitrary PID."""
+    try:
+        if len(args) != 6 or args[2:5] != ['--port', str(port), '--directory']:
+            return False
+        script, directory = Path(args[1]).resolve(strict=True), Path(args[5]).resolve(strict=True)
+        if script.name != 'serve_escape_room.py' or not re.fullmatch(r'python(?:w|\d+(?:\.\d+)*)?(?:\.exe)?', Path(executable).name, re.IGNORECASE):
+            return False
+        if Path(args[0]).resolve() != Path(executable).resolve() or directory_identity(directory) != root_identity:
+            return False
+        known = {LEGACY_SERVER_SHA, _git_sha(ROOT / 'serve_escape_room.py')}
+        return _git_sha(script) in known and (directory / 'src/game/main.js').is_file()
+    except (OSError, ValueError):
+        return False
+
+
+def _windows_listener(port):
+    command = (
+        '[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false); '
+        f"$taskListener=Get-NetTCPConnection -State Listen -LocalPort {int(port)} -ErrorAction SilentlyContinue | Where-Object {{$_.LocalAddress -eq '127.0.0.1'}} | Select-Object -First 1; "
+        'if($taskListener){$taskProcess=Get-CimInstance Win32_Process -Filter ("ProcessId="+$taskListener.OwningProcess); '
+        '$taskProcess | Select-Object ProcessId,CommandLine,ExecutablePath,@{Name="Started";Expression={$_.CreationDate.ToUniversalTime().ToString("o")}} | ConvertTo-Json -Compress}'
+    )
+    result = subprocess.run(['powershell.exe', '-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-Command', command],
+                            capture_output=True, text=True, encoding='utf-8', timeout=12,
+                            creationflags=subprocess.CREATE_NO_WINDOW)
+    return json.loads(result.stdout) if result.returncode == 0 and result.stdout.strip() else None
+
+
+def _stop_legacy_windows_server(root_identity, port):
+    if sys.platform != 'win32':
+        return False
+    handle = None
+    try:
+        first = _windows_listener(port)
+        if not first or not first.get('CommandLine') or not first.get('ExecutablePath'):
+            return False
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel.OpenProcess.argtypes = [ctypes.c_ulong, ctypes.c_bool, ctypes.c_ulong]
+        kernel.OpenProcess.restype = ctypes.c_void_p
+        kernel.CloseHandle.argtypes = [ctypes.c_void_p]
+        kernel.TerminateProcess.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+        kernel.QueryFullProcessImageNameW.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_wchar_p, ctypes.POINTER(ctypes.c_ulong)]
+        handle = kernel.OpenProcess(0x1000 | 0x0001, False, int(first['ProcessId']))
+        if not handle:
+            return False
+        # Recheck after opening the handle, including creation time. A recycled
+        # PID can never cause termination of a different process.
+        if _windows_listener(port) != first:
+            return False
+        size = ctypes.c_ulong(32768)
+        image = ctypes.create_unicode_buffer(size.value)
+        if not kernel.QueryFullProcessImageNameW(handle, 0, image, ctypes.byref(size)) or Path(image.value).resolve() != Path(first['ExecutablePath']).resolve():
+            return False
+        shell = ctypes.WinDLL('shell32', use_last_error=True)
+        shell.CommandLineToArgvW.argtypes = [ctypes.c_wchar_p, ctypes.POINTER(ctypes.c_int)]
+        shell.CommandLineToArgvW.restype = ctypes.POINTER(ctypes.c_wchar_p)
+        kernel.LocalFree.argtypes = [ctypes.c_void_p]
+        count = ctypes.c_int()
+        pointer = shell.CommandLineToArgvW(first['CommandLine'], ctypes.byref(count))
+        if not pointer:
+            return False
+        try:
+            args = [pointer[index] for index in range(count.value)]
+        finally:
+            kernel.LocalFree(ctypes.cast(pointer, ctypes.c_void_p))
+        if not trusted_legacy_command(args, image.value, root_identity, port):
+            return False
+        return bool(kernel.TerminateProcess(handle, 0))
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+        return False
+    finally:
+        if handle:
+            kernel.CloseHandle(handle)
+
+
+def stop_previous_game_server(*, port=PORT):
+    """Handover our own loopback server without touching other applications."""
+    if not isinstance(port, int) or not 1 <= port <= 65535:
+        return False
+    try:
+        with urllib.request.urlopen(f'http://127.0.0.1:{port}/index.html', timeout=2) as response:
+            html = response.read().decode('utf-8')
+            if response.headers.get('X-Escape-Room-Server') != 'no-cache-v1' or '棉花糖工坊：閉館之後' not in html or './src/game/main.js' not in html:
+                return False
+            identity = response.headers.get('X-Escape-Room-Root')
+            capability = response.headers.get('X-Escape-Room-Control')
+        if not identity:
+            return False
+        if capability == 'handover-v1':
+            state = json.loads(control_state_path(port).read_text(encoding='utf-8'))
+            if state.get('app') != 'escape-room-game' or state.get('version') != 1 or state.get('port') != port or directory_identity(state['directory']) != identity or not re.fullmatch(r'[0-9a-f]{64}', state.get('token', '')):
+                return False
+            request = urllib.request.Request(f'http://127.0.0.1:{port}/__escape-room__/shutdown', data=b'', method='POST',
+                                             headers={'X-Escape-Room-Control-Token': state['token']})
+            with urllib.request.urlopen(request, timeout=3) as response:
+                return response.status == 200 and json.loads(response.read()).get('stopping') is True
+        return _stop_legacy_windows_server(identity, port)
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
+def port_is_open(port=PORT):
+    with socket.socket() as probe:
+        probe.settimeout(.3)
+        return probe.connect_ex(('127.0.0.1', port)) == 0
 
 
 def server_readiness_error(expected_version, *, directory=None, url=None):
@@ -33,6 +150,8 @@ def server_readiness_error(expected_version, *, directory=None, url=None):
                 return "The running game server is older and cannot verify its folder."
             if served_root != directory_identity(directory):
                 return "The running game server serves another extracted game folder."
+            if response.headers.get('X-Escape-Room-Control') != 'handover-v1':
+                return 'The old game server needs a one-time launcher upgrade.'
             build = re.search(r'<meta\s+name=["\']escape-room-build["\']\s+content=["\']([^"\']+)["\']', html, re.IGNORECASE)
             actual_version = build.group(1) if build else "missing"
             if actual_version != expected_version:
@@ -54,10 +173,15 @@ def main():
         raise RuntimeError("Game files are missing: " + str(GAME))
     readiness_error = server_readiness_error(expected_version)
     if readiness_error:
-        with socket.socket() as probe:
-            probe.settimeout(1)
-            if probe.connect_ex(("127.0.0.1", PORT)) == 0:
-                raise RuntimeError(f"Port {PORT} is already occupied. {readiness_error} Close that server before retrying this folder's launcher; no process was stopped.")
+        if port_is_open(PORT):
+            if not stop_previous_game_server(port=PORT):
+                raise RuntimeError(f"8778仍由其他服務或無法驗證的舊服務占用，未停止任何其他程式。請先關閉原本的遊戲伺服器再重試。原因：{readiness_error}")
+            print('已停止經確認的舊版遊戲服務，正在切換到這個資料夾。')
+            deadline = time.monotonic() + 6
+            while port_is_open(PORT) and time.monotonic() < deadline:
+                time.sleep(.1)
+            if port_is_open(PORT):
+                raise RuntimeError('舊版遊戲服務尚未釋放8778，請稍後再啟動。')
         with (ROOT / "escape-room-server.log").open("ab") as log:
             server = subprocess.Popen(
                 [sys.executable, str(ROOT / "serve_escape_room.py"), "--port", str(PORT), "--directory", str(GAME)],
