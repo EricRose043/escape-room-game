@@ -27,6 +27,8 @@ test('消失期間能走動、沒有透明碰撞，暫停失焦及面板都不�
  }
  const panel=l.updateChapter({...s,ui:l.createKeypad('production.sequence-keypad')},{},.1,options);assert.equal(panel.encounterRecovery.remaining,remaining);
  const moved=l.updateChapter(s,{move:{x:1}},.1,options);assert.ok(Math.hypot(moved.player.x-s.player.x,moved.player.z-s.player.z)>.1);
+ const near={...s,player:{...s.player,x:18.5,z:-9.6,yaw:0}};
+ const through=l.updateChapter(near,{move:{y:1}},.1,options);assert.ok(Math.abs(through.player.z+9.85)<1e-8,'可通過隱去玩偶原本的碰撞範圍');
  const clamped=l.updateChapter(s,{},1000,options);assert.ok(clamped.encounterRecovery.remaining>=4.9-1e-9);
 });
 
@@ -58,4 +60,30 @@ test('走廊追兵回來時在玩家後方留距離，既有關門與追逐仍�
  assert.equal(s.encounterRecovery,null);assert.equal(s.corridor.active,true);assert.equal(s.corridor.caught,false);assert.equal(s.ui.mode,'explore');
  assert.ok(Math.hypot(s.player.x-s.corridor.chaser.x,s.player.z-s.corridor.chaser.z)>3);
  assert.ok(s.corridor.gates.closedIds.includes('corridor.door-2'));
+ for(const [x,z] of [[27,-17.5],[41.2,-17.5]]){
+  let arrived=false;
+  for(let i=0;i<1000;i++){
+   const dx=x-s.player.x,dz=z-s.player.z,distance=Math.hypot(dx,dz);if(distance<.015){arrived=true;break;}
+   const strength=Math.min(1,distance/(l.WALK_SPEED*.05)),vx=dx/distance*strength,vz=dz/distance*strength,yaw=s.player.yaw;
+   const next=l.updateChapter(s,{move:{x:vx*Math.cos(yaw)-vz*Math.sin(yaw),y:-vx*Math.sin(yaw)-vz*Math.cos(yaw)}},.05,options);
+   assert.equal(next.ui.mode,'explore');assert.ok(Math.hypot(next.player.x-s.player.x,next.player.z-s.player.z)>.001,'恢復後不可被門卡死');
+   assert.ok(!l.getGeometry(next).collisionBoxes.some(b=>l.circleOverlapsBox(next.player.x,next.player.z,b)));s=next;
+  }
+  assert.ok(arrived);
+ }
+ assert.equal(s.corridor.complete,true);assert.equal(s.checkpointId,'exit.checkpoint');
+ assert.deepEqual(l.validateChapterSave(l.createChapterSave(s)),[]);
+});
+
+test('五秒後沒有安全重現點就等玩家轉身；復位按錯也不使隱去玩偶提早現身',()=>{
+ const s=ready(),single={...def,spawn:{x:18.5,z:-10.5,yaw:0},patrol:['one']};
+ const world={areas:[{...l.WORLD.areas.find(a=>a.id===def.areaId),navigation:{nodes:[{id:'one',x:18.5,z:-10.5}],edges:[]}}]};
+ const geometry={occluderBoxes:[],collisionBoxes:[]};
+ let waiting={...l.beginEncounterRecovery(s,[single]),player:{...s.player,yaw:0},encounterRecovery:{remaining:.1}};
+ waiting=l.advanceEncounterRecovery(waiting,{},.1,{definitions:[single],world,geometry});assert.ok(waiting.encounterRecovery);assert.equal(waiting.monsters[id].mode,'inactive');
+ const returned=l.advanceEncounterRecovery({...waiting,player:{...waiting.player,yaw:Math.PI}}, {},.1,{definitions:[single],world,geometry});
+ assert.equal(returned.encounterRecovery,null);assert.equal(returned.monsters[id].mode,'patrol');
+ const absent=finish(l.updateChapter(ready(),{},.1,options));
+ const wrong={...absent,player:{...absent.player,x:20.1,z:-4.1,yaw:-Math.PI/2,pitch:0}};
+ const alarm=l.updateChapter(wrong,{interactPressed:true},0,options);assert.ok(alarm.events.some(e=>e.type==='alarm'));assert.equal(alarm.monsters[id].mode,'inactive');assert.ok(alarm.encounterRecovery);
 });

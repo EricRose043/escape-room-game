@@ -75,7 +75,7 @@ test('被抓期間移動轉頭互動裝備與場景計時停止',()=>{
   assert.equal(logic.selectChapterTarget(s),null);
 });
 
-test('暫停失焦拔除與繼續不跳進被抓計時或洩漏輸入',async()=>{
+test('暫停失焦拔除與原位繼續不跳進被抓計時或洩漏輸入',async()=>{
   const options={jumpScare:true};let s=logic.updateChapter(ready(options),{},0.1,options);
   s=logic.updateChapter(s,{},0.2,options);s=logic.updateChapter(s,{},0.1,options);
   assert.equal(s.ui.mode,'caught');assert.equal(logic.capturePresentation(s.ui,{jumpScare:true}).closeup,true);
@@ -110,6 +110,7 @@ test('暫停失焦拔除與繼續不跳進被抓計時或洩漏輸入',async()=>
   assert.equal(app.state().ui.mode,'caught');
   assert.equal(app.document.pointerLockElement,null,'被抓釋放 Pointer Lock，不誤觸暫停');
   assert.equal(app.state().player.paused,false);
+  const capturedPose=structuredClone(app.state().player);
   for(const code of ['KeyW','KeyE','KeyF','KeyR']) app.document.emit('keydown',{code});
   app.document.emit('mousemove',{movementX:500,movementY:500});
   app.frame(200);app.frame(300);
@@ -118,8 +119,10 @@ test('暫停失焦拔除與繼續不跳進被抓計時或洩漏輸入',async()=>
   assert.equal(app.get('#capture-canvas').hidden,true);assert.equal(app.get('#capture-screen').hidden,false);
   app.get('#resume').emit('click');app.frame(500);
   for(let i=6;i<28;i++) app.frame(i*100);
-  assert.equal(app.state().ui.mode,'explore');assert.equal(app.state().player.x,6.5);
-  assert.equal(app.state().player.yaw,-Math.PI/2);assert.equal(app.state().flashlight.enabled,false);
+  // shuoen本次明確要求原位回復；同時更嚴格核對整個視角／位置及無殘留輸入。
+  assert.equal(app.state().ui.mode,'explore');assert.deepEqual(app.state().player,capturedPose);
+  assert.equal(app.state().monsters[id].mode,'inactive');assert.ok(app.state().encounterRecovery);
+  assert.equal(app.state().flashlight.enabled,false);
   app.window.emit('blur');assert.equal(app.get('#pause-screen').hidden,false);
 });
 

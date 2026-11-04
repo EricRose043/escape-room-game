@@ -2,6 +2,7 @@ import { createAudio } from './procedural-audio.js';
 import { heartbeatIntensity, footstepInterval } from '../logic/audio-mix.js';
 import { WORLD } from '../logic/world.js';
 import { trainCinematicFrame } from '../logic/train-cinematic.js';
+import {encounterAbsent} from '../logic/encounter-recovery.js';
 export { createAudio };
 
 export function audioCueFor(previous,next) {
@@ -61,7 +62,7 @@ export function createFactoryAudio({contextFactory,audioFactory=createAudio}={})
     const area=WORLD.areas.find(a=>next?.player?.x>=a.bounds.minX && next.player.x<=a.bounds.maxX
       &&next.player.z>=a.bounds.minZ&&next.player.z<=a.bounds.maxZ);
     engine.setAmbience(rolling?'train':exploring?(area?.id??'lobby'):null);
-    const distances=(next?.corridor?.active?[{...next.corridor.chaser,mode:'chase'}]:Object.values(next?.monsters??{})).filter(m=>m.mode!=='inactive')
+    const distances=(encounterAbsent(next)?[]:next?.corridor?.active?[{...next.corridor.chaser,mode:'chase'}]:Object.values(next?.monsters??{})).filter(m=>m.mode!=='inactive')
       .map(m=>Math.hypot(m.x-next.player.x,m.z-next.player.z)).filter(Number.isFinite);
     engine.setHeartbeat(exploring && distances.length?heartbeatIntensity(Math.min(...distances)):0);
     const cue=audioCueFor(previous,next);if(cue)pendingCue=cue;flushCue();

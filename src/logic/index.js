@@ -24,6 +24,7 @@ export * from './mouse-look.js';
 export * from './progression.js';
 export * from './frame-budget.js';
 export * from './reasoning-content.js';
+export * from './encounter-recovery.js';
 
 export * from './corridor-chase.js';
 export * from './ending.js';

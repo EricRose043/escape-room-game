@@ -29,7 +29,7 @@ const settingsStorage=createGameSettingsStorage({
   setItem:(key,value)=>window.localStorage.setItem(key,value),
 },{search:window.location.search});
 let settings=settingsStorage.load();
-const chapterOptions={jumpScare:settings.jumpScare,progressive:true,reasoning:true};
+const chapterOptions={jumpScare:settings.jumpScare,progressive:true,reasoning:true,captureRecovery:'stay'};
 const playClues=reasoningClues(CLUES);
 let settingsOpen=false,endingDispose=null,endingMapOpen=false;
 let chapter = createChapter(chapterOptions);
