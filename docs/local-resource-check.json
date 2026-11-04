@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-04",
+  "result": "PASS",
+  "resources": 72,
+  "checks": [
+    "served resources equal final local source bytes",
+    "all relative ES module dependencies resolved",
+    "local pinned Three.js and visual assets available without CDN"
+  ],
+  "limitations": [
+    "Source/resource readiness only; no browser execution or WebGL rendering test."
+  ]
+}

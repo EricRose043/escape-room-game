@@ -1,10 +1,10 @@
 import { MAX_DT } from './movement.js';
 
-export const CAPTURE_SECONDS=1.2;
-const REVEAL_SECONDS=0.15,HIDE_SECONDS=0.5;
+export const CAPTURE_SECONDS=2.1;
+const REVEAL_SECONDS=0.15,HIDE_SECONDS=1.45;
 
-export function createCapture({jumpScare=false}={}) {
-  return {mode:'caught',elapsed:0,jumpScareAllowed:jumpScare===true};
+export function createCapture({jumpScare=false,cause,monsterId}={}) {
+  return {mode:'caught',elapsed:0,jumpScareAllowed:jumpScare===true,...(cause?{cause}:{}),...(monsterId?{monsterId}:{})};
 }
 
 export function updateCapture(ui,dt,{jumpScare=false}={}) {

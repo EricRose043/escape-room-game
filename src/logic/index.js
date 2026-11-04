@@ -24,3 +24,5 @@ export * from './settings.js';
 export * from './corridor-chase.js';
 export * from './ending.js';
 export * from './chapter-guidance.js';
+export * from './puzzles/train-code.js';
+export * from './train-cinematic.js';

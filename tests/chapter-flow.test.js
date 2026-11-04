@@ -30,11 +30,11 @@ function journey() {
   s={...s,player:logic.setPaused(s.player,false)};
   assert.equal(s.player.x,logic.WORLD.spawn.x); assert.equal(s.player.z,logic.WORLD.spawn.z);
   assert.equal(logic.hasFlashlight(s),false);
-  s=take(walk(s,0,5.5),'lobby.factory-map');
-  s=take(walk(s,0.5,4.95),'lobby.employee-card');
-  s=take(walk(s,-1.5,5.5),'lobby.flashlight');
+  s=take(s,'lobby.factory-map');
+  s=take(walk(walk(s,1.5,6.6),1.5,4.95),'lobby.employee-card');
+  s=take(walk(walk(walk(s,1.5,6.6),-1.5,6.6),-1.5,5.5),'lobby.flashlight');
   s=logic.updateChapter(s,{flashlightPressed:true});
-  s=walk(walk(walk(s,0,5.5),0,-4.6),-3,-4.6);
+  for(const [x,z] of [[-1.5,6.6],[1.5,6.6],[1.5,3],[0,3],[0,-4.6],[-3,-4.6]])s=walk(s,x,z);
   s=take(s,'power.fuse');
   s=walk(walk(s,0,-4.6),3,-3);
   const box=logic.DEVICES.find(d=>d.kind==='fuseBox');

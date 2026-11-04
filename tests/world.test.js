@@ -39,7 +39,7 @@ test('正式關卡所有 ID 唯一且引用有效', async () => {
 });
 test('出生點與必要通道可通行，物品可從走道接近', async () => {
   const { WORLD, getGeometry, ITEMS } = await load();
-  assert.deepEqual(WORLD.spawn, {x:0,z:6,yaw:0,pitch:0});
+  assert.deepEqual(WORLD.spawn, {x:0,z:6.6,yaw:0,pitch:0});
   const closed=reachable(getGeometry(state()).collisionBoxes,WORLD.spawn);
   assert.ok(closed.every(p=>p.z >= 0.3), '未取得員工卡不可繞過辦公室門');
   const open=reachable(getGeometry(state(true)).collisionBoxes,WORLD.spawn);

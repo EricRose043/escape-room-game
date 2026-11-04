@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-04",
+  "result": "PASS",
+  "build": "d58decab32be21b2",
+  "fileCount": 194,
+  "checks": [
+    "all game files and all four launcher/build/server files included",
+    "every archive member compared byte-for-byte with the delivered local file",
+    "archive integrity verified by zipfile.testzip"
+  ],
+  "limitations": [
+    "This verifies packaging, not Chrome rendering or physical controller hardware."
+  ]
+}

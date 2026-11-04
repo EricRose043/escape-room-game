@@ -31,7 +31,7 @@ export function showSettings(root,settings,onChange,onClose) {
   function render(focus=false) {
     controls[0].value=String(menu.settings.volume);values[0].textContent=`${menu.settings.volume}%`;
     controls[1].setAttribute('aria-checked',String(menu.settings.jumpScare));controls[1].textContent=menu.settings.jumpScare?'開啟':'關閉';
-    values[1].textContent=menu.settings.jumpScare?'被抓時可出現近景':'被抓時僅顯示黑畫面';
+    values[1].textContent=menu.settings.jumpScare?'被抓時播放齜牙貼臉演出':'關閉貼臉演出，被抓時僅顯示黑畫面';
     controls[2].value=String(menu.settings.mouseSensitivity);values[2].textContent=`${menu.settings.mouseSensitivity} 倍`;
     controls.forEach((el,index)=>el.classList.toggle('selected',index===menu.selected));
     if(focus)controls[menu.selected].focus();

@@ -32,7 +32,7 @@ async function runtime(jumpScare=false) {
   const document={...listeners(),hidden:false,pointerLockElement:null,hasFocus:()=>true,
     querySelector:get,createElement:element,body:element(),exitPointerLock(){this.pointerLockElement=null;this.emit('pointerlockchange');}};
   const window={...listeners(),innerWidth:1000,innerHeight:700,devicePixelRatio:1,
-    location:{search:jumpScare?'?jumpscare=1':''},localStorage:storage};
+    location:{search:jumpScare?'?jumpscare=1':'?jumpscare=0'},localStorage:storage};
   const vector=()=>({set(){},setScalar(){}});
   class Object3D {constructor(){this.position=vector();this.rotation=vector();}add(){}remove(){}lookAt(){}}
   class Renderer {constructor(){this.domElement=element();this.domElement.requestPointerLock=async()=>{
@@ -117,7 +117,7 @@ test('暫停失焦拔除與繼續不跳進被抓計時或洩漏輸入',async()=>
   assert.equal(app.state().player.paused,true);
   assert.equal(app.get('#capture-canvas').hidden,true);assert.equal(app.get('#capture-screen').hidden,false);
   app.get('#resume').emit('click');app.frame(500);
-  for(let i=6;i<25;i++) app.frame(i*100);
+  for(let i=6;i<28;i++) app.frame(i*100);
   assert.equal(app.state().ui.mode,'explore');assert.equal(app.state().player.x,6.5);
   assert.equal(app.state().player.yaw,-Math.PI/2);assert.equal(app.state().flashlight.enabled,false);
   app.window.emit('blur');assert.equal(app.get('#pause-screen').hidden,false);

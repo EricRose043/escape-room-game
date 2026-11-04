@@ -1,22 +1,26 @@
 # 啟動與靜態部署
 
-遊戲為純 HTML／CSS／ES module／three.js，沒有後端、帳號、伺服器資料庫或遊戲 npm 依賴。需要網路載入固定版本 three.js 0.160.0 的 jsDelivr 模組。
+遊戲為純 HTML／CSS／ES module／three.js，沒有後端、帳號、伺服器資料庫或遊戲 npm 依賴。three.js 0.160.0 隨附在`vendor/three`，本機啟動後不需連網。
 
 ## 本機
 
-Mac／Linux，在專案根目錄：
+需Python 3。Windows下載GitHub ZIP並解壓後，雙擊遊戲資料夾中的`Play-EscapeRoom.cmd`；完整試玩包則用父資料夾的同名檔。啟動器會辨識遊戲在同層或`escape-room-game/`子資料夾。Mac／Linux在`play_escape_room.py`所在資料夾：
 
 ```sh
-python3 -m http.server 8778 --bind 127.0.0.1
+python3 play_escape_room.py
 ```
 
 Windows PowerShell：
 
 ```powershell
-py -m http.server 8778 --bind 127.0.0.1
+py play_escape_room.py
 ```
 
-瀏覽器開 `http://127.0.0.1:8778/`。不要用 `file://`。遊戲需要 WebGL；Pointer Lock 被瀏覽器限制時可依頁面提示使用鍵盤備援開始與方向鍵轉頭。
+固定使用`http://127.0.0.1:8778/index.html`。啟動器呼叫`prepare_escape_room_assets.py`，以全部程式、樣式、PNG及引擎內容計算共同版本，將所有模組映射到相同版本的網址；再啟動`serve_escape_room.py`，GET／HEAD一律提供目前檔案及禁止快取標頭。這能避免瀏覽器混用不同版本的ES模組，導致開場停在第一段、略過按鈕無反應。
+
+現有服務的資料夾識別與首頁版本必須一致才會重用；其他服務占用8778時明確停止並提示原因，不會終止陌生程序或改埠。加`--serve-only`只啟動伺服器；本機準備版本與靜態HTTP檢查不等同Chrome實際操作驗收。
+
+不要用`file://`。遊戲需要WebGL；Pointer Lock被瀏覽器限制時可依頁面提示使用鍵盤備援開始與方向鍵轉頭。解壓檔請保留四個父資料夾檔案：`Play-EscapeRoom.cmd`、`play_escape_room.py`、`prepare_escape_room_assets.py`、`serve_escape_room.py`。
 
 ## 靜態主機
 
@@ -25,8 +29,9 @@ py -m http.server 8778 --bind 127.0.0.1
 - `index.html`
 - `src/` 全目錄（含 settings-entry.js、settings.css 及所有 logic／game 模組）
 - `assets/`（素材與來源記錄）
+- `vendor/`（固定版本three.js及其MIT授權）
 
-主機要能以正確的 JavaScript MIME type 提供 `.js`，並允許 import map 指向 jsDelivr。建置指令為空；首頁為 `index.html`，不需要 SPA rewrite。公開網路環境使用 HTTPS。部署前在獨立網址完成以下檢查：
+上傳前在父資料夾執行`python prepare_escape_room_assets.py`更新版本映射。主機要能以正確的JavaScript MIME type提供`.js`，並允許import map載入同站模組。首頁為`index.html`，不需要SPA rewrite；首頁建議禁用快取，帶版本的模組依完整網址快取。公開網路環境使用HTTPS。部署前在獨立網址完成以下檢查：
 
 1. 開場、略過、開始及設定可操作，主控台無錯誤。
 2. 普通瀏覽器可鎖定滑鼠，Esc 能暫停；手把按鍵提示正確。

@@ -14,7 +14,7 @@ export function createMonster(definition) {
     patrolIndex:0,waitRemaining:definition.dwellSeconds,path:[],pathIndex:1,
     walkDistance:0,navigationBlocked:false,geometryKey:null,
     lastSeen:null,lostSightSeconds:0,searchElapsed:0,returnNodeId:null,
-    repathRemaining:0,pathGoal:null,plannedMode:null,pathPlanCount:0,visionRaycasts:0,
+    repathRemaining:0,pathGoal:null,plannedMode:null,pathPlanCount:0,visionRaycasts:0,playerVisible:false,
     contactLatched:false,contactCount:0,contactFeedbackRemaining:0,events:[]};
 }
 
@@ -146,6 +146,7 @@ export function updateMonster(state,definition,area,player,dt,boxes,context={}) 
   }
   const visible=monsterVision(next,definition,area,player,context.occluderBoxes??boxes,context);
   next.visionRaycasts=visible.raycasts;
+  next.playerVisible=visible.visible;
   if(visible.visible) {
     next.lastSeen={x:player.x,z:player.z};next.lostSightSeconds=0;
     if(next.mode!=='chase') next={...next,mode:'chase',waitRemaining:0,searchElapsed:0,investigate:false};

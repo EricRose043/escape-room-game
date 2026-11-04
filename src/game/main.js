@@ -8,7 +8,7 @@ import {
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
   keyboardStartMenuCommand, startMenuGamepadCommand,
-  createSettings, createSettingsStorage, deserialize,finishChapter,chapterObjective,factoryMapText,
+  createSettings, createGameSettingsStorage, deserialize,finishChapter,chapterObjective,factoryMapText,trainCinematicFrame,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
@@ -20,11 +20,14 @@ import { createFactoryAudio } from './audio.js';
 import {showEnding} from './ending-view.js';
 
 const MOUSE_SENSITIVITY = 0.002; // 弧度／像素；滑鼠只送角度位移，不換算成速度。
-// 驚嚇預設關閉（使用者已確認）；保留既有 ?jumpscare=1 驗收入口。
-const settingsDefaults=createSettings(false);
-const settingsStorage=createSettingsStorage({getItem:key=>window.localStorage.getItem(key)},settingsDefaults);
+// 使用者已要求實際播放抓捕演出；新版啟動策略同步設定與畫面。
+const settingsDefaults=createSettings(true);
+const settingsStorage=createGameSettingsStorage({
+  getItem:key=>window.localStorage.getItem(key),
+  setItem:(key,value)=>window.localStorage.setItem(key,value),
+},{search:window.location.search});
 let settings=settingsStorage.load();
-const chapterOptions={jumpScare:new URLSearchParams(window.location.search).get('jumpscare')==='1'||settings.jumpScare};
+const chapterOptions={jumpScare:settings.jumpScare};
 let settingsOpen=false,endingDispose=null,endingMapOpen=false;
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
@@ -56,6 +59,7 @@ renderer.setPixelRatio(renderPixelRatio);
 document.body.appendChild(renderer.domElement);
 
 const worldView = createWorldView(scene);
+worldView.enhanceScene?.(renderer,camera);
 const monsterView = createMonsterView(scene);
 const audio=createFactoryAudio();
 audio.setMasterVolume?.(settings.volume/100);
@@ -71,20 +75,22 @@ function addBox(width, height, depth, x, y, z, material) {
 
 // 每個模型直接從唯一物品 AABB 建立，不另存座標或尺寸。
 const itemMeshes = new Map(ITEMS.map(item => [item.id,
-  addBox(item.maxX - item.minX, item.maxY - item.minY, item.maxZ - item.minZ,
+  worldView.createItemMesh?.(item) ?? addBox(item.maxX - item.minX, item.maxY - item.minY, item.maxZ - item.minZ,
     (item.minX + item.maxX) / 2, (item.minY + item.maxY) / 2, (item.minZ + item.maxZ) / 2,
     new THREE.MeshLambertMaterial({ color: item.color }))]));
 
 scene.add(new THREE.AmbientLight(0x8e9eae, 0.45));
 
 // 單盞手電筒，不開陰影或後製；照射範圍與 logic 共用設定。
-const torch = new THREE.SpotLight(0xffeed0, 18, BEAM.distance, BEAM.halfAngle, 0, 2);
+const torch = new THREE.SpotLight(0xffeed0, 18, BEAM.distance, BEAM.halfAngle, .4, 2);
 torch.castShadow = false;
 torch.visible = false;
 scene.add(torch);
 scene.add(torch.target);
 
 const clueMeshes = new Map(CLUES.map(clue => {
+  const mounted=worldView.createClueMesh?.(clue);
+  if(mounted)return [clue.id,mounted];
   const canvas = document.createElement('canvas');
   canvas.width = 1024;
   canvas.height = 360;
@@ -192,19 +198,27 @@ function showStoryBeat(beat) {
 }
 
 const mapPanel=document.querySelector('#factory-map');
+const filmPanel=document.querySelector('#train-film');
+const filmCaption=document.querySelector('#train-film-caption');
+function inTrainFilm(){return chapter.ui.mode==='ending'&&chapter.ui.variant==='derailment';}
 function syncUI() {
-  pauseScreen.hidden = !session.paused || startMenu.mode!=='closed' || ['ending','complete'].includes(chapter.ui.mode) || !mapPanel.hidden || settingsOpen;
+  const film=inTrainFilm();
+  document.body.dataset.cinematic=film?'true':'false';
+  filmPanel.hidden=!film;
+  if(film){const frame=trainCinematicFrame(chapter.ui.elapsed??0);filmPanel.dataset.blackout=String(frame.blackout);setText(filmCaption,frame.dialogue);filmCaption.hidden=!frame.dialogue;}
+  document.querySelector('#settings-button')?.setAttribute('aria-disabled',film?'true':'false');
+  pauseScreen.hidden = !session.paused || startMenu.mode!=='closed' || chapter.ui.mode==='complete' || (chapter.ui.mode==='ending'&&!film) || !mapPanel.hidden || settingsOpen;
   setText(document.querySelector('#objective'),chapterObjective(chapter));
-  setText(document.querySelector('#keypad-title'),chapter.ui.deviceId==='exit.final-keypad'?'出口控制板':chapter.ui.deviceId==='production.sequence-keypad'?'裝配線控制器':'電力控制器');
+  setText(document.querySelector('#keypad-title'),chapter.ui.deviceId==='bay.train-console'?'列車檢修控制器':chapter.ui.deviceId==='exit.final-keypad'?'出口控制板':chapter.ui.deviceId==='production.sequence-keypad'?'裝配線控制器':'電力控制器');
   startMenuView.sync(startMenu,prompt.device);
-  startOpen.hidden=!session.hasStarted;
+  startOpen.hidden=!session.hasStarted||film;
   setText(saveStatus,saveStorage.status().message);
   setText(document.querySelector('#start-save-status'),saveStorage.status().message);
   keypadView.sync(chapter.ui,session.paused,prompt.device);
   captureView.sync(chapter.ui,{...chapterOptions,paused:session.paused});
   let completed=false;try {completed=window.localStorage.getItem('toy-factory-complete')==='true';} catch {}
   const hasMap=chapter.inventory.itemIds.includes('lobby.factory-map') || completed;
-  document.querySelector('#factory-map-button').hidden=!hasMap || chapter.ui.mode==='complete';
+  document.querySelector('#factory-map-button').hidden=!hasMap || chapter.ui.mode==='complete'||film;
   document.querySelector('#ending-screen').hidden=chapter.ui.mode!=='complete'||endingMapOpen||startMenu.mode!=='closed';
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
   const target = selectChapterTarget(chapter);
@@ -217,7 +231,7 @@ function syncUI() {
   const hiding=chapter.ui.mode==='hiding';
   hidingHint.hidden=session.paused || !hiding;
   setText(hidingHint,hiding?`${chapter.ui.message || '躲藏中'} · ${buttonLabel('interact',prompt.device)} 出櫃`:'');
-  setText(pauseTitle, session.hasStarted ? '已暫停' : '棉花糖工坊：閉館之後');
+  setText(pauseTitle, film?'列車影像已暫停':session.hasStarted ? '已暫停' : '棉花糖工坊：閉館之後');
   setText(resumeButton, session.hasStarted ? '繼續（鍵盤滑鼠）' : '開始（鍵盤滑鼠）');
   chargeRow.hidden = !hasFlashlight(chapter);
   chargeMeter.value = chapter.flashlight.charge;
@@ -226,8 +240,8 @@ function syncUI() {
   const device = prompt.device;
   setText(controlsHint, chapter.ui.mode==='caught' ? `回復中 · ${buttonLabel('pause',device)} 暫停` : hiding
     ? `${buttonLabel('look', device)} 窺視（左右 45°／上下 25°） · ${buttonLabel('pause',device)} 暫停`
-    : `${buttonLabel('move', device)} 走路 · 滑鼠／方向鍵轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
-  setText(pauseInstructions, device === 'keyboard'
+    : `${buttonLabel('move', device)} 走路 · ${device==='keyboard'?'滑鼠／方向鍵':buttonLabel('look',device)}轉頭 · ${buttonLabel('pause', device)} 暫停${hasFlashlight(chapter) ? ` · ${buttonLabel('flashlight', device)} 手電筒 · ${buttonLabel('uv', device)} 切換光線` : ' · 請領取巡檢燈'}`);
+  setText(pauseInstructions, film?'回到視窗後，按繼續或 Start／Options，從中斷的位置繼續觀看。':device === 'keyboard'
     ? '鍵盤滑鼠：按下方按鈕。手把：按任一鍵喚醒，A／✕ 開始，Start／Options 暫停與繼續。'
     : session.hasStarted ? `按 ${buttonLabel('pause', device)} 繼續，${buttonLabel('cancel',device)} 返回開始選單，或使用下方按鈕切換鍵盤滑鼠。`
       : `按 ${buttonLabel('confirm', device)} 開始（不需要鎖定滑鼠）。`);
@@ -236,8 +250,12 @@ function syncUI() {
 }
 
 let mapReturnToGame=false,mapAwaitRelease=false;
-function openMap(){mapAwaitRelease=true;mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=factoryMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
+function openMap(){if(inTrainFilm())return;mapAwaitRelease=true;mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=factoryMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
 function closeMap(){mapPanel.hidden=true;endingMapOpen=false;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}clearInput();syncUI();if(chapter.ui.mode==='complete')document.querySelector('[data-ending-action="map"]')?.focus();}
+window.addEventListener('factory-help-open',()=>{
+  if(!intro.hidden||startMenu.mode!=='closed'||settingsOpen||inTrainFilm())return;
+  applySession({forcePause:true});clearInput();releasePointer('help');
+});
 window.addEventListener('factory-settings-open',()=>{
   settingsOpen=true;mapPanel.hidden=true;mapReturnToGame=false;
   applySession({forcePause:true});clearInput();audio.stop?.();releasePointer('settings');
@@ -252,7 +270,7 @@ document.querySelector('#factory-map-button').addEventListener('click',openMap);
 document.querySelector('#map-close').addEventListener('click',closeMap);
 document.querySelector('#ending-close').addEventListener('click',openMap);
 function restartFromEnding(){startMenuAwaitRelease=true;applySession({forcePause:true});openStartMenu();startMenu=updateStartMenu(startMenu,{type:'new'});syncUI();}
-function mountEnding(){if(endingDispose)return;endingDispose=showEnding(document.querySelector('#ending-screen'),chapter.endingResult??finishChapter(0,chapter.elapsedSeconds??0),restartFromEnding,{title:'你逃出了棉花糖工坊',onMap:openMap,ignoreHeld:true,storyText:'列車穿過封鎖的大門。尾端空車廂的斷電廣播卻重播：「最好的朋友，陪你直到回家。」隨後，車門從裡面輕輕扣上了。'});}
+function mountEnding(){if(endingDispose)return;const derail=chapter.ui.variant==='derailment'||chapter.trainCinematic?.started;endingDispose=showEnding(document.querySelector('#ending-screen'),chapter.endingResult??finishChapter(0,chapter.elapsedSeconds??0),restartFromEnding,{title:derail?'遊戲結束｜END':'第一章結束',onMap:openMap,ignoreHeld:true,storyText:derail?'列車在黑暗中脫軌。廣播停止了，車廂深處卻傳來那句話：「最好的朋友，陪你直到回家。」':'封存的舊結局紀錄已保留。重新開始可以體驗列車檢修謎題與脫軌尾聲。'});}
 function clearInput() {
   keys.clear();
   interactPending = false;
@@ -287,6 +305,7 @@ function handleStartCommand(command,source='keyboard') {
     if(endingDispose){endingDispose();endingDispose=null;}endingMapOpen=false;
     chapter=next;session=createSession();clearInput();
     if(chapter.ui.mode==='complete'){session={hasStarted:true,paused:true};mountEnding();syncUI();return;}
+    if(inTrainFilm()){applySession({confirmPressed:true});releasePointer('ending');syncUI();return;}
     if(source==='keyboard') requestLock();
     else {applySession({confirmPressed:true});releasePointer('gamepad');}
   }
@@ -375,6 +394,7 @@ document.addEventListener('keydown', (event) => {
     return;
   }
   if(chapter.ui.mode==='complete'||chapter.ui.mode==='ending')return;
+  if(event.code==='KeyH'&&!event.repeat){event.preventDefault();applySession({forcePause:true});clearInput();releasePointer('help');return;}
   if(chapter.ui.mode==='caught') {
     if(event.code==='Escape' && !event.repeat) applySession({forcePause:true});
     if(['KeyW','KeyA','KeyS','KeyD','KeyE','KeyF','KeyR','Escape','Enter','Space'].includes(event.code)) event.preventDefault();
@@ -511,6 +531,11 @@ function readActions(time) {
 
   const before = session;
   if(!intro.hidden){if(pad?.actions.confirmPressed||pad?.actions.cancelPressed||pad?.actions.pausePressed)finishIntro();return {...mergeActions(),gameplayActive:false};}
+  if(inTrainFilm()){
+    // 劇情不接受跳過或手動暫停；失焦、拔除手把仍會安全凍結同一時間軸。
+    if(session.paused&&pad?.actions.pausePressed){audio.start();applySession({pausePressed:true});}
+    return {...mergeActions(),gameplayActive:session.hasStarted&&!session.paused};
+  }
   if(!mapPanel.hidden){if(mapAwaitRelease){if(![0,1,8,9].some(i=>pad?.buttons?.[i]))mapAwaitRelease=false;return {...mergeActions(),gameplayActive:false};}if(pad?.actions.cancelPressed||pad?.actions.confirmPressed||pad?.actions.pausePressed||pad?.actions.mapPressed)closeMap();return {...mergeActions(),gameplayActive:false};}
   if(settingsOpen) {
     window.dispatchEvent?.(new CustomEvent('factory-settings-gamepad',{detail:pad?.actions??{}}));
@@ -584,13 +609,14 @@ function animate(time) {
     if (['keypad','caught','ending','complete'].includes(chapter.ui.mode)) releasePointer(chapter.ui.mode);
   }
   worldView.sync(chapter);
-  monsterView.sync(chapter);
+  monsterView.sync(chapter,dt,session.paused||actions.gameplayActive===false);
   for (const [id,mesh] of itemMeshes) mesh.visible=!chapter.inventory.itemIds.includes(id);
   syncUI();
   camera.position.set(chapter.player.x, EYE_HEIGHT, chapter.player.z);
   camera.rotation.set(chapter.player.pitch, chapter.player.yaw, 0, 'YXZ');
+  worldView.syncPresentation?.(chapter,session,prompt);
   syncLighting();
-  renderer.render(scene, camera);
+  if(!worldView.renderCinematic?.(renderer,chapter,settings,session))renderer.render(scene, camera);
   frames += 1;
   const elapsed = time - sampleStart;
   if (elapsed >= 1000) {

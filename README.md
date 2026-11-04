@@ -1,37 +1,43 @@
 # 棉花糖工坊：閉館之後
 
-**2026-11-01：已依 GitHub 新版三人分工接通正式整章。** 保留 Ryan 的劇情／R1／R2、shuoen 的測試／S1／S2／S3 原始提交，由 Eric 的 Codex 完成網站與機關接入。235 項自動測試全過，真實 Chrome 的鍵鼠、模擬 Xbox 與模擬 PS 三條完整路線 console 零錯誤；不等於實體設備全部驗收。
+**2026-11-04 本機完整試玩版：六區模型、列車2123謎題與3D脫軌尾聲已接入。** 保留 Ryan 與 shuoen 已完成成果；Ryan PR#5文件已合併，新增遊戲實作由 Eric 的 Codex 完成。280項Node測試與正式Three.js幾何檢查通過。本輪瀏覽器權限仍阻擋代理程式實際看畫面，GPU外觀、FPS及實體Xbox／PS尚待實玩；不使用11月1日歷史驗收冒充本次結果。
 
-整合與最新 CI／main 狀態見 [PR #4](https://github.com/EricRose043/escape-room-game/pull/4)。詳細功能、來源及限制見 [整合交付](docs/INTEGRATION_STATUS.md)，啟動與主機設定見 [部署說明](docs/DEPLOYMENT.md)。
+同日最新修正：貨運門與追逐前第一道隔離門整片都可觸發原門邊操作；兩張2413文件的互動判定對齊紙面。啟動器統一模組版本並禁止舊快取，避免Chrome混用程式；詳見[門與文件修正](docs/INTERACTION_FIXES.md)。
+
+此次內容、組員來源及驗證限制見 [列車與模型交付](docs/TRAIN_AND_MODEL_DELIVERY.md)及[視覺改版](docs/VISUAL_UPGRADE.md)。2026-11-04 Eric 實玩回覆「遊戲可以了」，並授權發布本次完整遊戲；本次程式在既有 main／[PR #5](https://github.com/EricRose043/escape-room-game/pull/5)後增量提交，保留所有組員原始提交。[PR #5](https://github.com/EricRose043/escape-room-game/pull/5)本身是已合併的劇情規格文件；[PR #4](https://github.com/EricRose043/escape-room-game/pull/4)保留11月1日原整合歷史。
 
 ## 目前完整流程
 
-辦公室取得地圖／員工卡／手電筒 → 控制室保險絲與 UV 檢修碼 → 裝配線數字控制器與四色復位 → 追逐走廊的維修對照 → 出口控制廳的反向線索與密碼 → 月台刷卡啟動列車 → 登車逃生、時間與完整收藏地圖。
+辦公室取得地圖／員工卡／手電筒 → 控制室保險絲與 UV 檢修碼 → 裝配線數字控制器與四色復位 → 追逐走廊的維修對照 → 出口控制廳的反向線索與密碼 → 月台三張檢修卡與發車謎題 → 登車、隧道、脫軌尾聲與END／完整收藏地圖。
 
-四色按錯會警報引怪；出口必須收齊三條線索；走廊停止會被抓。被抓或讀檔保留必要進度，新增出口安全存檔點。版本三相容 GitHub v1／v2 與上一版本地存檔；舊版沒做過的新機關不補造完成。
+四色按錯會警報引怪；出口必須收齊三條線索；走廊停止會被抓。月台三卡也須分別互動記錄後才可發車。被抓或讀檔保留必要進度；版本四保存新列車與演出進度，保留既有v1／v2／v3相容。舊合法發車仍可登車，不補造新卡片或解題紀錄。
 
-- 設定：O／Xbox Y／PS △，音量、近景驚嚇（預設關）、滑鼠靈敏度獨立存讀。
+裝配線採潛行：**被娃娃看見就必定抓到**，只能在被發現前遮擋或躲藏。新版手把指南有Xbox／PS實體布局圖，按Start／Options暫停查看。月台題目數兩組完整軌道，每組包含兩根鋼軌；圖面與提示均已改清楚。詳見[手把與抓捕調整](docs/CONTROLS_AND_CAPTURE.md)。
+
+- 設定：O／Xbox Y／PS △，音量、近景驚嚇（預設開，舊設定首次同步）、滑鼠靈敏度獨立存讀。
 - 地圖：M／Xbox View／PS Share，地圖內可回看已取得的三條線索。
 - 結局：方向鍵／十字鍵選「重新開始」或「完整收藏地圖」，Enter／A／✕ 確認。重玩仍需確認，不自動刪存檔。
 - 手把僅支援 standard mapping；模擬手把不是實體 Xbox／PS 驗收。
 
 ## 開啟遊戲
 
-需要 Python 3、本機 HTTP 伺服器及支援 ES module、importmap、WebGL 的桌面瀏覽器。three.js 固定使用 `0.160.0`，由 jsDelivr CDN 載入，因此需要網路。不需 `npm install`，沒有 npm 套件依賴。
+需要 Python 3、本機 HTTP 伺服器及支援 ES module、importmap、WebGL 的桌面瀏覽器。three.js 固定使用 `0.160.0`，隨附於 `vendor/three`；啟動後不需連網載入引擎。不需 `npm install`，沒有 npm 套件依賴。
 
-Mac：在專案資料夾執行：
+從GitHub的Code → Download ZIP下載並解壓縮，雙擊遊戲資料夾內的`Play-EscapeRoom.cmd`。完整試玩包也可雙擊父資料夾的同名檔案，啟動器支援兩種位置。固定網址`http://127.0.0.1:8778/index.html`；已有頁面先Ctrl+F5。存檔隨瀏覽器及網址保存，之後使用相同網址繼續。啟動器會更新整套模組版本、禁止舊快取，並核對伺服器所提供的版本及資料夾，避免 Chrome 混用新舊程式造成開場無法略過。詳見[啟動與部署](docs/DEPLOYMENT.md)。
+
+Mac／Linux：在`play_escape_room.py`所在資料夾執行：
 
 ```sh
-python3 -m http.server 8000 --bind 127.0.0.1
+python3 play_escape_room.py
 ```
 
 Windows PowerShell：
 
 ```powershell
-py -m http.server 8000 --bind 127.0.0.1
+py play_escape_room.py
 ```
 
-Windows 若只有 `python`，可替代 `py`，需為 Python 3。瀏覽器前往 `http://127.0.0.1:8000/index.html`；按 `Ctrl+C` 停止伺服器。若埠被使用，指令及網址一起改為其他埠。不要直接點兩下 `index.html` 使用 `file://`。本機伺服器僅提供靜態檔案，沒有遊戲後端或帳號。
+Windows 若只有 `python`，可替代 `py`，需為 Python 3。加上`--serve-only`可只啟動伺服器。若8778被另一份遊戲或舊伺服器占用，啟動器會指出原因，先關閉原伺服器再重開；不會自動切換存檔網址。不要直接點兩下`index.html`使用`file://`。本機伺服器僅提供靜態檔案，沒有遊戲後端或帳號。
 
 ## 操作
 

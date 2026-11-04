@@ -1,10 +1,11 @@
-import { WORLD, ITEMS, getGeometry } from './world.js';
+import { WORLD, ITEMS, DOORS, getGeometry, isDoorOpen } from './world.js';
 import { createPlayer, updatePlayer, MAX_DT, WALK_SPEED, PLAYER_RADIUS, circleOverlapsBox } from './movement.js';
 import { createFlashlight, updateEquipment } from './flashlight.js';
 import { selectInteractionTarget } from './interaction.js';
 import { getPuzzle } from './clues.js';
 import { createKeypad, updateKeypad, resolveKeypadCommand } from './keypad.js';
 import { createMonster, updateMonster, approachFraction, loseMonsterTarget } from './monster.js';
+import {monsterVision,inMonsterArea} from './monster-vision.js';
 import { isLockerFront, tryEnterHiding, tryLeaveHiding, updateHidingPlayer } from './hiding.js';
 import { CHECKPOINTS, advanceCheckpoint, checkpointReady } from './checkpoints.js';
 import { createCapture, updateCapture, CAPTURE_SECONDS } from './capture.js';
@@ -12,9 +13,17 @@ import {COLOR_SEQUENCE,createSequenceState,pressButton} from './puzzles/color-se
 import {validateExitCode,EXIT_CLUE_IDS} from './puzzles/exit-code.js';
 import {createCorridor,updateCorridor} from './corridor-chase.js';
 import {finishChapter} from './ending.js';
+import {createTrainPuzzle,trainReady,validateTrainCode} from './puzzles/train-code.js';
+import {TRAIN_CINEMATIC_SECONDS} from './train-cinematic.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
+// The entire door leaf operates the same control as the small panel/card beside it.
+// Keep these as targeting surfaces only: neither collision nor puzzle conditions change.
+const DOOR_CONTROLS = [
+  ['production.east-door','production.sequence-keypad'],
+  ['corridor.door-1','corridor.clue-note'],
+].map(([doorId,deviceId])=>({door:DOORS.find(d=>d.id===doorId),device:DEVICES.find(d=>d.id===deviceId)}));
 export function isDevicePowered(state, device) {
   if(device.puzzleId==='exit.final')return state.corridor?.complete===true&&state.puzzles[COLOR_SEQUENCE.id]?.restored===true;
   const puzzle=getPuzzle(device.puzzleId);
@@ -23,21 +32,26 @@ export function isDevicePowered(state, device) {
 }
 // 顯示與提交驗證共用唯一謎題資料；提交時仍再次檢查安裝狀態。
 export function validatePuzzleCode(state, puzzleId, code) {
+  if(puzzleId==='train.departure')return validateTrainCode(state,code);
   const puzzle = getPuzzle(puzzleId);
   if(puzzleId==='exit.final')return isDevicePowered(state,{puzzleId})&&validateExitCode(code,state.foundClueIds);
   return Boolean(puzzle && (puzzle.requiresInstall===false ? isDevicePowered(state,{puzzleId}) : state.puzzles[puzzleId]?.installedItemId) && code === puzzle.code);
 }
 export function selectChapterTarget(state) {
   if(state.ui.mode!=='explore') return null;
+  const doorControls=state.corridor?.active||state.corridor?.complete?[]:DOOR_CONTROLS
+    .filter(({door})=>!isDoorOpen(door,state))
+    .map(({door,device})=>({...device,bounds:door.bounds,interactionOccluderId:door.id,interactionSource:'door'}));
   return selectInteractionTarget(state.player,state.inventory,ITEMS,
-    DEVICES.filter(d=>d.kind!=='locker' || isLockerFront(state.player,d)),getGeometry(state).occluderBoxes);
+    [...DEVICES.filter(d=>d.kind!=='locker' || isLockerFront(state.player,d)),...doorControls],getGeometry(state).occluderBoxes);
 }
 export function deviceMessage(state, device) {
   if(device.kind==='sequenceButton')return state.puzzles[COLOR_SEQUENCE.id]?.restored?'復位完成':`復位 ${state.puzzles[COLOR_SEQUENCE.id]?.progress??0}/4`;
   if(device.kind==='clueNote')return state.foundClueIds?.includes(device.clueId)?'線索已記錄':'閱讀並記錄線索';
+  if(device.kind==='trainCard')return state.trainPuzzle?.readCardIds.includes(device.clueId)?'檢修卡已記錄｜地圖可回看':'閱讀並記錄檢修卡';
   if(device.puzzleId==='exit.final')return `出口線索 ${state.foundClueIds?.length??0}/3｜四位密碼`;
   if(device.kind==='locker') return '躲進置物櫃';
-  if(device.kind==='trainConsole') return state.trainStarted?'列車已啟動，快登車':'月台檢修碼已確認，刷員工卡啟動列車';
+  if(device.kind==='trainConsole') return state.trainStarted?'列車已啟動，快登車':`列車檢修卡 ${state.trainPuzzle?.readCardIds.length??0}/3｜校正讀數後輸入四位發車碼`;
   if(device.kind==='train') return state.trainStarted?'登上列車逃離工廠':'列車尚未啟動';
   if (state.puzzles[device.puzzleId]?.restored) return device.puzzleId==='power.main'?'主電力已恢復':'貨運月台門已解鎖';
   if (device.kind === 'keypad') return isDevicePowered(state,device) ? '控制器已通電' : '控制器未通電';
@@ -51,14 +65,14 @@ export function createChapter({jumpScare=false}={}) {
     checkpointId:CHECKPOINTS[0].id,foundClueIds:[],corridor:createCorridor(),elapsedSeconds:0,completed:false,
     puzzles:Object.fromEntries(WORLD.areas.flatMap(a=>a.puzzles).map(p=>[p.id,{installedItemId:null,restored:false,...(p.id===COLOR_SEQUENCE.id?createSequenceState(COLOR_SEQUENCE):{})}])),
     monsters:Object.fromEntries(MONSTERS.map(m=>[m.id,createMonster(m)])),
-    events:[],trainStarted:false,
+    events:[],trainStarted:false,trainPuzzle:createTrainPuzzle(),trainCinematic:{started:false,elapsed:0},trainLegacyAuthorized:false,trainLegacySave:null,
     ui:{mode:'explore'}};
 }
 export function hasFlashlight(state) {
   return ITEMS.some(i=>i.kind==='flashlight' && state.inventory.itemIds.includes(i.id));
 }
 export const POWER_TRANSITION_SECONDS = 0.6;
-export const ENDING_SECONDS = 8;
+export const ENDING_SECONDS = TRAIN_CINEMATIC_SECONDS;
 // 死亡回復及日後讀檔共用；呼叫者負責流程與暫停，不還原危險座標或介面。
 export function restoreCheckpoint(state) {
   const checkpoint=CHECKPOINTS.find(c=>c.id===state.checkpointId);
@@ -77,7 +91,11 @@ export function restoreCheckpoint(state) {
     puzzles:Object.fromEntries(Object.entries(state.puzzles).map(([id,puzzle])=>[id,{
       ...puzzle,restoreElapsed:puzzle.restored?POWER_TRANSITION_SECONDS:0,
     }])),
-    monsters,events:[],trainStarted:state.trainStarted===true,ui:{mode:'explore'},
+    monsters,events:[],trainStarted:state.trainStarted===true,
+    trainPuzzle:{readCardIds:[...(state.trainPuzzle?.readCardIds??[])],solved:state.trainPuzzle?.solved===true},
+    trainCinematic:{...(state.trainCinematic??{started:false,elapsed:0})},ui:{mode:'explore'},
+    trainLegacyAuthorized:state.trainLegacyAuthorized===true,
+    trainLegacySave:state.trainLegacySave?structuredClone(state.trainLegacySave):null,
   };
 }
 export function powerProgress(state, puzzleId) {
@@ -91,6 +109,12 @@ function advancePower(state, dt) {
   return {...state,puzzles};
 }
 export function submitPuzzleCode(state, deviceId, code) {
+  if(deviceId==='bay.train-console'){
+    if(state.player.paused || state.ui.mode!=='keypad' || state.ui.deviceId!==deviceId || state.trainStarted)return state;
+    if(!trainReady(state))return {...state,ui:{...state.ui,buffer:'',message:'發車條件不足：請記錄三張檢修卡、恢復供電並攜帶員工卡'}};
+    if(!validateTrainCode(state,code))return {...state,ui:{...state.ui,buffer:'',message:'檢修碼錯誤，請將讀數除以 6 並重新排列'}};
+    return {...state,trainPuzzle:{...state.trainPuzzle,solved:true},trainStarted:true,events:[{type:'train'}],ui:{mode:'explore',message:'檢修通過，員工卡已驗證。列車啟動，快上車！'}};
+  }
   const device=DEVICES.find(candidate=>candidate.id===deviceId && candidate.kind==='keypad');
   if (!device || state.player.paused || state.ui.mode!=='keypad' || state.ui.deviceId!==deviceId
     || !isDevicePowered(state,device) || state.puzzles[device.puzzleId]?.restored) return state;
@@ -128,20 +152,41 @@ function advanceMonsters(state,player,dt,geometry,hidden=false) {
   const monsters=Object.fromEntries(MONSTERS.map(definition=>[definition.id,
     updateMonster(state.monsters[definition.id],definition,WORLD.areas.find(a=>a.id===definition.areaId),player,dt,geometry.collisionBoxes,
       {occluderBoxes:geometry.occluderBoxes,hidden})]));
-  return {monsters,events:MONSTERS.flatMap(d=>monsters[d.id]===state.monsters[d.id]?[]:monsters[d.id].events)};
+  return {monsters,events:MONSTERS.flatMap(d=>monsters[d.id]===state.monsters[d.id]?[]:[...monsters[d.id].events,
+    ...(monsters[d.id].playerVisible?[{type:'detected',monsterId:d.id}]:[])])};
+}
+// 裝配線的真實視線一旦成立就鎖定抓捕；必經走廊追兵由獨立路線機制處理。
+// 在場景動作之前檢查，不能以同幀衝出視線、進櫃或打開面板取消已發生的發現。
+function detectedCapture(state,geometry,jumpScare){
+  if(state.corridor?.active||state.corridor?.complete)return null;
+  for(const definition of MONSTERS){
+    const area=WORLD.areas.find(a=>a.id===definition.areaId),current=state.monsters[definition.id];
+    if(!inMonsterArea(state.player,area))continue;
+    const observer=current.mode==='inactive'?{...current,mode:'patrol'}:current;
+    const vision=monsterVision(observer,definition,area,state.player,geometry.occluderBoxes);
+    if(!vision.visible)continue;
+    const contact=Math.hypot(current.x-state.player.x,current.z-state.player.z)<=definition.contactDistance+1e-9;
+    const cause=contact?'contact':'detected',event={type:cause,monsterId:definition.id};
+    return {...advanceCheckpoint(state),flashlight:{...state.flashlight,enabled:false},
+      monsters:{...state.monsters,[definition.id]:{...observer,mode:'chase',lastSeen:{x:state.player.x,z:state.player.z},visionRaycasts:vision.raycasts,playerVisible:true,
+        ...(contact?{contactLatched:true,contactCount:current.contactCount+1}:{}),events:[event]}},
+      events:[event],ui:createCapture({jumpScare,cause,monsterId:definition.id})};
+  }
+  return null;
 }
 function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??false}={}) {
   const allowed=jumpScare===true;
   if(state.jumpScare!==allowed) state={...state,jumpScare:allowed};
   if(state.ui.mode==='caught') state={...state,ui:updateCapture(state.ui,0,{jumpScare:allowed})};
-  // 暫停優先於任何命令；回來保留面板內容，不重播這一幀輸入。
-  if (actions.pausePressed || actions.focusLost || actions.forcePause) {
+  // 過場只允許失焦或設備斷線安全暫停；手動暫停及遊戲輸入不會打斷或跳過。
+  if (actions.focusLost || actions.forcePause || (actions.pausePressed && state.ui.mode!=='ending')) {
     return {...state,player:{...state.player,paused:true}};
   }
   if(state.ui.mode==='ending') {
     if(state.player.paused || actions.gameplayActive===false) return state;
-    const elapsed=Math.min(ENDING_SECONDS,(state.ui.elapsed??0)+(Number.isFinite(dt)?Math.max(0,dt):0));
-    return {...state,ui:elapsed>=ENDING_SECONDS-1e-9?{mode:'complete'}:{...state.ui,elapsed}};
+    const candidate=(state.ui.elapsed??0)+(Number.isFinite(dt)?Math.max(0,dt):0);
+    const elapsed=candidate>=ENDING_SECONDS-1e-9?ENDING_SECONDS:candidate;
+    return {...state,trainCinematic:{started:true,elapsed},ui:elapsed>=ENDING_SECONDS-1e-9?{mode:'complete',variant:'derailment'}:{...state.ui,elapsed}};
   }
   if (state.player.paused || actions.gameplayActive===false) return state;
   if(state.ui.mode==='caught') {
@@ -171,8 +216,13 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
     return advancePower({...state,player,...advanceMonsters(state,player,dt,geometry,true)},dt);
   }
   if(state.ui.mode!=='explore') return state;
+  if(actions.interactPressed || (Number.isFinite(dt)&&dt>0)){
+    const captured=detectedCapture(state,getGeometry(state),allowed);
+    if(captured)return captured;
+  }
   // 先處理開啟，避免同一個 A／✕ 輸入第一位，或開啟當幀移動／耗電。
   const initialTarget=selectChapterTarget(state);
+  if(actions.interactPressed&&initialTarget?.kind==='trainCard')return {...state,trainPuzzle:{...(state.trainPuzzle??createTrainPuzzle()),readCardIds:[...new Set([...(state.trainPuzzle?.readCardIds??[]),initialTarget.clueId])]},events:[],ui:{mode:'explore',messageTargetId:initialTarget.id,message:`已記錄：${initialTarget.name}`}};
   if(actions.interactPressed&&initialTarget?.kind==='clueNote')return {...state,foundClueIds:[...new Set([...(state.foundClueIds??[]),initialTarget.clueId])],events:[],ui:{mode:'explore',messageTargetId:initialTarget.id,message:initialTarget.name}};
   if(actions.interactPressed&&initialTarget?.kind==='sequenceButton'){
     const old=state.puzzles[COLOR_SEQUENCE.id],pressed=pressButton(old,COLOR_SEQUENCE,initialTarget.color);
@@ -183,11 +233,11 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
       events:[{type:pressed.alarm?'alarm':pressed.state.solved?'door':'sequence'}],ui:{mode:'explore',messageTargetId:initialTarget.id,message:pressed.alarm?'順序錯誤！警報已引來玩偶':pressed.state.solved?'復位完成，燈序線索已記錄':`復位 ${pressed.state.progress}/4`}};
   }
   if(actions.interactPressed && initialTarget?.kind==='trainConsole') {
-    const ready=state.puzzles['production.sequence']?.restored && state.puzzles['exit.final']?.restored && state.corridor?.complete && state.inventory.itemIds.includes('lobby.employee-card');
-    return ready?{...state,trainStarted:true,ui:{mode:'explore',message:'列車已啟動，快上車！'}}:{...state,ui:{...state.ui,message:'需要完成裝配線檢修並刷員工卡'}};
+    if(state.trainStarted)return {...state,ui:{mode:'explore',message:'列車已啟動，快登車'}};
+    return trainReady(state)?{...state,ui:createKeypad(initialTarget.id)}:{...state,ui:{...state.ui,message:`需要完成出口檢修、恢復供電、攜帶員工卡，並記錄三張檢修卡（${state.trainPuzzle?.readCardIds.length??0}/3）`}};
   }
   if(actions.interactPressed && initialTarget?.kind==='train') {
-    return state.trainStarted&&state.puzzles['exit.final']?.restored?{...state,ui:{mode:'ending',elapsed:0}}:{...state,ui:{...state.ui,message:'列車尚未啟動'}};
+    return state.trainStarted?{...state,flashlight:{...state.flashlight,enabled:false},trainCinematic:{started:true,elapsed:0},events:[],ui:{mode:'ending',variant:'derailment',elapsed:0}}:{...state,ui:{...state.ui,message:'列車尚未啟動'}};
   }
   if(actions.interactPressed && initialTarget?.kind==='locker') {
     const next=tryEnterHiding(state,initialTarget,getGeometry(state).collisionBoxes,monsterBodies(state));
@@ -218,6 +268,8 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
   if(result.events.some(event=>event.type==='contact')) {
     return {...result,flashlight:{...result.flashlight,enabled:false},ui:createCapture({jumpScare:allowed})};
   }
+  const sighting=result.events.find(event=>event.type==='detected');
+  if(sighting)return {...result,flashlight:{...result.flashlight,enabled:false},ui:createCapture({jumpScare:allowed,cause:'detected',monsterId:sighting.monsterId})};
   return result;
 }
 

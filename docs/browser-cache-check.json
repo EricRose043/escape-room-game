@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-04",
+  "result": "PASS",
+  "build": "d58decab32be21b2",
+  "modules": 67,
+  "importEdges": 155,
+  "httpResources": 71,
+  "httpBytes": 3811560,
+  "checks": [
+    "all browser modules map to one content-derived version",
+    "conditional GET requests return 200 current source with no-store",
+    "launcher accepts only the current build from the exact game folder",
+    "launcher rejects mismatched build and another extracted folder",
+    "build preparation is idempotent and changes when any dependency changes",
+    "main, settings, CSS, PNG and vendored Three.js match delivered files"
+  ],
+  "limitations": [
+    "Static HTTP and manifest checks only; no Chrome UI/GPU execution."
+  ]
+}

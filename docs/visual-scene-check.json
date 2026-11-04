@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-04",
+  "three": "160",
+  "result": "PASS",
+  "objects": 778,
+  "geometries": 631,
+  "materials": 88,
+  "textures": 45,
+  "triangles": 129836,
+  "instanceDetails": 4492,
+  "areaDetails": {
+    "lobby": 565,
+    "power-room": 509,
+    "production": 748,
+    "chase-corridor": 608,
+    "exit": 407,
+    "loading-bay": 952
+  },
+  "environmentBatches": 43,
+  "checks": [
+    "real Three.js scene construction",
+    "all geometry/transform values finite",
+    "6 item models",
+    "train cards and formula not occluded by modeled equipment",
+    "1200 scene updates without resource growth",
+    "2 pooled room lights",
+    "Lambert shader patch applied to pinned Three.js templates"
+  ],
+  "limitations": [
+    "Canvas drawing context replaced for Node construction checks.",
+    "No browser WebGL compilation, visual screenshot or physical controller validation: saved browser permission blocks localhost."
+  ]
+}

@@ -1,4 +1,7 @@
 node_modules/
+__pycache__/
+*.pyc
+escape-room-server.log
 .DS_Store
 supervisor/rounds/*.log
 supervisor/.codex-session-id

@@ -1,10 +1,10 @@
-import {createSettings,createSettingsStorage,SETTINGS_KEY} from '../logic/settings.js';
+import {createGameSettingsStorage,SETTINGS_KEY} from '../logic/settings.js';
 import {showSettings} from './settings-view.js';
 
-const storage=createSettingsStorage({
+const storage=createGameSettingsStorage({
   getItem:key=>window.localStorage.getItem(key),
   setItem:(key,value)=>window.localStorage.setItem(key,value),
-},createSettings(false));
+},{search:window.location.search});
 let settings=storage.load(),view=null;
 const root=document.createElement('div');root.id='settings-panel';root.hidden=true;
 const button=document.createElement('button');button.id='settings-button';button.type='button';button.textContent='設定（O／Y／△）';
@@ -12,7 +12,7 @@ document.body.append(button,root);
 const emit=(name,detail)=>window.dispatchEvent(new CustomEvent(name,{detail}));
 function close(){view=null;emit('factory-settings-close');button.focus();}
 function open(){
-  if(view)return;
+  if(view||document.body.dataset.cinematic==='true')return;
   emit('factory-settings-open');
   view=showSettings(root,settings,next=>{
     for(const key of ['volume','jumpScare','mouseSensitivity']) if(next[key]!==settings[key])settings=storage.update(key,next[key]);

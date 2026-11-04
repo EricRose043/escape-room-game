@@ -1,0 +1,12 @@
+{
+  "tests": 280,
+  "pass": 280,
+  "fail": 0,
+  "skipped": 0,
+  "date": "2026-11-04",
+  "result": "PASS",
+  "command": "node --test --test-reporter=spec",
+  "limitations": [
+    "Node tests do not verify GPU appearance or physical controller hardware."
+  ]
+}

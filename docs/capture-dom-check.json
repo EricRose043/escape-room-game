@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-04",
+  "result": "PASS",
+  "validation": "Actual index.html and presentation.css parsed in jsdom with native @napi-rs/canvas Canvas2D; no browser launched",
+  "frames": 127,
+  "visibleFrames": 78,
+  "layers": 8,
+  "minimumFacingNormal": 0.9252604758937933,
+  "pixels": {
+    "torso": {
+      "opaque": 151486,
+      "visibleColor": 151350
+    },
+    "head": {
+      "opaque": 407758,
+      "visibleColor": 199808
+    },
+    "left-eye": {
+      "opaque": 21988,
+      "visibleColor": 18545
+    },
+    "right-eye": {
+      "opaque": 18745,
+      "visibleColor": 17931
+    },
+    "teeth": {
+      "opaque": 32280,
+      "visibleColor": 32280
+    },
+    "jaw": {
+      "opaque": 75015,
+      "visibleColor": 74618
+    },
+    "left-hand": {
+      "opaque": 154285,
+      "visibleColor": 119395
+    },
+    "right-hand": {
+      "opaque": 154291,
+      "visibleColor": 119404
+    }
+  },
+  "checks": [
+    "real DOM append moves the sole original canvas into the rig",
+    "eight layers contain visible non-black native Canvas pixels",
+    "actual stylesheet hidden selectors and ancestor visibility",
+    "capture z-index12 above world/HUD/pause9",
+    "closeup true exposes all layers for .15<=elapsed<1.45",
+    "backface normals remain forward-facing",
+    "off reproduces expected black-only capture",
+    "paused hides all closeup layers",
+    "no competing capture or aria-hidden CSS selectors"
+  ],
+  "finding": "No additional DOM/CSS visibility blocker found. jumpScare=false and/or jumpScareAllowed=false intentionally produce the reported black-only capture.",
+  "limitations": [
+    "jsdom does not perform browser layout, CSS 3D compositing, GPU rendering or input-device verification."
+  ]
+}

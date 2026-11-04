@@ -5,6 +5,16 @@ import {createSettings,createSettingsStorage} from '../src/logic/settings.js';
 import {createFactoryAudio} from '../src/game/audio.js';
 import {readGamepad,capturePresentation} from '../src/logic/index.js';
 const memory=()=>{const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};};
+test('新版正式遊戲解除舊黑屏設定，抓捕時真正顯示近景，後續手動關閉仍保留',async()=>{
+  const storage=memory(),old=createSettingsStorage(storage,createSettings(false));old.load();old.save();
+  const app=await runtime(storage);
+  assert.equal(app.settings().jumpScare,true);assert.equal(app.options().jumpScare,true);
+  app.get('#start-new').emit('click');app.document.emit('keydown',{code:'ArrowRight'});app.document.emit('keydown',{code:'Enter'});await Promise.resolve();
+  const state=app.state();app.setChapter({...state,player:{...state.player,paused:false},ui:{mode:'caught',elapsed:.3,jumpScareAllowed:true}});
+  app.frame(0);assert.equal(app.get('#capture-screen').hidden,false);assert.equal(app.get('#capture-canvas').hidden,false,'不是僅檢查設定值，實際主程式會顯示近景');
+  const saved=createSettingsStorage(storage,createSettings(true));saved.load();saved.update('jumpScare',false);
+  const next=await runtime(storage);assert.equal(next.options().jumpScare,false,'完成升級後仍尊重新的手動關閉');
+});
 test('正式 main 載入設定、即時關閉驚嚇、更新靈敏度並保持暫停',async()=>{
   const storage=memory(),store=createSettingsStorage(storage,createSettings(false));store.load();
   store.update('jumpScare',true);store.update('mouseSensitivity',2);

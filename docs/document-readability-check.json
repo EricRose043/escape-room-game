@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-04",
+  "three": "160",
+  "result": "PASS",
+  "checks": 1350,
+  "papers": 18,
+  "eyeHeight": 1.6,
+  "wallDistances": [
+    1.5,
+    2.5,
+    3
+  ],
+  "lateralOffsets": [
+    -0.5,
+    0,
+    0.5
+  ],
+  "paperHorizontalSamples": [
+    -0.43,
+    0,
+    0.43
+  ],
+  "paperVerticalSamples": [
+    -0.41,
+    0,
+    0.41
+  ],
+  "byDocument": {
+    "lobby.warning": 81,
+    "lobby.seal-notice": 81,
+    "lobby.night-note": 81,
+    "power.uv-note": 81,
+    "power.incident-log": 81,
+    "power.night-report": 81,
+    "power.train-log": 81,
+    "production.color-order": 81,
+    "production.monitor-record": 81,
+    "production.console-guide": 81,
+    "corridor.sign": 27,
+    "bay.train-formula": 81,
+    "bay.traction-card-label": 81,
+    "bay.brake-card-label": 81,
+    "bay.lighting-card-label": 81,
+    "production.sequence-clue": 81,
+    "corridor.color-key": 27,
+    "exit.reverse-clue": 81
+  },
+  "invalidSightlines": 108,
+  "railTracks": {
+    "count": 2,
+    "railCount": 4,
+    "centres": [
+      -17.5,
+      -21
+    ],
+    "northWallWalkway": 1.3500000000000014
+  },
+  "clearances": {
+    "instances": 4444,
+    "batches": 43,
+    "areaDetails": {
+      "lobby": 565,
+      "power-room": 509,
+      "production": 748,
+      "chase-corridor": 608,
+      "exit": 407,
+      "loading-bay": 952
+    },
+    "documentClearances": 18,
+    "adjustedDetails": 92
+  },
+  "failures": [],
+  "failureCount": 0,
+  "checksPerformed": [
+    "Actual Three.js world construction, all opaque geometry including instanced details and decorated doors.",
+    "Centre, four corners and four edge-midpoints from three distances and three lateral positions.",
+    "Physically inaccessible views behind an intervening solid wall are excluded and counted.",
+    "Document planes retain normal depth testing; no overlay rendering or disabled depth test.",
+    "Both complete tracks have independent rail profiles, sleepers, beds and ground-painted numbers."
+  ],
+  "limitations": [
+    "Canvas text drawing is replaced by a Node stub; this checks geometry visibility, not browser text rasterization.",
+    "No browser screenshot or physical gamepad test was performed."
+  ]
+}

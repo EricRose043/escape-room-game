@@ -42,6 +42,40 @@ export function createSettingsStorage(storage,defaults) {
   }
   return {get,load,save,update(key,value){current=updateSetting(current,key,value);save();return get();},status:()=>({state,message})};
 }
+export const GAME_CAPTURE_POLICY_KEY='escape-room.capture-enabled.v2';
+// 遊戲入口共用一次性設定升級。基礎儲存 API 仍維持呼叫端指定預設與原始 v1 格式。
+export function createGameSettingsStorage(storage,{search=''}={}) {
+  let readable=true,policyPending=true,firstLoad=true,policyMessage='';
+  const base=createSettingsStorage({getItem:key=>storage.getItem(key),setItem(key,value){
+    // 讀取失敗時不以預設音量覆寫未知的舊設定；當次選項仍在記憶體生效。
+    if(!readable)throw Error('Settings could not be read');
+    storage.setItem(key,value);
+  }},createSettings(true));
+  function finishPolicy(){
+    if(!policyPending)return true;
+    if(!readable||base.status().state!=='saved')return false;
+    try {storage.setItem(GAME_CAPTURE_POLICY_KEY,'1');policyPending=false;policyMessage='';return true;}
+    catch {policyMessage='設定更新紀錄暫時無法儲存，本次仍會顯示驚嚇動畫。';return false;}
+  }
+  function load(){
+    policyMessage='';const loaded=base.load();readable=base.status().state!=='error';
+    let marked=false;
+    if(readable){try{marked=storage.getItem(GAME_CAPTURE_POLICY_KEY)==='1';}catch{policyMessage='無法讀取設定更新紀錄，本次仍可遊玩。';}}
+    policyPending=!marked;
+    const query=firstLoad?new URLSearchParams(typeof search==='string'?search:'').get('jumpscare'):null;
+    firstLoad=false;
+    const explicit=query==='0'||query==='1';
+    const jumpScare=explicit?query==='1':policyPending?true:loaded.jumpScare;
+    if((readable&&(policyPending||explicit))||jumpScare!==loaded.jumpScare){
+      base.update('jumpScare',jumpScare);finishPolicy();
+    }
+    return base.get();
+  }
+  function save(){const saved=base.save();return saved&&finishPolicy();}
+  return {load,get:base.get,save,
+    update(key,value){const next=base.update(key,value);if(base.status().state==='saved')finishPolicy();return next;},
+    status:()=>policyMessage?{state:'error',message:policyMessage}:base.status()};
+}
 export function createSettingsMenu(settings) {return {selected:0,settings:{...settings},closed:false};}
 export function updateSettingsMenu(menu,command) {
   if(!command || menu.closed) return menu;

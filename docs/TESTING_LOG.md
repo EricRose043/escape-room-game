@@ -2,6 +2,16 @@
 
 統整：shuoen88。各人負責真實操作者與功能自測；Eric 處理主程式串接及審查合併。不得代填別人尚未做的測試。
 
+## LOG-20261104-INTERACTION：整片門與文件判定
+
+- 操作者：Eric直接指示的Codex；本機無Git歷史快照，沒有補造commit。
+- 來源：Eric實玩回報門要瞄左側、2413文件要瞄下方牆面；本次為修正結果，未代填使用者後續試玩。
+- `node --test --test-reporter=spec`：280/280通過。新增文件3項、門面7項；全套檢查曾發現未具ID的障礙物被別名略過，已修正為僅在明確指定門ID時略過，原遮擋回歸恢復通過。
+- 真HTML/67 ESM/62原生Canvas：開場點擊略過、真main鍵盤E／模擬XboxA門面操作、文件提示與字幕通過；WebGLRenderer為免GPU替身，站位進度採明確fixtures。正式logic另完整走至END。
+- Three.js文件1,350條可達視線無遮擋；場景1,200次同步無資源增長。
+- 71份HTTP資源、版本importmap、no-cache及啟動器資料夾/版本核對通過；報告`browser-cache-check.json`及`startup-dom-check.json`。
+- 結果：自動檢查PASS；Chrome GPU、實體Xbox／PS為未檢查，未繞過本機origin限制。細節見INTERACTION_FIXES.md。
+
 ## 填寫與判定
 
 每筆包含日期／操作者、commit、案例、設備與瀏覽器／手把型號、操作、預期、實際、證據、結果及缺陷編號。結果使用「通過／失敗／未檢查／受環境限制／待功能／歷史轉錄」。Node 替身、假手把及程式審查不等於實機通過；測試數不代表全部 VERIFY 已驗收。

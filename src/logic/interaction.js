@@ -58,7 +58,7 @@ export function selectInteractionTarget(player, inventory, items, devices, block
   const hit = candidates[0];
   if (!hit) return null;
   if (blockers.some(box => {
-    if (hit.target.bounds && box.id === hit.target.id) return false;
+    if (hit.target.bounds && (box.id === hit.target.id || (hit.target.interactionOccluderId && box.id === hit.target.interactionOccluderId))) return false;
     const distance = rayBoxDistance(ray, box);
     return distance !== null && distance <= hit.distance;
   })) return null;

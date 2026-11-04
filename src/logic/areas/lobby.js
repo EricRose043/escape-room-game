@@ -2,8 +2,8 @@
 const box = (id, kind, minX, maxX, minY, maxY, minZ, maxZ, extra = {}) => ({ id, kind, minX, maxX, minY, maxY, minZ, maxZ, ...extra });
 export const LOBBY = {
   id: 'lobby', name: '工廠辦公室', bounds: { minX: -5, maxX: 5, minZ: 0, maxZ: 8 }, height: 3.5,
-  spawn: { x: 0, z: 6, yaw: 0, pitch: 0 },
-  checkpoint: {id:'lobby.checkpoint',order:0,spawn:{x:0,z:6,yaw:0,pitch:0},
+  spawn: { x: 0, z: 6.6, yaw: 0, pitch: 0 },
+  checkpoint: {id:'lobby.checkpoint',order:0,spawn:{x:0,z:6.6,yaw:0,pitch:0},
     floorId:'lobby.floor',requires:{itemIds:[],puzzleIds:[]}},
   boxes: [
     box('lobby.west', 'wall', -5.2,-5,0,3.5,0,8),
@@ -14,6 +14,7 @@ export const LOBBY = {
     box('lobby.lintel', 'wall', -0.9,0.9,2.6,3.5,-0.2,0, { blocksMovement: false }),
     box('lobby.service-desk', 'table', -2.4,-0.6,0,0.9,3.7,4.7),
     box('lobby.side-table', 'table', 2.3,3.7,0,0.9,2.4,3.6),
+    box('lobby.map-desk', 'table', -.55,.95,0,.88,4.65,5.95),
   ],
   extraSurfaces: [
     box('lobby.threshold-floor','floor',-0.9,0.9,-0.2,0,-0.2,0),

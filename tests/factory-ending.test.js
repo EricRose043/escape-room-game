@@ -27,6 +27,12 @@ test('啟動列車後登車完成逃脫，沒啟動前不能通關',()=>{
       'production.sequence':{installedItemId:null,restored:true,restoreElapsed:0.6},'production.color-sequence':{installedItemId:null,restored:true},'exit.final':{installedItemId:null,restored:true}},
     foundClueIds:['production.color-clue','corridor.color-key','exit.reverse-clue'],corridor:{...s.corridor,complete:true}};
   s=logic.updateChapter(s,{interactPressed:true});
+  assert.equal(s.trainStarted,false,'三張檢修卡與2123不可跳過');
+  for(const id of logic.TRAIN_CARD_IDS){const b=logic.DEVICES.find(d=>d.id===id).bounds;s={...s,player:{...s.player,x:(b.minX+b.maxX)/2,z:b.maxZ+1,yaw:0,pitch:0}};s=logic.updateChapter(s,{interactPressed:true});}
+  s={...s,player:{...s.player,x:console.bounds.minX-0.5,z:(console.bounds.minZ+console.bounds.maxZ)/2,yaw:-Math.PI/2,pitch:-0.55}};
+  s=logic.updateChapter(s,{interactPressed:true});
+  assert.equal(s.ui.mode,'keypad');
+  s=logic.submitPuzzleCode(s,console.id,logic.TRAIN_CODE);
   assert.equal(s.trainStarted,true);
   s={...s,player:{...s.player,x:boarding.bounds.minX-0.5,z:(boarding.bounds.minZ+boarding.bounds.maxZ)/2,yaw:-Math.PI/2}};
   s=logic.updateChapter(s,{interactPressed:true});
@@ -43,7 +49,7 @@ test('中段密碼鎖、列車控制台與列車提示各自顯示正確進度',
   const state=logic.createChapter();
   const solved={...state,puzzles:{...state.puzzles,'production.sequence':{installedItemId:null,restored:true}}};
   assert.equal(logic.deviceMessage(solved,keypad),'貨運月台門已解鎖');
-  assert.equal(logic.deviceMessage(solved,console),'月台檢修碼已確認，刷員工卡啟動列車');
+  assert.equal(logic.deviceMessage(solved,console),'列車檢修卡 0/3｜校正讀數後輸入四位發車碼');
   assert.equal(logic.deviceMessage({...solved,trainStarted:true},console),'列車已啟動，快登車');
   assert.equal(logic.deviceMessage(solved,train),'列車尚未啟動');
 });

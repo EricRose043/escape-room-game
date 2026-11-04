@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-04",
+  "result": "PASS",
+  "three": "160",
+  "frames": 1441,
+  "meshes": 211,
+  "instances": 2763,
+  "lights": 3,
+  "triangles": 68496,
+  "initialized": true,
+  "checks": [
+    "lazy creation",
+    "real geometry and finite transforms",
+    "full ending seek across all phases",
+    "three bounded lights",
+    "no scene resource growth",
+    "paused film keeps exact camera and cinematic renderer",
+    "blackout render",
+    "original doll jump visibility",
+    "cab forward ray has no opaque train obstruction",
+    "snarling doll face unobstructed and inside camera frustum at4.25/4.8/5.05seconds",
+    "reduced motion",
+    "dispose and rebuild"
+  ],
+  "limitations": [
+    "Node real Three.js geometry check with substituted Canvas drawing context.",
+    "No GPU/WebGL shader compilation, visual screenshot, browser interaction or physical controller verification."
+  ]
+}

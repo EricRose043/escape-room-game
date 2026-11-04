@@ -1,18 +1,23 @@
 // 原創 Web Audio 合成；不下載音檔、不匯入 three.js，也不主動接入遊戲。
 // 主音量 v 為 0～1；S2 的 0～100 請除以 100 再傳入。
 const clamp = value => typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
-const AMBIENCE = Object.freeze({ lobby: 55, 'power-room': 65, production: 73, 'chase-corridor': 82, exit: 49 });
+const AMBIENCE = Object.freeze({ lobby: 55, 'power-room': 65, production: 73, 'chase-corridor': 82, exit: 49, train: 38 });
 
 // Ryan 工廠事件音型由同一組 tone／master／生命週期管理，避免第二個 context。
 const CUES = Object.freeze({
   power:[[82,.32,'sine',.06,0],[123,.32,'triangle',.045,.12],[165,.4,'sine',.035,.24]],
   chase:[[145,.36,'sawtooth',.05,0],[119,.42,'triangle',.04,.13]],
-  caught:[[76,.52,'sawtooth',.08,0],[52,.7,'sine',.06,.08]],
+  caught:[[38,.16,'sine',.07,0],[131,.28,'sawtooth',.065,.15],[139,.32,'sawtooth',.055,.15],[311,.18,'triangle',.035,.17],[47,.95,'sine',.07,.23],[73,.48,'sawtooth',.035,.72]],
   hide:[[88,.16,'triangle',.035,0],[62,.2,'sine',.03,.1]],
   unhide:[[105,.18,'triangle',.03,0]],
   escape:[[220,.34,'triangle',.045,0],[330,.42,'sine',.04,.18],[440,.7,'sine',.035,.38]],
   door:[[92,.3,'square',.045,0],[68,.38,'sawtooth',.035,.16]],
   train:[[55,.5,'sawtooth',.04,0],[82,.5,'triangle',.04,.22],[110,.7,'sine',.035,.42]],
+  'train-rail':[[42,.08,'triangle',.055,0],[68,.06,'square',.018,.12]],
+  'train-ambush':[[98,.55,'sawtooth',.055,0],[74,.7,'triangle',.045,.18]],
+  'train-impact':[[44,.55,'sawtooth',.09,0],[117,.16,'square',.045,.03],[31,.8,'sine',.08,.08]],
+  'train-failure':[[520,.2,'square',.04,0],[520,.2,'square',.04,.4],[390,.3,'triangle',.04,.8]],
+  'train-derail':[[38,.8,'sawtooth',.09,0],[190,.6,'square',.035,.05],[26,1,'sine',.08,.18]],
 });
 
 export function createAudio(options = {}) {

@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-04",
+  "result": "PASS",
+  "canvas": "@napi-rs/canvas native Canvas2D",
+  "layers": 8,
+  "durationSeconds": 2.1,
+  "visibleWindowSeconds": [0.15, 1.45],
+  "attackSeconds": 0.075,
+  "preview": "docs/evidence/capture-polish/contact-sheet.png",
+  "checks": [
+    "Actual layer paintings rendered with native Canvas2D and inspected as PNG",
+    "CPU perspective projection uses transforms produced by the actual capture view",
+    "Independent head, torso, left eye, right eye, upper teeth, jaw and two hand layers",
+    "75 millisecond head lunge followed by jaw opening and hands closing around the lens",
+    "No canvas painting during animation updates",
+    "Closeup disabled, revoked, paused and tail blackout hide every layer immediately",
+    "Pause and resume retain the exact capture-clock pose",
+    "Deterministic motion without flashing light or random frame changes"
+  ],
+  "limitations": [
+    "Contact sheet is a CPU projection of the real Canvas art and CSS transforms, not a browser screenshot.",
+    "CSS compositor behavior, in-game viewing and physical-controller use still require runtime verification."
+  ]
+}

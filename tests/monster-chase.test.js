@@ -85,12 +85,12 @@ test('玩家不能穿過怪物身體，接觸觸發被抓並保留進度', () =>
     s=logic.updateChapter(s,{move:{y:1}},0.1);events.push(...s.events);
     assert.ok(distance(s.player,s.monsters[id])>=logic.PLAYER_RADIUS+d.radius-1e-8);
     assert.equal(s.player.paused,false);
-    if(s.events.some(event=>event.type==='contact')) {assert.equal(s.ui.mode,'caught');break;}
+    if(s.events.some(event=>event.type==='contact'||event.type==='detected')) {assert.equal(s.ui.mode,'caught');break;}
     assert.equal(s.ui.mode,'explore');
   }
   assert.equal(events.length,1);assert.deepEqual(s.inventory,inventory);
   assert.equal(s.puzzles['power.main'].restored,puzzles['power.main'].restored);
-  for(let i=0;i<12;i++) s=logic.updateChapter(s,{},0.1);
+  for(let i=0;i<Math.ceil(logic.CAPTURE_SECONDS*10);i++) s=logic.updateChapter(s,{},0.1);
   assert.equal(s.ui.mode,'explore');
   assert.equal(s.player.x,6.5);assert.equal(s.player.z,-6.5);assert.equal(s.player.yaw,-Math.PI/2);
   const before=structuredClone(s.player);

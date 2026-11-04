@@ -24,7 +24,7 @@ test('四個存檔點 ID 前置條件與玩家半徑位置有效',()=>{
   assert.deepEqual(logic.CHECKPOINTS.map(c=>c.id),[lobbyId,powerId,productionId,'exit.checkpoint']);
   assert.deepEqual(logic.CHECKPOINTS.map(c=>c.order),[0,1,2,3]);
   assert.deepEqual(logic.CHECKPOINTS.map(c=>c.spawn),[
-    {x:0,z:6,yaw:0,pitch:0},{x:0,z:-1.2,yaw:0,pitch:0},{x:6.5,z:-6.5,yaw:-Math.PI/2,pitch:0},{x:41.2,z:-17.5,yaw:-Math.PI/2,pitch:0},
+    {x:0,z:6.6,yaw:0,pitch:0},{x:0,z:-1.2,yaw:0,pitch:0},{x:6.5,z:-6.5,yaw:-Math.PI/2,pitch:0},{x:41.2,z:-17.5,yaw:-Math.PI/2,pitch:0},
   ]);
   for(const checkpoint of logic.CHECKPOINTS) {
     const s=checkpoint.id===lobbyId?logic.createChapter():powered();
@@ -77,13 +77,13 @@ test('首次完整進區啟用存檔點，回頭不降級或重複啟用',()=>{
   assert.equal(logic.updateChapter(paused).checkpointId,lobbyId);
   s=logic.updateChapter(at(s,0,b.maxZ-r));assert.equal(s.checkpointId,powerId);
   assert.equal(logic.advanceCheckpoint(s),s,'同一存檔點不重複啟用');
-  s=logic.updateChapter(at(s,0,6));assert.equal(s.checkpointId,powerId);
+  s=logic.updateChapter(at(s,0,6.6));assert.equal(s.checkpointId,powerId);
   s={...s,puzzles:powered().puzzles};
   s=logic.updateChapter(at(s,area.bounds.minX+r-0.001,-6.5));assert.equal(s.checkpointId,powerId);
   s=logic.updateChapter(at(s,area.bounds.minX+r,-6.5));assert.equal(s.checkpointId,productionId);
   assert.equal(logic.advanceCheckpoint(s),s);
   s=logic.updateChapter(at(s,0,-1.2));assert.equal(s.checkpointId,productionId);
-  assert.equal(logic.updateChapter(at(s,0,6)).checkpointId,productionId);
+  assert.equal(logic.updateChapter(at(s,0,6.6)).checkpointId,productionId);
 });
 
 test('恢復供電不提前取得尚未到達的生產線存檔點',()=>{
@@ -176,7 +176,7 @@ test('普通離區不重置怪物，回復時按進度重建啟動狀態',()=>{
   assert.deepEqual(logic.restoreCheckpoint(dirty).monsters[monsterId],logic.createMonster(definition));
 });
 
-test('平台回復位置安全，重新進區仍可被發現與接觸',()=>{
+test('平台回復位置安全，重新進區仍可被發現並抓捕',()=>{
   let s=logic.restoreCheckpoint(production());assertPose(s,productionId);
   assert.ok(!logic.inMonsterArea(s.player,area));
   assert.ok(!logic.getGeometry(s).collisionBoxes.some(b=>logic.circleOverlapsBox(s.player.x,s.player.z,b)));
@@ -186,12 +186,12 @@ test('平台回復位置安全，重新進區仍可被發現與接觸',()=>{
   let chased=false,contact=false;
   for(let i=0;i<600;i++) {
     s=logic.updateChapter(s,{},0.1);chased ||= s.monsters[monsterId].mode==='chase';
-    if(s.events.some(e=>e.type==='contact')) {contact=true;break;}
+    if(s.events.some(e=>e.type==='contact'||e.type==='detected')) {contact=true;break;}
   }
   assert.ok(chased);assert.ok(contact,'沒有永久或計時無敵');
   s=logic.restoreCheckpoint(s);assertPose(s,productionId);assert.equal(s.monsters[monsterId].contactLatched,false);
   s=at(s,8.2,-6.5);contact=false;
-  for(let i=0;i<600;i++) {s=logic.updateChapter(s,{},0.1);if(s.events.some(e=>e.type==='contact')) {contact=true;break;}}
+  for(let i=0;i<600;i++) {s=logic.updateChapter(s,{},0.1);if(s.events.some(e=>e.type==='contact'||e.type==='detected')) {contact=true;break;}}
   assert.ok(contact,'第二次回復後仍能再次接觸');
 });
 

@@ -1,9 +1,16 @@
 import { createAudio } from './procedural-audio.js';
 import { heartbeatIntensity, footstepInterval } from '../logic/audio-mix.js';
 import { WORLD } from '../logic/world.js';
+import { trainCinematicFrame } from '../logic/train-cinematic.js';
 export { createAudio };
 
 export function audioCueFor(previous,next) {
+  if(next?.ui?.mode==='ending'&&next?.ui?.variant==='derailment'){
+    const current=trainCinematicFrame(next.ui.elapsed).phase;
+    const before=previous?.ui?.mode==='ending'?trainCinematicFrame(previous.ui.elapsed).phase:null;
+    if(current!==before)return {depart:'train',ambush:'train-ambush',impact:'train-impact',failure:'train-failure',derail:'train-derail'}[current]??null;
+    return null;
+  }
   if(next?.events!==previous?.events&&next?.events?.some(e=>e.type==='alarm'))return 'alarm';
   if(!previous?.trainStarted&&next?.trainStarted) return 'train';
   if(next?.ui?.mode==='ending' && previous?.ui?.mode!=='ending') return 'escape';
@@ -23,11 +30,11 @@ export function createFactoryAudio({contextFactory,audioFactory=createAudio}={})
     constructor(){const context=contextFactory();if(!context)throw new Error('Audio unavailable');return context;}
   }}:{};
   const engine=audioFactory(options);
-  let muted=false,started=false,disposed=false,untilStep=0,pendingCue=null,masterVolume=.32;
+  let muted=false,started=false,disposed=false,untilStep=0,pendingCue=null,masterVolume=.32,untilRail=0;
   engine.setMasterVolume(masterVolume);
   function setMasterVolume(value){masterVolume=Number.isFinite(value)?Math.max(0,Math.min(1,value)):0;engine.setMasterVolume(muted?0:masterVolume);}
   const supported=()=>engine.getStatus().supported;
-  function stop(){untilStep=0;pendingCue=null;engine.stop();}
+  function stop(){untilStep=0;untilRail=0;pendingCue=null;engine.stop();}
   function flushCue(){
     if(pendingCue && !muted && !disposed && engine.getStatus().contextState==='running') {
       const cue=pendingCue;pendingCue=null;if(cue==='alarm')engine.playAlarm();else engine.playCue(cue);
@@ -48,14 +55,19 @@ export function createFactoryAudio({contextFactory,audioFactory=createAudio}={})
     if(!started || disposed) return;
     if(!active || muted){stop();return;}
     const exploring=next?.ui?.mode==='explore';
+    const film=next?.ui?.mode==='ending'&&next.ui.variant==='derailment';
+    const trainFrame=film?trainCinematicFrame(next.ui.elapsed):null;
+    const rolling=film&&trainFrame.elapsed<22;
     const area=WORLD.areas.find(a=>next?.player?.x>=a.bounds.minX && next.player.x<=a.bounds.maxX
       &&next.player.z>=a.bounds.minZ&&next.player.z<=a.bounds.maxZ);
-    engine.setAmbience(exploring?(area?.id??'lobby'):null);
+    engine.setAmbience(rolling?'train':exploring?(area?.id??'lobby'):null);
     const distances=(next?.corridor?.active?[{...next.corridor.chaser,mode:'chase'}]:Object.values(next?.monsters??{})).filter(m=>m.mode!=='inactive')
       .map(m=>Math.hypot(m.x-next.player.x,m.z-next.player.z)).filter(Number.isFinite);
     engine.setHeartbeat(exploring && distances.length?heartbeatIntensity(Math.min(...distances)):0);
     const cue=audioCueFor(previous,next);if(cue)pendingCue=cue;flushCue();
     const seconds=Number.isFinite(dt)?Math.max(0,Math.min(.1,dt)):0;
+    if(rolling){untilRail-=seconds;if(untilRail<=0){engine.playCue('train-rail');untilRail=trainFrame.elapsed<6?.5:.32;}}
+    else untilRail=0;
     const distance=Math.hypot((next?.player?.x??0)-(previous?.player?.x??0),(next?.player?.z??0)-(previous?.player?.z??0));
     const interval=footstepInterval(seconds>0?distance/seconds:0);
     if(!exploring || !Number.isFinite(interval)){untilStep=0;return;}

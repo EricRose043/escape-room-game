@@ -101,8 +101,10 @@ test('正式流程供電進區被抓關頁繼續後保留進度且仍可再被�
     assert.fail('路線超時');
   }
   function take(id) {const i=logic.ITEMS.find(i=>i.id===id);aim((i.minX+i.maxX)/2,(i.minY+i.maxY)/2,(i.minZ+i.maxZ)/2);step({interactPressed:true});assert.ok(s.inventory.itemIds.includes(id));}
-  walk(0,5.5);take('lobby.factory-map');walk(0.5,4.95);take('lobby.employee-card');
-  walk(-1.5,5.5);take('lobby.flashlight');step({flashlightPressed:true});walk(0,5.5);walk(0,-4.6);walk(-3,-4.6);take('power.fuse');
+  take('lobby.factory-map');walk(1.5,6.6);walk(1.5,4.95);take('lobby.employee-card');
+  walk(1.5,6.6);walk(-1.5,6.6);walk(-1.5,5.5);take('lobby.flashlight');step({flashlightPressed:true});
+  for(const [x,z] of [[-1.5,6.6],[1.5,6.6],[1.5,3],[0,3],[0,-4.6],[-3,-4.6]])walk(x,z);
+  take('power.fuse');
   walk(0,-4.6);walk(3,-3);aim(4.25,1.4,-3);step({interactPressed:true});walk(3,-5.2);aim(4.5,1.4,-5.2);step({interactPressed:true});
   for(const value of logic.getPuzzle('power.main').code) step({keypadCommands:[{type:'digit',value}]});
   step({keypadCommands:[{type:'submit'}]});walk(3,-6.5);walk(6.5,-6.5);assert.equal(s.checkpointId,'power.checkpoint');
@@ -117,7 +119,7 @@ test('正式流程供電進區被抓關頁繼續後保留進度且仍可再被�
   assert.equal(app.state().flashlight.enabled,false);assert.deepEqual(logic.createChapterSave(app.state()),progress);
   s=app.state();s={...s,player:{...s.player,x:8.2,z:-6.5}};
   for(let i=0;i<600 && s.ui.mode!=='caught';i++) step({},0.1);
-  assert.equal(s.ui.mode,'caught');for(let i=0;i<12;i++) step({},0.1);
+  assert.equal(s.ui.mode,'caught');for(let i=0;i<Math.ceil(logic.CAPTURE_SECONDS*10);i++) step({},0.1);
   assert.equal(s.ui.mode,'explore');assert.equal(s.player.x,6.5);assert.ok(s.elapsedSeconds>=progress.elapsedSeconds);assert.deepEqual(logic.createChapterSave(s),{...progress,elapsedSeconds:s.elapsedSeconds});
   app.setChapter({...s,flashlight:{...s.flashlight,enabled:true}});
   app.pads([pad([])]);app.frame(200);const pending=app.state();app.window.emit('pagehide');
