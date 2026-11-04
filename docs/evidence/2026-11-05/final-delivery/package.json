@@ -1,0 +1,28 @@
+{
+  "releaseDate": "2026-11-05",
+  "build": "359cf85415ed4b20",
+  "githubRuntimeCommit": "c90483fb3a40fbd4a26d615c588cf5e03300af07",
+  "githubUploadedSourceCommit": "77213c20f28f2ecca38b2ca7c41beaea4260f798",
+  "githubPullRequest": "https://github.com/EricRose043/escape-room-game/pull/6",
+  "publicUrl": "https://shuoen-toy-factory-demo.breathtakingchair.chatgpt.site",
+  "publicVersion": 2,
+  "tests": {
+    "node": 323,
+    "windows": 323,
+    "launcher": 8
+  },
+  "hardwareResults": "not substituted by automated tests",
+  "folder": "C:\\Users\\user\\codex projects\\escape-room-demo-2026-11-05-final",
+  "zip": "C:\\Users\\user\\codex projects\\escape-room-demo-2026-11-05-final.zip",
+  "zipBytes": 2559580,
+  "zipSha256": "a00ae56f92f4ba4beb4ccb5931099c78c9610abefed0a3b71b0cda8e01c46a6a",
+  "zipCrc": "pass",
+  "zipFileCount": 94,
+  "runtimeMatchesSource": true,
+  "unpackedHttp200AndByteIdentical": 80,
+  "entryPreparationIdempotent": true,
+  "testPort": 58124,
+  "existing8778Untouched": true,
+  "documentationRefreshed": true,
+  "finalRuntimeByteComparison": "pass"
+}

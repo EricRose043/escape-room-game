@@ -3,7 +3,7 @@ import {TRAIN_CARDS,TRAIN_CARD_IDS,TRAIN_FORMULA} from './puzzles/train-code.js'
 export function chapterObjective(s){const has=id=>s.inventory.itemIds.includes(id);
  if(s.ui.mode==='complete')return '列車在舊線脫軌……第一章完。收藏地圖已解鎖。';
  if(s.ui.mode==='ending')return '員工撤離列車已發車。';
- if(s.ui.mode==='caught')return '牠已發現你，無法逃脫。抓捕演出後將回到最近的存檔點。';
+ if(s.ui.mode==='caught')return s.ui.stayInPlace?'牠就在眼前。驚嚇後你仍留在原地；玩偶會暫時消失。':'牠已發現你，無法逃脫。抓捕演出後將回到最近的存檔點。';
  if(!has('lobby.flashlight')||!has('lobby.employee-card'))return '先在辦公室取得手電筒、地圖與員工卡。';
  if(!s.puzzles['power.main'].installedItemId)return '在控制室找保險絲，安裝到東牆電箱。';
  if(!s.puzzles['power.main'].restored)return '用紫外光讀檢修碼，再輸入電箱旁的密碼鎖。';

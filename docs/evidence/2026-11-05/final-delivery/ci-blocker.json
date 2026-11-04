@@ -1,0 +1,89 @@
+{
+  "run": {
+    "id": 41935825920,
+    "head_sha": "77213c20f28f2ecca38b2ca7c41beaea4260f798",
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/EricRose043/escape-room-game/actions/runs/41935825920",
+    "event": "pull_request",
+    "created_at": "2026-11-04T23:42:26Z",
+    "updated_at": "2026-11-04T23:42:30Z"
+  },
+  "jobs": {
+    "total_count": 4,
+    "jobs": [
+      {
+        "id": 126943890448,
+        "name": "Node 24 / windows-latest",
+        "status": "completed",
+        "conclusion": "failure",
+        "steps": [],
+        "html_url": "https://github.com/EricRose043/escape-room-game/actions/runs/41935825920/job/126943890448"
+      },
+      {
+        "id": 126943890487,
+        "name": "Node 22 / windows-latest",
+        "status": "completed",
+        "conclusion": "failure",
+        "steps": [],
+        "html_url": "https://github.com/EricRose043/escape-room-game/actions/runs/41935825920/job/126943890487"
+      },
+      {
+        "id": 126943890578,
+        "name": "Node 24 / ubuntu-latest",
+        "status": "completed",
+        "conclusion": "failure",
+        "steps": [],
+        "html_url": "https://github.com/EricRose043/escape-room-game/actions/runs/41935825920/job/126943890578"
+      },
+      {
+        "id": 126943890639,
+        "name": "Node 22 / ubuntu-latest",
+        "status": "completed",
+        "conclusion": "failure",
+        "steps": [],
+        "html_url": "https://github.com/EricRose043/escape-room-game/actions/runs/41935825920/job/126943890639"
+      }
+    ]
+  },
+  "ubuntuAnnotations": [
+    {
+      "path": ".github",
+      "blob_href": "https://github.com/EricRose043/escape-room-game/blob/77213c20f28f2ecca38b2ca7c41beaea4260f798/.github",
+      "start_line": 1,
+      "start_column": null,
+      "end_line": 1,
+      "end_column": null,
+      "annotation_level": "failure",
+      "title": "",
+      "message": "The job was not started because your account is locked due to a billing issue.",
+      "raw_details": ""
+    },
+    {
+      "path": ".github",
+      "blob_href": "https://github.com/EricRose043/escape-room-game/blob/77213c20f28f2ecca38b2ca7c41beaea4260f798/.github",
+      "start_line": 1,
+      "start_column": null,
+      "end_line": 1,
+      "end_column": null,
+      "annotation_level": "notice",
+      "title": "",
+      "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+      "raw_details": ""
+    }
+  ],
+  "windowsAnnotations": [
+    {
+      "path": ".github",
+      "blob_href": "https://github.com/EricRose043/escape-room-game/blob/77213c20f28f2ecca38b2ca7c41beaea4260f798/.github",
+      "start_line": 1,
+      "start_column": null,
+      "end_line": 1,
+      "end_column": null,
+      "annotation_level": "failure",
+      "title": "",
+      "message": "The job was not started because your account is locked due to a billing issue.",
+      "raw_details": ""
+    }
+  ]
+}

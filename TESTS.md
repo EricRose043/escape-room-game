@@ -235,3 +235,55 @@ TF 表是分支查核證據，玩法及驗收含義變更仍待人確認；Q-004
 - 原 T4.01 文本與新版員工卡門禁的差異、實體手把、舊電腦效能與真人聽感仍如實區分；未改 VERIFY，不宣稱53條全部人類驗收通過。
 
 詳細與原始輸出：[INTEGRATION_STATUS](docs/INTEGRATION_STATUS.md)、[LOG](docs/TESTING_LOG.md)、[PR #4](https://github.com/EricRose043/escape-room-game/pull/4)。
+
+## 2026-11-04 shuoen最新main覆測
+
+來源：TEAM_TASKS S0／S2、VERIFY TG.01設定操作。新tests/integration-settings-precision.test.js驗合法小數存讀後的面板表示，以及手把微調後顯示與狀態一致。先紅2失敗（b600b38），修復後完整282/282，乾淨Windows clone282/282。測試使用Node DOM替身；不列為最新GPU／實體手把實測。
+
+原53條最新逐項結果見docs/ACCEPTANCE_STATUS.md；S3位置與整合已由owner完成，不再要求舊位置選擇。驚嚇D028已由本次shuoen確認保留。實體設備與真人結果仍待HUMAN_TEST_CHECKLIST。
+
+## 2026-11-05 本機沉浸感候選（LOG-20261105-IMMERSION）
+
+來源為 shuoen88 本次實玩要求／S-D034，以及既有 BRIEF 恐怖程度、操作、探索／解謎；不更改 VERIFY 原文。下列是細部自動案例，人類體感仍依原 T1.01、T1b.07、T6.01／04、T7／8／9、TG.01／03 另驗。
+
+| 案例 | 對應來源與測試檔 | 已檢查結果 |
+|---|---|---|
+| IM-01 | T1.01／03、S2；integration-mouse-look.test.js、integration-main-immersion.test.js | 降低總轉角、平滑、停用清餘量；正式 main 路徑暫停凍結，4項通過 |
+| IM-02 | TB-A01／03、S1；integration-immersion-audio.test.js | 主音量仍有效、增益及限制器、腳步增強、底噪不疊加與清理，2項通過 |
+| IM-03 | T6.01／04、BRIEF恐怖程度；integration-capture-detail.test.js | 1536px八層與120個連續姿態取樣，無逐幀重畫／新增圖層；1項通過。IM-01另驗正式抓捕時鐘繼續、背後不重畫 |
+| IM-04 | BRIEF探索、S-D034畫面要求；integration-surface-materials.test.js | 真Three.js建立粗糙／金屬／凹凸材質、共用快取與單批陰影，碰撞資料不變，2項通過；未驗GPU shader呈現 |
+| IM-05 | T7／8／9、S-D034難度；integration-progressive-difficulty.test.js | 保留前段提示、後段改推理、錯碼短鎖／警報、暫停凍結、取消重開不繞過、壓力速度有上限，2項通過；另最高壓力全章邏輯路線1/1到END |
+| IM-06 | TG.03、S-D034卡頓回饋；integration-frame-budget.test.js | 低幀率下降、穩定後漸進恢復、上下限與無效量測，2項通過；不等於已量測實機FPS |
+
+總套件305/305，Windows乾淨clone305/305、啟動器Python8/8、本機77資源HTTP與位元核對。操作與證據見docs/IMMERSION_CANDIDATE.md；本輪未做新GPU／實體手把／真人聽感驗證，舊電腦依使用者要求暫緩。未上傳、未重發公開站或備份包，等使用者確認。
+
+## 2026-11-05 驚嚇音色與整章推理（S-D035）
+
+來源為使用者再次實玩回饋、明確選擇整章重做推理，以及BRIEF恐怖程度／玩法核心；沿用T1／T6／T7／T8／T9及TG的人類驗收，不改VERIFY。
+
+| 案例 | 測試與檢查內容 | 本輪結果 |
+|---|---|---|
+| HR-01 | horror-stinger.test.js、integration-scary-texture.test.js：原創紋理頻帶／峰值／衰減／立體聲，首次unlock預建、重用、音量與stop／dispose | 2項通過；不等於真人音色確認 |
+| HR-02 | reasoning-content.test.js：五階證據推導與原驗證一致、24種四色排列只有一解、原始讀數不是密碼、地圖按進度回看與存檔往返 | 3項通過 |
+| HR-03 | integration-main-reasoning.test.js、reasoning-guidance.test.js：正式main畫布無完整UV答案，鍵鼠／Xbox／PS指引及列車錯碼不洩漏校驗值 | 2項通過；模擬裝置而非實體手把 |
+| HR-04 | reasoning-reading.test.js、reasoning-paper-target.test.js：真Three.js文件掛面／字幕選讀、裝飾淨空、加高紙面與邊緣可互動、超距仍擋 | 2項通過；另Canvas文件輸出已目視檢查，非GPU場景 |
+| HR-05 | route-replay.mjs：出生點取物、安裝／復電、實際取得與還原裝配線存檔點，以新證據推導答案、最高錯誤壓力走到END | 1/1；獨立自動邏輯路線，非真人全章 |
+
+本輪總套件314/314，乾淨Windows clone314/314、Python啟動器8/8。證據在docs/evidence/2026-11-05/horror-reasoning；人類新謎題／音色、GPU及硬體仍待確認，公開站與ZIP維持舊版。
+
+## 2026-11-05 原位驚嚇與短暫消失（S-D036）
+
+來源：使用者明確要求玩家原位、玩偶消失；更新正式main的驚嚇回復行為，與舊T6.01的存檔點文字分開。BRIEF／VERIFY未改，原存檔讀取案例保留。
+
+| 案例 | 覆蓋與檔案 | 結果 |
+|---|---|---|
+| SR-01 | encounter-recovery.test.js：兩種驚嚇開關、完整原位姿態／進度、5秒消失、透明碰撞排除、暫停／失焦／面板／大dt、前方等待與警報不提早現身 | 4項相關案例通過 |
+| SR-02 | 同檔：走廊原位／關門保留、隱去期間到出口、後方重現後逐步走到出口且無碰撞卡門、存檔合法 | 2項通過 |
+| SR-03 | integration-encounter-recovery.test.js：正式main選stay、近景關閉、原位及殘留輸入清理；走廊消失時沒有追兵心跳 | 2項通過；DOM／音訊替身 |
+| SR-04 | encounter-monster-view.test.js：實際Three.js群組在裝配線及走廊消失，再恢復可見 | 1項通過；非GPU實玩 |
+
+917d3df先紅7項，bf5d041轉綠；新9項及既有回歸共323/323，Windows323/323，Python8/8，本機80資源核對。capture-input正式main舊傳送預期依使用者新要求更新成完整姿態相等／玩偶隱去，沒有刪掉暫停、拔除、視角或輸入斷言；獨立checkpoint及讀檔測試仍驗原回復API。真人緊張感與實體設備仍待試玩。
+
+## 2026-11-05 正式交付檢查
+
+S-D037同意後未再改遊戲程式。Sites來源與已測runtime逐位元一致、保存版本2並原生部署成功；ZIP CRC、解壓後80個執行資源200及位元一致、入口版本生成冪等、報告講稿與授權包含檢查皆通過。證據在final-delivery。遠端Actions run41935825920明列帳戶billing lock而未啟動，jobs steps全空；不列為遠端測試通過，也未修改驗收或付款設定。

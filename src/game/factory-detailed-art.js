@@ -8,11 +8,11 @@ import { planDocumentClearances, boundsIntersect, subtractReservedBox } from './
 // Collision footprints are authoritative. Substantial furnishings stay inside
 // them; building services stay on walls or above traversable headroom. Repeated
 // detail is instanced by geometry and material, not allocated every frame.
-export function createEnvironmentArt(scene,art){
-  const {palette:p}=art,batches=new Map(),areaDetails=new Map(WORLD.areas.map(a=>[a.id,0]));
+export function createEnvironmentArt(scene,art,{areas=WORLD.areas}={}){
+  const {palette:p}=art,batches=new Map(),areaDetails=new Map(areas.map(a=>[a.id,0]));
   const geometries={box:new THREE.BoxGeometry(1,1,1),cylinder:new THREE.CylinderGeometry(1,1,1,12),sphere:new THREE.SphereGeometry(1,10,6),ring:new THREE.TorusGeometry(1,.055,5,16)};
   for(const geometry of Object.values(geometries))geometry.computeBoundingBox();
-  const documentClearances=planDocumentClearances(WORLD.areas,STATIC_BOXES),detailMatrix=new THREE.Matrix4(),detailPosition=new THREE.Vector3(),detailScale=new THREE.Vector3();
+  const documentClearances=planDocumentClearances(areas,STATIC_BOXES),detailMatrix=new THREE.Matrix4(),detailPosition=new THREE.Vector3(),detailScale=new THREE.Vector3();
   let adjustedDetails=0;
   const q=new THREE.Quaternion(),axisY=new THREE.Vector3(0,1,0),direction=new THREE.Vector3(),rotation=new THREE.Euler();
   function part(shape,kind,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0,quaternion=null){
@@ -30,7 +30,7 @@ export function createEnvironmentArt(scene,art){
       return;
     }
     batches.get(key).push({x,y,z,sx,sy,sz,q:orientation});
-    const area=WORLD.areas.find(a=>x>=a.bounds.minX&&x<=a.bounds.maxX&&z>=a.bounds.minZ&&z<=a.bounds.maxZ);if(area)areaDetails.set(area.id,areaDetails.get(area.id)+1);
+    const area=areas.find(a=>x>=a.bounds.minX&&x<=a.bounds.maxX&&z>=a.bounds.minZ&&z<=a.bounds.maxZ);if(area)areaDetails.set(area.id,areaDetails.get(area.id)+1);
   }
   const box=(w,h,d,x,y,z,kind='trim',ry=0)=>part('box',kind,x,y,z,w,h,d,0,ry);
   const cylinder=(r,h,x,y,z,kind='steel',rx=0,rz=0)=>part('cylinder',kind,x,y,z,r,h,r,rx,0,rz);
@@ -65,7 +65,7 @@ export function createEnvironmentArt(scene,art){
       }
     }
   }
-  for(const area of WORLD.areas){
+  for(const area of areas){
     if(area.id==='chase-corridor')continue;
     const b=area.bounds,h=area.height,cx=(b.minX+b.maxX)/2,cz=(b.minZ+b.maxZ)/2;
     for(let z=b.minZ+.8;z<b.maxZ;z+=2.8){
@@ -219,7 +219,7 @@ export function createEnvironmentArt(scene,art){
   for(const z of [-18.75,-15.25]){box(.05,.3,.18,51.91,2.5,z,'black');box(.07,.15,.12,51.875,2.52,z,'screenLight');}
   // Freight hall: overhead travelling crane, lifting tackle, shutter pocket,
   // buffers, paved platform edge and individual rail fastening plates.
-  const bay=WORLD.areas.find(a=>a.id==='loading-bay');if(bay){
+  const bay=areas.find(a=>a.id==='loading-bay');if(bay){
     const b=bay.bounds,cx=(b.minX+b.maxX)/2,cz=(b.minZ+b.maxZ)/2;
     for(const z of [b.minZ+.7,b.maxZ-.7]){box(b.maxX-b.minX-.3,.1,.27,cx,3.99,z,'trim');box(b.maxX-b.minX-.3,.23,.06,cx,4.1,z,'steel');
       const wallZ=z<cz?b.minZ+.025:b.maxZ-.025;
@@ -249,7 +249,7 @@ export function createEnvironmentArt(scene,art){
   for(const [key,parts] of batches){const [shape,kind]=key.split('/'),mesh=new THREE.InstancedMesh(geometries[shape],p[kind]??p.trim,parts.length);mesh.name='factory-details-'+key;instances+=parts.length;
     for(const [i,a] of parts.entries()){transform.position.set(a.x,a.y,a.z);transform.scale.set(a.sx,a.sy,a.sz);transform.quaternion.copy(a.q);transform.updateMatrix();mesh.setMatrixAt(i,transform.matrix);}mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();scene.add(mesh);
   }
-  const random=seededRandom(77),dust=[];for(const area of WORLD.areas){const b=area.bounds;for(let i=0;i<40;i++)dust.push(b.minX+random()*(b.maxX-b.minX),.3+random()*(area.height-.6),b.minZ+random()*(b.maxZ-b.minZ));}
+  const random=seededRandom(77),dust=[];for(const area of areas){const b=area.bounds;for(let i=0;i<40;i++)dust.push(b.minX+random()*(b.maxX-b.minX),.3+random()*(area.height-.6),b.minZ+random()*(b.maxZ-b.minZ));}
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(dust,3));scene.add(new THREE.Points(geometry,new THREE.PointsMaterial({color:0xc9b98c,size:.014,transparent:true,opacity:.21,depthWrite:false})));
   scene.userData.factoryArt={instances,batches:batches.size,areaDetails:Object.fromEntries(areaDetails),documentClearances:documentClearances.length,adjustedDetails};return {detailCount:shell.length,label,instances,areaDetails:Object.fromEntries(areaDetails)};
 }

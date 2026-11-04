@@ -15,6 +15,9 @@ import {createCorridor,updateCorridor} from './corridor-chase.js';
 import {finishChapter} from './ending.js';
 import {createTrainPuzzle,trainReady,validateTrainCode} from './puzzles/train-code.js';
 import {TRAIN_CINEMATIC_SECONDS} from './train-cinematic.js';
+import {progressionBefore,progressionAfter,pressureSpeed} from './progression.js';
+import {reasoningTarget} from './reasoning-content.js';
+import {beginEncounterRecovery,advanceEncounterRecovery,hideAbsentMonsters,encounterAbsent} from './encounter-recovery.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
@@ -37,13 +40,14 @@ export function validatePuzzleCode(state, puzzleId, code) {
   if(puzzleId==='exit.final')return isDevicePowered(state,{puzzleId})&&validateExitCode(code,state.foundClueIds);
   return Boolean(puzzle && (puzzle.requiresInstall===false ? isDevicePowered(state,{puzzleId}) : state.puzzles[puzzleId]?.installedItemId) && code === puzzle.code);
 }
-export function selectChapterTarget(state) {
+export function selectChapterTarget(state,{reasoning=false}={}) {
   if(state.ui.mode!=='explore') return null;
   const doorControls=state.corridor?.active||state.corridor?.complete?[]:DOOR_CONTROLS
     .filter(({door})=>!isDoorOpen(door,state))
     .map(({door,device})=>({...device,bounds:door.bounds,interactionOccluderId:door.id,interactionSource:'door'}));
+  const devices=reasoning?DEVICES.map(reasoningTarget):DEVICES;
   return selectInteractionTarget(state.player,state.inventory,ITEMS,
-    [...DEVICES.filter(d=>d.kind!=='locker' || isLockerFront(state.player,d)),...doorControls],getGeometry(state).occluderBoxes);
+    [...devices.filter(d=>d.kind!=='locker' || isLockerFront(state.player,d)),...doorControls],getGeometry(state).occluderBoxes);
 }
 export function deviceMessage(state, device) {
   if(device.kind==='sequenceButton')return state.puzzles[COLOR_SEQUENCE.id]?.restored?'復位完成':`復位 ${state.puzzles[COLOR_SEQUENCE.id]?.progress??0}/4`;
@@ -149,6 +153,7 @@ function monsterBodies(state) {
     .map(d=>({...state.monsters[d.id],radius:d.radius}));
 }
 function advanceMonsters(state,player,dt,geometry,hidden=false) {
+  if(encounterAbsent(state))return {monsters:state.monsters,events:[]};
   const monsters=Object.fromEntries(MONSTERS.map(definition=>[definition.id,
     updateMonster(state.monsters[definition.id],definition,WORLD.areas.find(a=>a.id===definition.areaId),player,dt,geometry.collisionBoxes,
       {occluderBoxes:geometry.occluderBoxes,hidden})]));
@@ -158,6 +163,7 @@ function advanceMonsters(state,player,dt,geometry,hidden=false) {
 // 裝配線的真實視線一旦成立就鎖定抓捕；必經走廊追兵由獨立路線機制處理。
 // 在場景動作之前檢查，不能以同幀衝出視線、進櫃或打開面板取消已發生的發現。
 function detectedCapture(state,geometry,jumpScare){
+  if(encounterAbsent(state))return null;
   if(state.corridor?.active||state.corridor?.complete)return null;
   for(const definition of MONSTERS){
     const area=WORLD.areas.find(a=>a.id===definition.areaId),current=state.monsters[definition.id];
@@ -174,7 +180,7 @@ function detectedCapture(state,geometry,jumpScare){
   }
   return null;
 }
-function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??false}={}) {
+function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??false,reasoning=false,captureRecovery='checkpoint'}={}) {
   const allowed=jumpScare===true;
   if(state.jumpScare!==allowed) state={...state,jumpScare:allowed};
   if(state.ui.mode==='caught') state={...state,ui:updateCapture(state.ui,0,{jumpScare:allowed})};
@@ -191,7 +197,7 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
   if (state.player.paused || actions.gameplayActive===false) return state;
   if(state.ui.mode==='caught') {
     const ui=updateCapture(state.ui,dt,{jumpScare:allowed});
-    if(ui.elapsed>=CAPTURE_SECONDS-1e-9) return {...restoreCheckpoint(state),jumpScare:allowed};
+    if(ui.elapsed>=CAPTURE_SECONDS-1e-9) return captureRecovery==='stay'?beginEncounterRecovery(state,MONSTERS):{...restoreCheckpoint(state),jumpScare:allowed};
     return ui===state.ui?state:{...state,ui,events:[]};
   }
   if (state.ui.mode==='keypad') {
@@ -221,7 +227,7 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
     if(captured)return captured;
   }
   // 先處理開啟，避免同一個 A／✕ 輸入第一位，或開啟當幀移動／耗電。
-  const initialTarget=selectChapterTarget(state);
+  const initialTarget=selectChapterTarget(state,{reasoning});
   if(actions.interactPressed&&initialTarget?.kind==='trainCard')return {...state,trainPuzzle:{...(state.trainPuzzle??createTrainPuzzle()),readCardIds:[...new Set([...(state.trainPuzzle?.readCardIds??[]),initialTarget.clueId])]},events:[],ui:{mode:'explore',messageTargetId:initialTarget.id,message:`已記錄：${initialTarget.name}`}};
   if(actions.interactPressed&&initialTarget?.kind==='clueNote')return {...state,foundClueIds:[...new Set([...(state.foundClueIds??[]),initialTarget.clueId])],events:[],ui:{mode:'explore',messageTargetId:initialTarget.id,message:initialTarget.name}};
   if(actions.interactPressed&&initialTarget?.kind==='sequenceButton'){
@@ -251,7 +257,7 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
   const geometry=getGeometry(state);
   const player=movePlayerWithMonsters(state,actions,dt,geometry.collisionBoxes);
   const equipmentActions=hasFlashlight(state)?actions:{...actions,flashlightPressed:false,uvPressed:false};
-  const target = selectChapterTarget({...state,player});
+  const target = selectChapterTarget({...state,player},{reasoning});
   const isDevice = Boolean(target?.bounds);
   const next=updateEquipment(state,player,{...equipmentActions,interactPressed:actions.interactPressed && !isDevice},dt,ITEMS,geometry.occluderBoxes);
   const result = advanceCheckpoint(advancePower({...next,player},dt));
@@ -275,14 +281,26 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
 
 export function updateChapter(state,actions={},dt=0,options={}) {
  if(state.ui.mode==='complete')return state;
+ if(options.captureRecovery==='stay'&&encounterAbsent(state))state=advanceEncounterRecovery(state,actions,dt,{definitions:MONSTERS,world:WORLD,geometry:getGeometry(state)});
+ if(options.progressive){
+   state=progressionBefore(state,actions,dt);
+   if(state.pressure.remaining>0&&state.ui.mode==='keypad')actions={...actions,keypadCommands:(actions.keypadCommands??[]).filter(c=>c.type==='cancel')};
+ }
  let next=updateChapterCore(state,actions,dt,options);
+ if(options.captureRecovery==='stay'){
+  next=hideAbsentMonsters(next);
+  if(next.ui.mode==='caught'&&!next.ui.stayInPlace)next={...next,ui:{...next.ui,stayInPlace:true}};
+ }
+ if(options.reasoning&&next.ui.mode==='keypad'&&next.ui.deviceId==='bay.train-console'&&/錯誤/.test(next.ui.message??''))
+   next={...next,ui:{...next.ui,message:'檢修碼錯誤。重新核對校驗來源、負載順序與完整軌道組數。'}};
+ if(options.progressive)next=progressionAfter(state,next,actions.keypadCommands);
  if(!state.player.paused&&!next.player.paused&&actions.gameplayActive!==false&&['explore','hiding'].includes(state.ui.mode)) next={...next,elapsedSeconds:(state.elapsedSeconds??0)+(Number.isFinite(dt)?Math.max(0,Math.min(MAX_DT,dt)):0)};
  if(next.ui.mode==='complete')return {...next,completed:true,endingResult:finishChapter(0,next.elapsedSeconds??0)};
  if(next.player.paused||actions.gameplayActive===false||next.ui.mode!=='explore'||state.ui.mode==='caught'||!next.puzzles[COLOR_SEQUENCE.id]?.restored)return next;
- const corridor=updateCorridor(next.corridor??createCorridor(),next.player,dt);
+ const corridor=updateCorridor(next.corridor??createCorridor(),next.player,dt,{speed:options.progressive?pressureSpeed(next.pressure?.level):2.1,absent:encounterAbsent(next)});
  if(corridor===next.corridor)return next;
  next=advanceCheckpoint({...next,corridor});
  if(corridor.active||corridor.complete)next.monsters=Object.fromEntries(MONSTERS.map(d=>[d.id,{...next.monsters[d.id],mode:'inactive'}]));
- if(corridor.caught)next={...next,flashlight:{...next.flashlight,enabled:false},ui:createCapture({jumpScare:next.jumpScare})};
+ if(corridor.caught)next={...next,flashlight:{...next.flashlight,enabled:false},ui:{...createCapture({jumpScare:next.jumpScare}),...(options.captureRecovery==='stay'?{stayInPlace:true}:{})}};
  return next;
 }

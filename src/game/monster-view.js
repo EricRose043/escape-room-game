@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { MONSTERS } from '../logic/chapter.js';
 import { createArtMaterials } from './art-materials.js';
 import { dollExpression } from './doll-expression.js';
+import {monsterPresentation} from '../logic/encounter-recovery.js';
 
 // 原創舊式藍色絨布玩偶：琥珀鈕扣眼、歪斜縫線笑容與長布偶手臂。
 export function createMonsterView(scene) {
@@ -95,7 +96,7 @@ export function createMonsterView(scene) {
   }));
   return {sync(state,dt=0,paused=false){
     for(const [id,model] of models) {
-      const monster=state.corridor?.active?{...state.monsters[id],...state.corridor.chaser,mode:'chase',walkDistance:state.corridor.distance}:state.monsters[id];model.group.visible=monster.mode!=='inactive';
+      const monster=monsterPresentation(state,id);model.group.visible=monster.mode!=='inactive';
       const chasing=monster.mode==='chase';
       if(model.mode!==monster.mode){model.mode=monster.mode;model.elapsed=0;}
       if(!paused)model.elapsed+=Math.max(0,Math.min(.1,Number.isFinite(dt)?dt:0));

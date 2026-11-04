@@ -1,0 +1,9 @@
+{
+  "files": [
+    "index.html",
+    "src/game/procedural-audio.js",
+    "tools/audio-test.html"
+  ],
+  "all200AndByteIdentical": true,
+  "browserListening": "user pending"
+}

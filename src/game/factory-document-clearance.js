@@ -4,7 +4,7 @@ import { planMountedSign } from './sign-design.js';
 // catches raised dado rails, seams and service pipes, not merely coplanar ink.
 export function planDocumentClearances(areas,boxes){
   const documents=areas.flatMap(area=>area.signs).map(sign=>planMountedSign(sign,boxes)).filter(plan=>plan&&['paper','warning','diagram'].includes(plan.kind));
-  const clues=areas.flatMap(area=>area.clues).filter(clue=>clue.id!=='power.uv-code').map(clue=>({...clue,kind:'clue'}));
+  const clues=areas.flatMap(area=>area.clues).filter(clue=>clue.id!=='power.uv-code'||clue.reserveReadingSpace===true).map(clue=>({...clue,kind:'clue'}));
   return [...documents,...clues].map(plan=>{
     const n=plan.normal,p=plan.position,axis=n.x?'X':'Z',tangent=n.x?'Z':'X',a=axis.toLowerCase(),t=tangent.toLowerCase(),normal=n[a];
     const b={minY:p.y-plan.height/2-.12,maxY:p.y+plan.height/2+.12};

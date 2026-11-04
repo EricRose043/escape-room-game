@@ -8,7 +8,9 @@ import {
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
   keyboardStartMenuCommand, startMenuGamepadCommand,
-  createSettings, createGameSettingsStorage, deserialize,finishChapter,chapterObjective,factoryMapText,trainCinematicFrame,
+  createSettings, createGameSettingsStorage, deserialize,finishChapter,chapterObjective,trainCinematicFrame,
+  createMouseLook,advanceMouseLook,worldVisible,progressiveObjective,assessFrameQuality,
+  reasoningClues,reasoningMapText,reasoningTarget,reasoningObjective,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
@@ -27,7 +29,8 @@ const settingsStorage=createGameSettingsStorage({
   setItem:(key,value)=>window.localStorage.setItem(key,value),
 },{search:window.location.search});
 let settings=settingsStorage.load();
-const chapterOptions={jumpScare:settings.jumpScare};
+const chapterOptions={jumpScare:settings.jumpScare,progressive:true,reasoning:true,captureRecovery:'stay'};
+const playClues=reasoningClues(CLUES);
 let settingsOpen=false,endingDispose=null,endingMapOpen=false;
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
@@ -55,13 +58,14 @@ scene.background = new THREE.Color(0x0c1015);
 const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 50);
 camera.rotation.order = 'YXZ';
 
-// 簡單幾何、無即時陰影或後製；像素比上限 1，降低內顯負擔。
+// 無即時陰影或後製；依實測幀率調整3D解析度，DOM與輸入仍逐幀更新。
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 let renderPixelRatio=Math.min(window.devicePixelRatio||1,1.25);
+let renderQuality={scale:renderPixelRatio,stable:0};
 renderer.setPixelRatio(renderPixelRatio);
 document.body.appendChild(renderer.domElement);
 
-const worldView = createWorldView(scene);
+const worldView = createWorldView(scene,{reasoning:true});
 worldView.enhanceScene?.(renderer,camera);
 const monsterView = createMonsterView(scene);
 const audio=createFactoryAudio();
@@ -82,7 +86,7 @@ const itemMeshes = new Map(ITEMS.map(item => [item.id,
     (item.minX + item.maxX) / 2, (item.minY + item.maxY) / 2, (item.minZ + item.maxZ) / 2,
     new THREE.MeshLambertMaterial({ color: item.color }))]));
 
-scene.add(new THREE.AmbientLight(0x8e9eae, 0.45));
+scene.add(new THREE.AmbientLight(0x9da7b4, 0.32));
 
 // 單盞手電筒，不開陰影或後製；照射範圍與 logic 共用設定。
 const torch = new THREE.SpotLight(0xffeed0, 18, BEAM.distance, BEAM.halfAngle, .4, 2);
@@ -91,7 +95,7 @@ torch.visible = false;
 scene.add(torch);
 scene.add(torch.target);
 
-const clueMeshes = new Map(CLUES.map(clue => {
+const clueMeshes = new Map(playClues.map(clue => {
   const mounted=worldView.createClueMesh?.(clue);
   if(mounted)return [clue.id,mounted];
   const canvas = document.createElement('canvas');
@@ -130,7 +134,7 @@ function syncLighting() {
   torch.target.position.set(origin.x + direction.x, origin.y + direction.y, origin.z + direction.z);
   torch.visible = hasFlashlight(chapter) && chapter.flashlight.enabled && chapter.flashlight.charge > 0;
   torch.color.setHex(chapter.flashlight.mode === 'uv' ? 0x9977ff : 0xffeed0);
-  for (const clue of CLUES) {
+  for (const clue of playClues) {
     clueMeshes.get(clue.id).visible = clue.alwaysVisible||isClueVisible(chapter.player, chapter.flashlight, clue, geometry.occluderBoxes);
   }
 }
@@ -177,6 +181,7 @@ let equipmentPending = { flashlightPressed: false, uvPressed: false };
 let disconnectedMessage = false;
 let dYaw = 0;
 let dPitch = 0;
+let mouseLook=createMouseLook();
 let previousTime;
 let requestingLock = false;
 let pointerLockFailed = false;
@@ -211,7 +216,7 @@ function syncUI() {
   if(film){const frame=trainCinematicFrame(chapter.ui.elapsed??0);filmPanel.dataset.blackout=String(frame.blackout);setText(filmCaption,frame.dialogue);filmCaption.hidden=!frame.dialogue;}
   document.querySelector('#settings-button')?.setAttribute('aria-disabled',film?'true':'false');
   pauseScreen.hidden = !session.paused || startMenu.mode!=='closed' || chapter.ui.mode==='complete' || (chapter.ui.mode==='ending'&&!film) || !mapPanel.hidden || settingsOpen;
-  setText(document.querySelector('#objective'),chapterObjective(chapter));
+  setText(document.querySelector('#objective'),reasoningObjective(chapter,progressiveObjective(chapter,chapterObjective(chapter))));
   setText(document.querySelector('#keypad-title'),chapter.ui.deviceId==='bay.train-console'?'列車檢修控制器':chapter.ui.deviceId==='exit.final-keypad'?'出口控制板':chapter.ui.deviceId==='production.sequence-keypad'?'裝配線控制器':'電力控制器');
   startMenuView.sync(startMenu,prompt.device);
   startOpen.hidden=!session.hasStarted||film;
@@ -224,9 +229,9 @@ function syncUI() {
   document.querySelector('#factory-map-button').hidden=!hasMap || chapter.ui.mode==='complete'||film;
   document.querySelector('#ending-screen').hidden=chapter.ui.mode!=='complete'||endingMapOpen||startMenu.mode!=='closed';
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
-  const target = selectChapterTarget(chapter);
+  const target = reasoningTarget(selectChapterTarget(chapter,chapterOptions));
   interactionHint.hidden = !target;
-  const message=target && chapter.ui.messageTargetId===target.id?chapter.ui.message:null;
+  const message=target && chapter.ui.messageTargetId===target.id?(target.kind==='clueNote'?'線索已記錄，地圖可回看':chapter.ui.message):null;
   setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} ${target.bounds ? `${target.name}｜${message ?? deviceMessage(chapter,target)}` : `撿起 ${target.name}`}` : '');
   const contact=Object.values(chapter.monsters).some(m=>m.contactFeedbackRemaining>0);
   contactHint.hidden=session.paused || chapter.ui.mode!=='explore' || !contact;
@@ -253,7 +258,7 @@ function syncUI() {
 }
 
 let mapReturnToGame=false,mapAwaitRelease=false;
-function openMap(){if(inTrainFilm())return;mapAwaitRelease=true;mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=factoryMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
+function openMap(){if(inTrainFilm())return;mapAwaitRelease=true;mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=reasoningMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
 function closeMap(){mapPanel.hidden=true;endingMapOpen=false;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}clearInput();syncUI();if(chapter.ui.mode==='complete')document.querySelector('[data-ending-action="map"]')?.focus();}
 window.addEventListener('factory-help-open',()=>{
   if(!intro.hidden||startMenu.mode!=='closed'||settingsOpen||inTrainFilm())return;
@@ -275,6 +280,7 @@ document.querySelector('#ending-close').addEventListener('click',openMap);
 function restartFromEnding(){startMenuAwaitRelease=true;applySession({forcePause:true});openStartMenu();startMenu=updateStartMenu(startMenu,{type:'new'});syncUI();}
 function mountEnding(){if(endingDispose)return;const derail=chapter.ui.variant==='derailment'||chapter.trainCinematic?.started;endingDispose=showEnding(document.querySelector('#ending-screen'),chapter.endingResult??finishChapter(0,chapter.elapsedSeconds??0),restartFromEnding,{title:derail?'遊戲結束｜END':'第一章結束',onMap:openMap,ignoreHeld:true,storyText:derail?'列車在黑暗中脫軌。廣播停止了，車廂深處卻傳來那句話：「最好的朋友，陪你直到回家。」':'封存的舊結局紀錄已保留。重新開始可以體驗列車檢修謎題與脫軌尾聲。'});}
 function clearInput() {
+  mouseLook=createMouseLook();
   keys.clear();
   interactPending = false;
   keypadPending = [];
@@ -519,7 +525,7 @@ function pollGamepads() {
   return selected;
 }
 
-function readActions(time) {
+function readActions(time,dt=0) {
   const pad = pollGamepads();
   // 背景時仍更新前幀按鈕狀態，避免回到前景時把長按當成新按下。
   if (document.hidden || !document.hasFocus()) {
@@ -570,7 +576,9 @@ function readActions(time) {
   x /= length;
   y /= length;
   // 暫停已在 session 處理；交給 movement 的動作不可再次觸發暫停。
-  const merged = mergeActions({ move: { x, y }, look: { dYaw, dPitch }, interactPressed: interactPending, ...equipmentPending, keypadCommands:keypadPending }, pad?.actions);
+  const filtered=advanceMouseLook(mouseLook,{dYaw,dPitch},dt,session.hasStarted&&!session.paused&&['explore','hiding'].includes(chapter.ui.mode));
+  mouseLook=filtered.state;
+  const merged = mergeActions({ move: { x, y }, look: filtered.look, interactPressed: interactPending, ...equipmentPending, keypadCommands:keypadPending }, pad?.actions);
   const actions = gameplayActions(merged, before, session);
   interactPending = false;
   keypadPending = [];
@@ -578,7 +586,6 @@ function readActions(time) {
   actions.pausePressed = false;
   dYaw = 0;
   dPitch = 0;
-  syncUI();
   return actions;
 }
 syncUI();
@@ -592,7 +599,7 @@ function animate(time) {
   if (sampleStart === undefined) sampleStart = time;
   const dt = previousTime === undefined ? 0 : Math.min(.1,Math.max(0,(time - previousTime) / 1000));
   previousTime = time;
-  const actions = readActions(time);
+  const actions = readActions(time,dt);
   const beforeChapter=chapter;
   const beforeMode=chapter.ui.mode;
   chapter = updateChapter(chapter, actions, dt, chapterOptions);
@@ -605,29 +612,32 @@ function animate(time) {
   if(beforeMode!=='complete' && chapter.ui.mode==='complete') {
     try { localStorage.setItem('toy-factory-complete','true'); } catch {}
     document.querySelector('#map-title').textContent='完整工廠地圖｜通關解鎖';
-    document.querySelector('#map-content').textContent=factoryMapText(chapter,true);mountEnding();
+    document.querySelector('#map-content').textContent=reasoningMapText(chapter,true);mountEnding();
   }
   if(session.hasStarted && startMenu.mode==='closed') saveStorage.observe(beforeChapter,chapter,actions.gameplayActive?dt:0);
   if (beforeMode!==chapter.ui.mode) {
     clearInput();
     if (['keypad','caught','ending','complete'].includes(chapter.ui.mode)) releasePointer(chapter.ui.mode);
   }
-  worldView.sync(chapter);
-  monsterView.sync(chapter,dt,session.paused||actions.gameplayActive===false);
-  for (const [id,mesh] of itemMeshes) mesh.visible=!chapter.inventory.itemIds.includes(id);
   syncUI();
-  camera.position.set(chapter.player.x, EYE_HEIGHT, chapter.player.z);
-  camera.rotation.set(chapter.player.pitch, chapter.player.yaw, 0, 'YXZ');
-  worldView.syncPresentation?.(chapter,session,prompt);
-  syncLighting();
-  if(!worldView.renderCinematic?.(renderer,chapter,settings,session))renderer.render(scene, camera);
+  if(worldVisible(chapter.ui.mode)){
+    worldView.sync(chapter);
+    monsterView.sync(chapter,dt,session.paused||actions.gameplayActive===false);
+    for (const [id,mesh] of itemMeshes) mesh.visible=!chapter.inventory.itemIds.includes(id);
+    camera.position.set(chapter.player.x, EYE_HEIGHT, chapter.player.z);
+    camera.rotation.set(chapter.player.pitch, chapter.player.yaw, 0, 'YXZ');
+    worldView.syncPresentation?.(chapter,session,prompt);
+    syncLighting();
+    if(!worldView.renderCinematic?.(renderer,chapter,settings,session))renderer.render(scene, camera);
+  }
   if(firstRender){firstRender=false;startup?.markReady();}
   frames += 1;
   const elapsed = time - sampleStart;
   if (elapsed >= 1000) {
     const fps=Math.round(frames*1000/elapsed);
     fpsDisplay.textContent = `FPS: ${fps}`;
-    if(fps<42 && renderPixelRatio>1) {renderPixelRatio=1;renderer.setPixelRatio(renderPixelRatio);resize();}
+    renderQuality=assessFrameQuality(renderQuality,fps,Math.min(window.devicePixelRatio||1,1.25));
+    if(Math.abs(renderQuality.scale-renderPixelRatio)>.001){renderPixelRatio=renderQuality.scale;renderer.setPixelRatio(renderPixelRatio);resize();}
     frames = 0;
     sampleStart = time;
   }

@@ -1,0 +1,30 @@
+{
+  "base": "6ff1d44cf5114197d99aeef54eae101a5b2bbe53",
+  "testedCommit": "7bd0c5574d1006e7a18511b7b88b5ad1d9be480f",
+  "node": "v24.22.1",
+  "windowsAutocrlfClone": true,
+  "mainCRLF": 0,
+  "exit": 0,
+  "originalAuthorsPreservedByAncestry": [
+    {
+      "sha": "3072dfae6079f3d16350694bdd90573f0ff81bc7",
+      "inMain": true
+    },
+    {
+      "sha": "42d8357260be7ef3c1274501bfaff983e756f356",
+      "inMain": true
+    },
+    {
+      "sha": "05b290bacddf53187601efa3f1c95f0ab4b6bb4f",
+      "inMain": true
+    },
+    {
+      "sha": "80fbb657ebce493072aff3749d5d09b58e1e6923",
+      "inMain": true
+    },
+    {
+      "sha": "c57134764a556a5a708add49f100fd3895a0af9c",
+      "inMain": true
+    }
+  ]
+}

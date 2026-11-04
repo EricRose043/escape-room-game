@@ -13,7 +13,9 @@ export function showSettings(root,settings,onChange,onClose) {
     const text=make('label',label),value=make('output');text.htmlFor=`setting-${key}`;
     const control=make(key==='jumpScare'?'button':'input');control.id=`setting-${key}`;
     if(key==='jumpScare') {control.type='button';control.setAttribute('role','switch');control.setAttribute('aria-label',label);}
-    else {control.type='range';control.min=String(min);control.max=String(max);control.step=String(step);}
+    // 儲存層接受範圍內的任何有限數值；原生 range 不應把合法舊設定量化。
+    // 鍵盤／手把的增量仍由 updateSettingsMenu 控制。
+    else {control.type='range';control.min=String(min);control.max=String(max);control.step=key==='volume'&&Number.isInteger(settings.volume)?'1':'any';}
     control.addEventListener('focus',()=>{menu={...menu,selected:index};});
     control.addEventListener(key==='jumpScare'?'click':'input',()=>{
       menu={...menu,selected:index};

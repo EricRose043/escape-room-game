@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: 正式main開啟推理呈現，送進畫布的UV資料沒有完整答案
+ok 1 - 正式main開啟推理呈現，送進畫布的UV資料沒有完整答案
+  ---
+  duration_ms: 33.1412
+  type: 'test'
+  ...
+# Subtest: 五個階段能由分散的證據推出唯一既有解，UV原始讀數不是密碼
+ok 2 - 五個階段能由分散的證據推出唯一既有解，UV原始讀數不是密碼
+  ---
+  duration_ms: 6.163
+  type: 'test'
+  ...
+# Subtest: 新排序規則實際畫成文件，不會被固定答案箭頭取代；新文件有實體掛面與模型保留區
+ok 3 - 新排序規則實際畫成文件，不會被固定答案箭頭取代；新文件有實體掛面與模型保留區
+  ---
+  duration_ms: 8.5369
+  type: 'test'
+  ...
+# Subtest: 跨區回看依已解進度出現，列車未取得的卡與校驗數字不提前洩漏
+ok 4 - 跨區回看依已解進度出現，列車未取得的卡與校驗數字不提前洩漏
+  ---
+  duration_ms: 4.1995
+  type: 'test'
+  ...
+# Subtest: 新推理文件可從室內用真Three.js掛面與準星選讀，新增UV區也保留裝飾淨空
+ok 5 - 新推理文件可從室內用真Three.js掛面與準星選讀，新增UV區也保留裝飾淨空
+  ---
+  duration_ms: 36.0021
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 258.0275

@@ -12,7 +12,7 @@ export function controlLegend(device='keyboard'){
     {control:'cancel',key:key('cancel'),action:'返回／取消'},
   ];
 }
-export function operationGuide(s,device='keyboard',target=null){
+function baseGuide(s,device='keyboard',target=null){
   const label=action=>buttonLabel(action,device),act=(action,text)=>({control:action,key:label(action),action:text});
   const has=id=>s.inventory.itemIds.includes(id);
   if(s.ui.mode==='hiding')return {title:'保持安靜',body:'在被發現前躲藏。用視角窺看外面，等娃娃轉身離開再出櫃；一旦被看見就會被抓。',actions:[act('look','窺視'),act('interact','出櫃')]};
@@ -33,4 +33,12 @@ export function operationGuide(s,device='keyboard',target=null){
   if(s.puzzles['exit.final']?.restored&&!s.trainStarted)return {title:`月台檢修卡 ${s.trainPuzzle?.readCardIds.length??0}／3`,body:'北側設備上有牽引、制動與照明三張檢修卡。分別按互動鍵記錄，接著回到發車控制台。',actions:[act('look','找檢修卡'),act('interact','讀卡／操作')]};
   if(s.trainStarted)return {title:'登上撤離列車',body:'列車已啟動。沿月台走到列車入口，對準後按互動鍵登車。',actions:[act('move','走向列車'),act('interact','登車')]};
   return {title:'避開娃娃的視線',body:'利用機台遮擋，觀察娃娃轉身再移動，也可提前躲入置物櫃。一旦被看見，就會觸發無法逃脫的抓捕。',actions:[act('interact','操作／先躲藏'),act('pause','操作指南')]};
+}
+export function operationGuide(s,device='keyboard',target=null,{reasoning=false}={}){
+ const guide=baseGuide(s,device,target);
+ if(!reasoning)return guide;
+ if(target?.kind==='trainConsole'&&!s.trainStarted)return {...guide,body:'收齊三張檢修卡，再比對現場檢修規則及早期控制室紀錄。地圖保留已完成控制器的資料。'};
+ if(!target&&s.inventory.itemIds.includes('lobby.flashlight')&&s.puzzles['power.main'].installedItemId&&!s.puzzles['power.main'].restored)
+   return {...guide,title:'讀數需要搭配接線圖',body:'開燈並切紫外光找停機讀數，再找另一份回路接線圖。讀數排列不是輸入順序；數字鍵或手把都能操作控制器。'};
+ return guide;
 }

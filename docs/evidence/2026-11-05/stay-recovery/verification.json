@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-05 Asia/Taipei",
+  "codeCommit": "c90483fb3a40fbd4a26d615c588cf5e03300af07",
+  "mainBaseline": "fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8",
+  "entryBuild": "359cf85415ed4b20",
+  "nodeTests": 323,
+  "windowsTests": 323,
+  "mainCRLF": 0,
+  "launcherTests": 8,
+  "logicRouteToEnd": 1,
+  "http200AndByteIdentical": 80,
+  "teamSourceAncestry": "main plus five previous team source commits preserved",
+  "publication": "local only; no GitHub push, PR update, Site deploy or ZIP refresh",
+  "browserGpuAndPhysicalController": "not measured this round",
+  "humanScareTiming": "pending",
+  "policy": "main captureRecovery=stay; save loading retains checkpoints; at least 5 active seconds absent"
+}

@@ -5,3 +5,4 @@ escape-room-server.log
 .DS_Store
 supervisor/rounds/*.log
 supervisor/.codex-session-id
+.demo-site/

@@ -45,8 +45,8 @@ export function createCaptureView(root) {
       }
       place('torso',p.x*.6,p.y+30,p.z-60,p.tilt*.4,p.pitch*.5,p.yaw*.7,p.scale);
       place('head',p.x,p.y,p.z,p.tilt,p.pitch,p.yaw,p.scale);
-      place('left-eye',p.x-2,p.y,p.z+8,p.tilt-1.5*p.creep,p.pitch*.9,p.yaw*.8,p.scale);
-      place('right-eye',p.x+2,p.y-2,p.z+13,p.tilt+2*p.creep,p.pitch*.86,p.yaw*.7,p.scale);
+      place('left-eye',p.x-2+p.eyeShift,p.y,p.z+8,p.tilt-1.5*p.creep,p.pitch*.9,p.yaw*.8,p.scale);
+      place('right-eye',p.x+2-p.eyeShift*.6,p.y-2,p.z+13,p.tilt+2*p.creep,p.pitch*.86,p.yaw*.7,p.scale);
       place('teeth',p.x,p.y-2,p.z+17,p.tilt,p.pitch,p.yaw,p.scale);
       place('jaw',p.x+9*p.jaw,p.y+p.jawY,p.z+24+p.jaw*11,p.tilt+p.jawTilt,p.pitch-12*p.jaw,p.yaw-4*p.jaw,p.scale);
       place('left-hand',-p.handX,17-p.hands*20,p.handZ,-13+p.hands*19,-6+p.hands*10,18-p.hands*9,1.08);

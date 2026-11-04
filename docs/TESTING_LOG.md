@@ -257,3 +257,191 @@ Eric回報同學開場無法略過，回答開啟方式「不知道」。Codex�
 [run 41320466639](https://github.com/EricRose043/escape-room-game/actions/runs/41320466639) 的 GitHub Summary／Annotations 明確顯示帳戶近期付款失敗或支出上限需要調整，沒有啟動任何 job。GitHub API 未提供該註解，已用原生 Chrome 讀取確認；詳 [原始狀態](evidence/2026-11-01/owner-integration/github-ci-startup.json)。
 
 工作流程 YAML 已本機解析；本機235項及三條Chrome路線通過。但 Linux／Windows × Node22／24 的遠端CI **NOT_RUN，不是 PASS**，也不以歷史220項Windows結果代替。沒有更改付款、預算、Actions權限或分支保護；只有帳戶持有人可處理帳務限制，解除後再重跑CI。
+
+## LOG-20261104-SHUOEN：最新版分工覆核與小數設定修復
+
+查核開始2026-11-04、收尾2026-11-05；操作者shuoen88授權的Codex。以git ls-remote --heads及明確fetch所有分支核對，鎖定main **6ff1d44cf5114197d99aeef54eae101a5b2bbe53**，從該版開shuoen/nov04-integration-audit，沒有以舊S1分支覆蓋main。PR #1／#4／#5已合併，#2／#3已關閉但原始來源SHA均在main。
+
+### 先確認分工狀態
+
+S1／S2／S3已由owner接入。S3位置已由D021解決，色序、警報、線索出口及列車均已實作，本輪主要工作為重新驗收、修復S2缺口及統整狀態。D028驚嚇預設／升級與先前shuoen選擇不同，先詢問，使用者明確回覆「保留Eric最新行為，記錄與我原選擇的差異」，記D033；未改其策略。
+
+### 測試與修復
+
+1. 基線`node --test --test-reporter=tap`：280/280、無失敗／略過。
+2. 檢查S2接受合法小數，但原生range步距會量化值。新增integration-settings-precision.test.js（Node DOM步距替身）驗37.4音量／1.1倍率，以及手把調成1.35後的面板一致性；b600b38先紅2失敗。
+3. 7bd0c55修正：倍率及既存小數音量採step=any；整數音量保留step=1，鍵盤／手把增量沿用純規則。原測試斷言未改。完整282/282。
+4. 全新Windows clone同一修復SHA，core.autocrlf=true，main.js CRLF=0，同指令282/282。Node v24.22.1，本環境直接用Node runner，未聲稱直接跑npm test。
+5. ancestor核對3072dfa／42d8357／05b290b／80fbb65／c571347對main皆成功；完整SHA在verification.json。Git作者main當時Ryan95、Eric81、shuoen25，不用提交數評量工作量。
+6. GitHub最新main run41859330532為startup_failure，API jobs total_count=0。遠端矩陣NOT_RUN；未拿本機通過替代，未更改帳戶付款或Actions設定；最新失敗根因本輪未取得。
+
+### 證據與限制
+
+[基線TAP](evidence/2026-11-04/shuoen-audit/baseline.tap)、[先紅](evidence/2026-11-04/shuoen-audit/settings-red.tap)、[完整套件](evidence/2026-11-04/shuoen-audit/full-suite.tap)、[Windows](evidence/2026-11-04/shuoen-audit/windows-suite.tap)、[版本與作者追溯](evidence/2026-11-04/shuoen-audit/verification.json)、[CI狀態](evidence/2026-11-04/shuoen-audit/ci-runs.json)、[0 jobs](evidence/2026-11-04/shuoen-audit/ci-jobs.json)。TAP僅整理行尾空白及換行。
+
+本輪沒有新瀏覽器／GPU畫面驗證；可用瀏覽器技能檔缺失，沒有使用舊工具或未讀API冒充測試。Node DOM替身與舊11/01通關證據分開。尚缺實體Xbox／PS、學校舊電腦FPS、真人首次解題與音色結果；已詢問設備狀況，未知結果不代填。原53條結果表已按目前功能更新，VERIFY員工卡門禁文字差異仍需人審，本輪不更改BRIEF／VERIFY。
+
+
+## 2026-11-05 使用者設備回覆
+
+shuoen已確認有Xbox／Xbox配置手把；尚未提供實測結果，不能勾為通過。使用者明確要求舊電腦先跳過，因此學校舊電腦30FPS標為「依使用者要求暫緩／未驗」，不再作本輪交付阻擋；PS實體仍未提供設備結果。
+
+Xbox下一步（正式index.html，先用目前main；PR #6經Eric合併後重測設定）：
+
+1. 連接手把、按任一鍵，核對顯示Xbox；左搖桿移動、右搖桿轉頭，放手不得漂移。
+2. Y開設定，十字鍵上下選、左右調，A切換驚嚇、B返回；保持暫停，Start再繼續。
+3. RB開關燈、LB換UV、A拾物與操作密碼鎖，View開關地圖；進行中拔除使用中的手把應暫停。
+4. 設定音量及靈敏度後關頁重開，核對數字與選擇保留；沒有經過一次升級的舊設定依D028先開啟驚嚇，之後手動關閉需能保存。
+5. 只用手把走完色序、3142、走廊、2413、三卡2123與列車結局；記卡關步驟，查看結局地圖與重玩確認是否可操作。
+
+回報請填：測試commit或PR版本、手把型號、瀏覽器、通過／失敗步驟、預期／實際。沒有完成的項目可直接填未做；不需一次完成所有項目。
+
+## LOG-20261105-DEMO：公開站與本機試玩包
+
+依使用者要求同台Xbox／鍵鼠試玩及報告公開網址，保留最新main基線與本分支修復；沒有再改遊戲規則。prepare_escape_room_assets更新index共同版本；完整282/282。本機8778已啟動，72個檔案逐一HTTP200且位元一致；ZIP已通過CRC與解壓後臨時8780服務確認（測完只停止本輪啟動的臨時程序）。公開Sites source05d2a492、version1、deployment succeeded與public存取原生回傳確認；ID及網址見demo-site.json。公開HTTP探測遇Cloudflare403/1010，未繞過，也未代填瀏覽器通關。備份包SHA256及檔案位置見evidence/2026-11-05/demo-release/package.json；完整套件與本機HTTP清單在同目錄。先前Chrome政策停止後，本輪未重試瀏覽器自動操作。
+
+## LOG-20261105-SCARE：依試玩回饋加強被抓音效
+
+使用者要求被抓驚嚇聲音更大、更恐怖；待其確認全部順暢後，才交付最終公開站／備份包／報告講稿。因此本輪只更新本機與GitHub來源，不保存新Sites版本、不重發佈、不重打正式ZIP。既有公開版保留舊快照。
+
+開始核對遠端main已更新a97400a（開場獨立載入診斷）。c5d3e0e以merge納入，保留雙方歷史；採新版HTML獨立啟動，重新產生共同版本。重複編號保留owner D032／DEF-010，shuoen前輪決定改編D033、設定精度缺陷DEF-011，僅消除編號衝突。
+
+音效新回歸d4f12de先紅（2項中1失敗）；實作後完整292/292。被抓六聲部的起始峰值由原最大0.07提高至0.20（程式增益，不聲稱主觀音量倍數），加入下滑頻率、失諧粗糙雙音、短低通噪聲與約1.5秒低頻尾音；不更動主音量設定、其他事件旋律或16聲部限制。停止／靜音／dispose仍由同一引擎管理，回歸檢查保留門聲增益與清理能力。
+
+tools/audio-test.html新增「被抓驚嚇音效（新版）」直接呼叫遊戲同一playCue，便於使用者試聽。index、音效模組與試聽頁皆本機HTTP200且位元相同；程序記錄在scare-audio/local-http.json。這是Node WebAudio替身與HTTP驗證，尚未真人試聽或實體手把整章覆驗；恐怖感等待使用者回覆，不代填通過。
+
+## LOG-20261105-IMMERSION：本機再次試玩候選
+
+shuoen88要求整體／腳步更大聲、靈敏度降低及改善轉頭卡頓、細化近景、加強工廠寫實感與難度遞增；對難度選項明確回覆「我覺得一跟二都很好」，因此採前段教學、中後段推理及有上限的錯誤壓力。發布順序改依S-D034：先本機試玩，確認後才上傳GitHub、更新公開站／正式ZIP及交付講稿；本輪沒有push、PR更新、Sites版本保存／部署或正式ZIP修改。
+
+### 基線與變更
+
+開始已納入main a97400a，工作期間發現main更新為fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8，透過da6f4e6合併啟動器交接修復，未覆蓋或重寫三人提交。遊戲程式完成點e31295aabac83eaa7a536e47a1f9f89cb8b6f7d7；入口雜湊映射再用prepare_escape_room_assets.py生成。BRIEF／VERIFY未改。
+
+1. 輸出增益1.65及原生壓縮限制器保留主音量／靜音；加強腳步與鞋跟，區域增加循環通風／電流底噪，停止可清理。沿用前輪驚嚇低吼與衝擊。
+2. 滑鼠總轉角降至同倍率原先55%，指數平滑約12ms；暫停清餘量、手把轉速保留。移除一次重複介面更新，依每秒幀率量測逐步調整3D解析度，穩定十秒才恢復。
+3. 八層近景提高為1536px，連續眼球與下顎細微姿態；抓捕期間邏輯／UI繼續，省略遮住的工廠WebGL繪圖。物件不逐幀重建。
+4. 實體材質的粗糙度、金屬反應與細微凹凸，單批接地陰影與霧／曝光調整，不增即時陰影光源或改碰撞資料。
+5. 四色線索改為唯一排序條件，後段目標少透露直接公式。錯碼警報／復位最高4秒，錯誤壓力最高3級、走廊速度最高2.28m/s仍低於玩家2.5；不遺失物品、已讀線索或已解謎題，壓力不存檔。故事、既有正確答案與存檔版本保留。
+
+### 先紅再綠與執行結果
+
+| 範圍 | 紅燈提交 | 綠燈實作 | 證據 |
+|---|---|---|---|
+| 滑鼠／遮住世界 | 16036b5 | 38865ce | mouse-red.tap |
+| 音效與生命週期 | c1b71ff | 63a222a | audio-red.tap |
+| 近景細節 | 18e3232 | fc8c361 | capture-red.tap |
+| 材質／接地陰影 | 1dac755 | 3aa032f | material-red.tap |
+| 漸進難度 | 5bc99ee | 7e6b15a | progression-red.tap |
+| 自動解析度 | eef4a49 | e31295a | frame-budget-red.tap |
+
+難度測試新寫時有一處將字串傳入assert.match，改成更精確的assert.equal文字斷言，沒有改既有測試或降低期望；其餘紅燈為新增行為尚不存在。main整合測試另驗正式讀取滑鼠、暫停及被抓時鐘／繪圖路徑，不只測獨立函式。
+
+- Node v24.22.1：`node --test --test-reporter=tap` **305/305**，0失敗／略過。WebAudio／DOM為替身；材質使用真正隨附Three.js模組建立與查值，並未建立真GPU context。
+- 全新Windows clone、core.autocrlf=true：**305/305**，main.js CRLF=0；未用本機結果代替GitHub CI，這輪沒有推送觸發遠端CI。
+- Python啟動器：**8/8**。
+- 使用既有stealth-route路線，代理updateChapter強制progressive=true並以pressure.level=3開始：**1/1到END**。是最高壓力自動邏輯路線，非真人實玩。
+- 本機8778：**77個**執行資源／預覽HTTP200且與磁碟內容相同，預覽內嵌模組Node語法檢查通過。
+
+原始輸出：[完整套件](evidence/2026-11-05/immersion-candidate/full-suite.tap)、[Windows](evidence/2026-11-05/immersion-candidate/windows-suite.tap)、[啟動器](evidence/2026-11-05/immersion-candidate/launcher-tests.txt)、[最高壓力路線](evidence/2026-11-05/immersion-candidate/hardest-progressive-route.tap)、[版本摘要](evidence/2026-11-05/immersion-candidate/verification.json)。同目錄六份red.tap對應上表；僅整理換行及行尾空白。
+
+### 未檢查與環境限制
+
+目前沒有新真瀏覽器GPU／shader、實機FPS、實體Xbox／PS或真人音色／完整首次解題的結果。先前瀏覽器自動操作因無法確定目前網址被安全機制停止，未另換工具繞過。新程式不代表實機已達固定60／120fps，也不代填「寫實／更恐怖」通過。舊電腦效能依使用者要求暫緩。實玩操作在[本機候選說明](IMMERSION_CANDIDATE.md)，用本機8778及Ctrl+F5更新；不要拿舊公開站／備份包評估本批修改。
+
+歷史編號澄清：本紀錄較早段落提及的shuoen決定D033／設定精度DEF-011，現在分別為S-D033／S-DEF-011；owner D033與DEF-011留給啟動器修復。
+
+## LOG-20261105-REASONING：傳統驚嚇音色與整章分散證據
+
+使用者再次實玩回報「驚嚇的聲音不像傳統的那種」及「只要一照紫外線就能破關」，要求上網找恐怖遊戲參考；詢問範圍後，明確選擇整章加深推理。決定S-D035。延續發布暫緩，不推送GitHub、不改PR、不保存Sites版本／部署、不重打正式ZIP。
+
+### 來源查找與版本
+
+查閱EA／Motive的Dead Space Intensity Director開發文章及Xbox Wire的Alien: Isolation主設計師訪談，採緊張／喘息、環境層次與集中爆發的設計思路。只讀設計說明，沒有下載／擷取其素材或聲稱實際聽過遊戲；網址與本專案推論分列在HORROR_AUDIO_AND_REASONING.md。
+
+開始與收尾的git ls-remote都確認main仍為fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8，已在本分支祖先；遠端本分支仍停在3d14735f，符合未上傳。程式完成96ab393，入口資源提交038b9ad；本機build **60ec1eb14a9a8e4b**。main與五個過往組員來源SHA的ancestor核對皆通過，BRIEF／VERIFY未改。
+
+### 實作與先紅後綠
+
+| 項目 | 紅燈提交／證據 | 綠燈提交／結果 |
+|---|---|---|
+| 原創非旋律驚嚇紋理與預建播放 | 20d8260、audio-red.tap：2失敗 | 9d1ed9c；新2項轉綠，當時完整307/307 |
+| 五階段分散證據、畫布與地圖防直接答案 | b0ac7e2、reasoning-red.tap：缺新模組及正式main未開啟 | 33e3474；當時完整313/313 |
+| 加高紙面與完整互動邊緣 | 2a218fe、paper-target-red.tap：紙條高度不足 | 96ab393；完整314/314 |
+
+聲音以程序氣流／共振／非諧和擦響及短反射建立1.65秒立體聲紋理，首次unlock預建並重用，配兩層低頻撞擊／下降尾音。共用主音量／限制器與stop／dispose，測試檢查有限值、相對頻帶紋理、峰值、衰減與生命週期；非真人試聽。
+
+控制室由未排序UV讀數配回路圖；裝配線由原始格數配設備單位及接線；四色由設備校正值配燈牌及三項條件，24個排列中只有1解；出口把校正值、燈序、移轉及反向規則跨區整合；列車再取早期照明校驗來源、三張卡、現場排序與軌道。保留原故事／答案／已解進度／存檔版本；已知答案仍可直接輸入，不聲稱有防猜碼或每輪隨機。
+
+查核發現舊color-order即使文字改了，renderer仍畫固定紅黃綠藍箭頭；正式reasoning呈現改文件而保留舊模組API相容。main畫布、閱讀字幕、目標、文件互動、地圖及列車錯碼同步採新內容；地圖只在相應控制器完成後保留紀錄，不自動發給尚未取得的列車卡／整套公式。
+
+### 實際執行
+
+- Node v24.22.1，`node --test --test-reporter=tap` **314/314**，0失敗／略過，完整TAP見full-suite.tap。
+- 乾淨Windows clone，以core.autocrlf=true從038b9ad重新取出，**314/314**，main.js CRLF=0；windows-suite.tap。沒有以本機結果冒稱GitHub CI已跑。
+- Python啟動器unittest discover **8/8**；launcher-tests.txt。
+- route-replay.mjs由既有chapter-flow取物／復電路線與stealth-route後半路線組成，真正從出生點走到裝配線並啟用存檔點，再還原此已取得存檔點，以最高壓力及reasoning=true前進至END，**1/1**。答案由新證據資料推導，沒有直接指定後段已解旗標。這是Node邏輯操作，非瀏覽器或真人全章。
+- 真Three.js建立新紙面並以室內視角選讀：6個關鍵文件可讀；兩張加高跨區紙張的上下邊緣可記錄，超距仍不可。裝飾模型使用同一文件淨空資料。
+- 使用本機@napi-rs/canvas及系統微軟正黑體執行真正sign-view，輸出並目視檢查10份文件；第一次發現舊窄紙條太擠、標題與本文距離不足，修正後重新渲染。reasoning-papers-before-size-fix.png／reasoning-papers.png；不是GPU場景截圖。
+- 本機8778入口與**79個**執行資源／預覽HTTP200且位元一致；local-http.json。build及祖先摘要見verification.json。
+
+新測試的兩項設定修正也保留紀錄：reasoning-first-green-attempt.tap的一個新fixture漏了已取得保險絲及已復位的前置旗標，補齊合法前置後存檔往返通過，未降低斷言；route-first-attempt.tap原將到達6.5m平台視為已進裝配線，實際需走入區域7.5m才啟用存檔點，改測試路線再還原，沒有直接設定checkpoint或改遊戲判定。
+
+### 待使用者與環境限制
+
+本輪未做新的真瀏覽器GPU／FPS或實體Xbox／PS；未重試先前被安全機制停止的瀏覽器操作，也沒有換工具繞過。新音色恐怖感、首次推理解題深度及整章人體操作仍待使用者；舊電腦效能依先前選擇暫緩。孤立WAV只是原創紋理層，實際混音請用immersion-preview或正式index試玩；不要把聲音訊號測試當成聽感通過。
+
+操作與完整來源：[本輪候選說明](HORROR_AUDIO_AND_REASONING.md)。本機與最終公開站／備份不同步是使用者明確要求的試玩流程。
+
+## LOG-20261105-STAY：驚嚇後玩家原位、玩偶短暫消失
+
+使用者先提「驚嚇完回原位」及第二關線索不夠明確、先要解法；選項曾回覆玩偶退回原位，隨後立即文字澄清對象是玩家留在驚嚇前位置、玩偶消失一下增加緊張。以最新文字為準，記S-D036。第二關先提供原始格數／單位／接線次序的3142推導及紅黃綠藍順序，本輪未另改線索文案。
+
+### 版本與實作
+
+開始及實作收尾核對main仍fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8，已在本分支歷史；遠端本分支仍3d14735f，未上傳。917d3df先新增7個失敗案例；bf5d041完成邏輯與呈現，c90483f更新共同入口版本，build **359cf85415ed4b20**。BRIEF／VERIFY保留，發布仍依使用者要求等待試玩確認。
+
+正式main使用captureRecovery='stay'：抓捕2.1秒後保留完整玩家位置／視角、物品與謎題／線索／電量／關門進度。玩偶至少消失5秒有效遊玩時間，暫停／失焦／未啟動／密碼面板不倒數。消失期間無模型、透明碰撞、視線與接觸抓捕、追兵心跳；警報可響但不會提前讓玩偶現身。時間到後裝配線選至少4m、身後或遮擋的巡邏點，先背向玩家，清除舊追蹤；沒有安全點就延後到轉身／移動後出現。
+
+走廊不傳送／重設已關門：消失時追兵不走，玩家可走並推進關門與出口條件；恢復時由玩家沿走廊進度後退約5.5m，留出追逐距離，避免原地重複抓。獨立checkpoint回復、關頁續玩與存檔格式仍保留；此功能未把玩家任意座標加入永久存檔。
+
+### 實際結果
+
+- 新7項先紅證據recovery-red.tap，首次實作7/7轉綠first-green-attempt.tap。
+- 第一次完整套件320/321，唯一失敗是capture-input實際main仍要求回到x=6.5，與使用者新規則相反；first-full-regression.tap。依明確授權將該段更新為捕捉前整個player姿態deepEqual、玩偶inactive與存在消失狀態；原暫停／失焦／拔除／開關與無殘留輸入檢查保留，獨立checkpoint／讀檔測試不改。
+- 補安全重現等待、錯序警報不提早現身、實際Three.js群組可見性，以及走廊回復後逐步移動到出口而無碰撞卡門。新增共9項，完整 **323/323**、0失敗／略過；full-suite.tap。
+- 從c90483f乾淨Windows clone、core.autocrlf=true：**323/323**，main.js CRLF=0；windows-suite.tap及windows-result.json。
+- Python啟動器 **8/8**；launcher-tests.txt。獨立出生點取物／復電、還原實際取得的裝配線存檔點到END邏輯路線，以stay／reasoning／progressive開啟，**1/1**；route-replay.mjs／tap。
+- 本機8778 **80個**入口、JS／CSS／PNG／three.js及預覽資源HTTP200且與磁碟一致；local-http.json。
+
+### 限制與交付
+
+Three.js可見性測試是真正模型群組的CPU檢查，沒有新GPU截圖／FPS、實體Xbox／PS或真人緊張感結果；未重試／繞過之前瀏覽器安全停止。舊電腦仍依使用者選擇暫緩。沒有push、PR修改、Site保存／部署或正式ZIP更新，不把本機提交當作已發布。
+
+操作與第二關明碼計算表：[STAY_RECOVERY](STAY_RECOVERY.md)。原53條驗收中的回存檔文字不擅改成已全數人類通過，本輪變更有使用者獨立決定。
+
+## LOG-20261105-FINAL：使用者確認後正式交付
+
+shuoen88明確要求公開網址、備份、報告介紹講稿，以及上傳前面所有改動，記S-D037，解除前輪本機暫緩。重新git ls-remote及明確fetch全部分支，main仍fffe647、已為本分支祖先；沒有用舊快照覆蓋其他人更新。77213c2正常push原分支，包含所有試玩提交與PRESENTATION_SCRIPT，原PR #6維持Eric審查合併，三人作者／commit不重寫。
+
+### 公開網站
+
+使用Sites技能及既有project_id appgprj_6aeb59e36838819198e5559bd6813b97。get_site確認現有public與owner權限；source helper先開啟既有來源再更新dist，所有執行檔逐位元等同已測的runtime c90483f。helper推送site source **1cafeaf675c043254cfbcc20f8bb5903b87ddc45**，封裝84檔、3942400 bytes的tar。save回傳版本2，部署 **appgdep_6aebc28e7a1481919474c0f935cdd129** 原生succeeded，網址仍 https://shuoen-toy-factory-demo.breathtakingchair.chatgpt.site ，未更改受眾。
+
+沒有重試之前被拒絕的自動HTTP／瀏覽器路徑。公開可用性根據Sites原生成功與public設定，沒有偽稱新的真瀏覽器GPU／老師現場網路實測。open_in_codex已回queued交付連結，不將queued當頁面載入證據。
+
+### 正式備份與講稿
+
+建立專案同層escape-room-demo-2026-11-05-final及ZIP，保留前輪舊備份。內容含同版index／src／assets／vendor、四個啟動檔、預覽、操作說明、CONTRIBUTORS／授權、VERSION及報告講稿；沒有Git、登入憑證或瀏覽器／預製測試存檔。
+
+ZIP CRC通過，真正解壓到暫存位置後，prepare_assets不改入口內容。用本輪專用臨時埠啟動解壓後伺服器，80個入口／執行資源皆200且位元一致，最後只關掉此測試程序，未接替使用者8778。最後文書更新後重新封裝並核對全部runtime仍與來源一致；大小、SHA256與檔數以final-delivery/package.json為準。
+
+PRESENTATION_SCRIPT有3～4分鐘主稿、1分鐘短版、60～90秒示範順序、三人分工／AI使用／測試限制備答。GitHub保留Markdown來源；ZIP內另附UTF-8記事本版「報告介紹講稿.txt」，逐字內容與來源核對。
+
+### 自動驗證與CI狀態
+
+遊戲與原測試自c90483f後未再改動，沿用Node323/323、乾淨Windows323/323、Python8/8及出生點至END邏輯1/1；本輪新增的是交付包、資源一致性與來源追溯檢查，不為文書捏造紅燈測試。
+
+本輪推送的Actions run41935825920實際回傳failure，但4個jobs的steps皆空。Ubuntu／Windows annotation均明示「The job was not started because your account is locked due to a billing issue.」因此這是帳戶端未啟動，不是測試斷言執行失敗，也不列為CI通過；未改付款／Actions設定或嘗試繞過。原生Sites交付已成功，GitHub程式已上傳。證據ci-blocker.json及PR描述分開列明。
+
+實體Xbox／PS、新GPU／FPS與真人完整通關的未知結果仍保留，舊電腦依使用者要求暫緩。使用者同意發布不代替這些測試結果。最終可操作交付見DEMO_READY.md，版本／保存／部署與ZIP證據在evidence/2026-11-05/final-delivery。

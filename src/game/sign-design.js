@@ -15,10 +15,10 @@ export function planMountedSign(sign,boxes){
   const card=sign.id.endsWith('-label')?boxes.find(b=>b.kind==='trainCard'&&b.id===sign.id.slice(0,-6)):null;
   if(card)return {...sign,supportId:card.id,position:{x:(card.minX+card.maxX)/2,y:(card.minY+card.maxY)/2,z:card.maxZ+.006},normal:{x:0,y:0,z:1},kind:'paper',lines:wrapSignText(sign.text,12)};
   const formula=sign.id==='bay.train-formula';
-  const kind=sign.id.includes('color-order')?'diagram':/warning|uv-note/.test(sign.id)?'warning'
-    :formula||/log|report|record|notice|note|console-guide|corridor.sign/.test(sign.id)?'paper':'stencil';
-  const width=formula?1.8:kind==='paper'||kind==='warning'?Math.min(sign.width,1.25):Math.min(sign.width,2.7);
-  const height=formula?1.05:(kind==='paper'||kind==='warning') ? .53 : sign.height;
+  const kind=sign.kind??(sign.id.includes('color-order')?'diagram':/warning|uv-note/.test(sign.id)?'warning'
+    :formula||/log|report|record|notice|note|console-guide|corridor.sign/.test(sign.id)?'paper':'stencil');
+  const width=sign.paperSize?clamp(sign.paperSize.width,1,1.8):formula?1.8:kind==='paper'||kind==='warning'?Math.min(sign.width,1.25):Math.min(sign.width,2.7);
+  const height=sign.paperSize?clamp(sign.paperSize.height,.53,1.1):formula?1.05:(kind==='paper'||kind==='warning') ? .53 : sign.height;
   const faces=[];
   for(const b of boxes.filter(b=>['wall','locker'].includes(b.kind))){
     const axis=b.maxX-b.minX<b.maxZ-b.minZ?'x':'z',tangent=axis==='x'?'z':'x';

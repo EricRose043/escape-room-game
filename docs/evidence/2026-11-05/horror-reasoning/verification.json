@@ -1,0 +1,19 @@
+{
+  "codeCommit": "038b9ad896b60332251cd5998c1b74f843077423",
+  "baseMain": "fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8",
+  "nodeTests": 314,
+  "cleanWindowsCloneTests": 314,
+  "coreAutocrlf": true,
+  "mainCRLF": 0,
+  "publication": "LOCAL ONLY; no push, no PR update, no Site publish, no ZIP refresh",
+  "humanAudioAndFirstTimeReasoning": "pending",
+  "gpuOrPhysicalController": "not measured this round",
+  "canvasPapers": "rendered with actual sign renderer and visually inspected; not a WebGL screenshot",
+  "entryBuild": "60ec1eb14a9a8e4b",
+  "http200AndByteIdentical": 79,
+  "launcherTests": 8,
+  "spawnToEndReplay": 1,
+  "baseMainStillLatestAtFinalCheck": true,
+  "remoteBranchUnchanged": "3d14735f88efe159aa16c239c5309b91281c4cf9",
+  "teamAncestry": "main and five earlier team source commits preserved"
+}

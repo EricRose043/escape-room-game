@@ -13,10 +13,10 @@ function drawSign(plan){
     ctx.moveTo(22,15);ctx.lineTo(w-25,20);ctx.lineTo(w-14,h-36);ctx.lineTo(w-80,h-15);ctx.lineTo(32,h-23);ctx.closePath();ctx.fill();
     ctx.fillStyle='#443e2820';for(let i=0;i<64;i++)ctx.fillRect((i*137)%w,(i*71)%h,2+(i%7),1);
     ctx.fillStyle='#b8a675b8';ctx.fillRect(65,3,146,37);ctx.fillRect(w-220,h-40,146,35);
-    ctx.fillStyle='#6d6244';ctx.font='500 26px system-ui';ctx.textAlign='left';ctx.fillText(plan.id==='bay.train-formula'?'列車發車 / 五步檢修':plan.kind==='warning'?'注意 / 維修提醒':plan.kind==='clue'?'檢修紀錄':'工廠內部文件',64,76);
-    const lines=wrapSignText(plan.text,12),font=Math.min(63,(h-115)/(lines.length*1.35));
+    ctx.fillStyle='#6d6244';ctx.font=`500 ${Math.min(26,h*.11)}px "Microsoft JhengHei",sans-serif`;ctx.textAlign='left';ctx.fillText(plan.id==='bay.train-formula'?'列車發車 / 檢修規則':plan.kind==='warning'?'注意 / 維修提醒':plan.kind==='clue'?'檢修紀錄':'工廠內部文件',64,Math.min(76,h*.22));
+    const lines=wrapSignText(plan.text,12),top=Math.min(116,h*.34),font=Math.min(63,(h-top-48)/(lines.length*1.35));
     ctx.font=`500 ${font}px "Microsoft JhengHei",sans-serif`;ctx.fillStyle='#303b33';
-    for(const [i,line] of lines.entries())ctx.fillText(line,64,122+i*font*1.35);
+    for(const [i,line] of lines.entries())ctx.fillText(line,64,top+font+i*font*1.35);
   }else if(plan.kind==='diagram'){
     const colors=['#b15845','#d1b34a','#68936f','#5f90a6'],names=['紅','黃','綠','藍'];
     for(let i=0;i<4;i++){
@@ -25,7 +25,7 @@ function drawSign(plan){
       if(i<3){ctx.font=`${Math.round(h*.21)}px system-ui`;ctx.fillText('→',x+125,h*.52);}
     }
   }else{
-    const lines=plan.text.split('｜'),font=Math.min(105,w/(Math.max(...lines.map(s=>Array.from(s).length))+1.5));
+    const lines=plan.text.split(/\n|｜/),font=Math.min(105,w/(Math.max(...lines.map(s=>Array.from(s).length))+1.5),(h-24)/(lines.length*1.2));
     ctx.fillStyle='#d5c9a2';ctx.font=`700 ${font}px "Microsoft JhengHei",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
     lines.forEach((line,i)=>ctx.fillText(line,w/2,h/2+(i-(lines.length-1)/2)*font*1.12));
   }

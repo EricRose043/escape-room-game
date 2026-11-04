@@ -20,6 +20,11 @@ export * from './chapter-save.js';
 export * from './save-storage.js';
 export * from './start-menu.js';
 export * from './settings.js';
+export * from './mouse-look.js';
+export * from './progression.js';
+export * from './frame-budget.js';
+export * from './reasoning-content.js';
+export * from './encounter-recovery.js';
 
 export * from './corridor-chase.js';
 export * from './ending.js';

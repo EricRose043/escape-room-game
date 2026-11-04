@@ -1,0 +1,54 @@
+TAP version 13
+# Subtest: 正式main開啟推理呈現，送進畫布的UV資料沒有完整答案
+ok 1 - 正式main開啟推理呈現，送進畫布的UV資料沒有完整答案
+  ---
+  duration_ms: 27.1444
+  type: 'test'
+  ...
+# Subtest: 五個階段能由分散的證據推出唯一既有解，UV原始讀數不是密碼
+ok 2 - 五個階段能由分散的證據推出唯一既有解，UV原始讀數不是密碼
+  ---
+  duration_ms: 5.3381
+  type: 'test'
+  ...
+# Subtest: 新排序規則實際畫成文件，不會被固定答案箭頭取代；新文件有實體掛面與模型保留區
+ok 3 - 新排序規則實際畫成文件，不會被固定答案箭頭取代；新文件有實體掛面與模型保留區
+  ---
+  duration_ms: 7.1304
+  type: 'test'
+  ...
+# Subtest: 跨區回看依已解進度出現，列車未取得的卡與校驗數字不提前洩漏
+not ok 4 - 跨區回看依已解進度出現，列車未取得的卡與校驗數字不提前洩漏
+  ---
+  duration_ms: 10.4236
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\reasoning-content.test.js:35:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+
+      assert.ok(restored)
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: ~
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/reasoning-content.test.js:43:9)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 231.399
