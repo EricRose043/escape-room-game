@@ -9,6 +9,7 @@ import {
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
   keyboardStartMenuCommand, startMenuGamepadCommand,
   createSettings, createGameSettingsStorage, deserialize,finishChapter,chapterObjective,factoryMapText,trainCinematicFrame,
+  createMouseLook,advanceMouseLook,worldVisible,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
@@ -177,6 +178,7 @@ let equipmentPending = { flashlightPressed: false, uvPressed: false };
 let disconnectedMessage = false;
 let dYaw = 0;
 let dPitch = 0;
+let mouseLook=createMouseLook();
 let previousTime;
 let requestingLock = false;
 let pointerLockFailed = false;
@@ -275,6 +277,7 @@ document.querySelector('#ending-close').addEventListener('click',openMap);
 function restartFromEnding(){startMenuAwaitRelease=true;applySession({forcePause:true});openStartMenu();startMenu=updateStartMenu(startMenu,{type:'new'});syncUI();}
 function mountEnding(){if(endingDispose)return;const derail=chapter.ui.variant==='derailment'||chapter.trainCinematic?.started;endingDispose=showEnding(document.querySelector('#ending-screen'),chapter.endingResult??finishChapter(0,chapter.elapsedSeconds??0),restartFromEnding,{title:derail?'遊戲結束｜END':'第一章結束',onMap:openMap,ignoreHeld:true,storyText:derail?'列車在黑暗中脫軌。廣播停止了，車廂深處卻傳來那句話：「最好的朋友，陪你直到回家。」':'封存的舊結局紀錄已保留。重新開始可以體驗列車檢修謎題與脫軌尾聲。'});}
 function clearInput() {
+  mouseLook=createMouseLook();
   keys.clear();
   interactPending = false;
   keypadPending = [];
@@ -519,7 +522,7 @@ function pollGamepads() {
   return selected;
 }
 
-function readActions(time) {
+function readActions(time,dt=0) {
   const pad = pollGamepads();
   // 背景時仍更新前幀按鈕狀態，避免回到前景時把長按當成新按下。
   if (document.hidden || !document.hasFocus()) {
@@ -570,7 +573,9 @@ function readActions(time) {
   x /= length;
   y /= length;
   // 暫停已在 session 處理；交給 movement 的動作不可再次觸發暫停。
-  const merged = mergeActions({ move: { x, y }, look: { dYaw, dPitch }, interactPressed: interactPending, ...equipmentPending, keypadCommands:keypadPending }, pad?.actions);
+  const filtered=advanceMouseLook(mouseLook,{dYaw,dPitch},dt,session.hasStarted&&!session.paused&&['explore','hiding'].includes(chapter.ui.mode));
+  mouseLook=filtered.state;
+  const merged = mergeActions({ move: { x, y }, look: filtered.look, interactPressed: interactPending, ...equipmentPending, keypadCommands:keypadPending }, pad?.actions);
   const actions = gameplayActions(merged, before, session);
   interactPending = false;
   keypadPending = [];
@@ -578,7 +583,6 @@ function readActions(time) {
   actions.pausePressed = false;
   dYaw = 0;
   dPitch = 0;
-  syncUI();
   return actions;
 }
 syncUI();
@@ -592,7 +596,7 @@ function animate(time) {
   if (sampleStart === undefined) sampleStart = time;
   const dt = previousTime === undefined ? 0 : Math.min(.1,Math.max(0,(time - previousTime) / 1000));
   previousTime = time;
-  const actions = readActions(time);
+  const actions = readActions(time,dt);
   const beforeChapter=chapter;
   const beforeMode=chapter.ui.mode;
   chapter = updateChapter(chapter, actions, dt, chapterOptions);
@@ -612,15 +616,17 @@ function animate(time) {
     clearInput();
     if (['keypad','caught','ending','complete'].includes(chapter.ui.mode)) releasePointer(chapter.ui.mode);
   }
-  worldView.sync(chapter);
-  monsterView.sync(chapter,dt,session.paused||actions.gameplayActive===false);
-  for (const [id,mesh] of itemMeshes) mesh.visible=!chapter.inventory.itemIds.includes(id);
   syncUI();
-  camera.position.set(chapter.player.x, EYE_HEIGHT, chapter.player.z);
-  camera.rotation.set(chapter.player.pitch, chapter.player.yaw, 0, 'YXZ');
-  worldView.syncPresentation?.(chapter,session,prompt);
-  syncLighting();
-  if(!worldView.renderCinematic?.(renderer,chapter,settings,session))renderer.render(scene, camera);
+  if(worldVisible(chapter.ui.mode)){
+    worldView.sync(chapter);
+    monsterView.sync(chapter,dt,session.paused||actions.gameplayActive===false);
+    for (const [id,mesh] of itemMeshes) mesh.visible=!chapter.inventory.itemIds.includes(id);
+    camera.position.set(chapter.player.x, EYE_HEIGHT, chapter.player.z);
+    camera.rotation.set(chapter.player.pitch, chapter.player.yaw, 0, 'YXZ');
+    worldView.syncPresentation?.(chapter,session,prompt);
+    syncLighting();
+    if(!worldView.renderCinematic?.(renderer,chapter,settings,session))renderer.render(scene, camera);
+  }
   if(firstRender){firstRender=false;startup?.markReady();}
   frames += 1;
   const elapsed = time - sampleStart;
