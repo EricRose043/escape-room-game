@@ -16,6 +16,7 @@ import {finishChapter} from './ending.js';
 import {createTrainPuzzle,trainReady,validateTrainCode} from './puzzles/train-code.js';
 import {TRAIN_CINEMATIC_SECONDS} from './train-cinematic.js';
 import {progressionBefore,progressionAfter,pressureSpeed} from './progression.js';
+import {reasoningTarget} from './reasoning-content.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
@@ -38,13 +39,14 @@ export function validatePuzzleCode(state, puzzleId, code) {
   if(puzzleId==='exit.final')return isDevicePowered(state,{puzzleId})&&validateExitCode(code,state.foundClueIds);
   return Boolean(puzzle && (puzzle.requiresInstall===false ? isDevicePowered(state,{puzzleId}) : state.puzzles[puzzleId]?.installedItemId) && code === puzzle.code);
 }
-export function selectChapterTarget(state) {
+export function selectChapterTarget(state,{reasoning=false}={}) {
   if(state.ui.mode!=='explore') return null;
   const doorControls=state.corridor?.active||state.corridor?.complete?[]:DOOR_CONTROLS
     .filter(({door})=>!isDoorOpen(door,state))
     .map(({door,device})=>({...device,bounds:door.bounds,interactionOccluderId:door.id,interactionSource:'door'}));
+  const devices=reasoning?DEVICES.map(reasoningTarget):DEVICES;
   return selectInteractionTarget(state.player,state.inventory,ITEMS,
-    [...DEVICES.filter(d=>d.kind!=='locker' || isLockerFront(state.player,d)),...doorControls],getGeometry(state).occluderBoxes);
+    [...devices.filter(d=>d.kind!=='locker' || isLockerFront(state.player,d)),...doorControls],getGeometry(state).occluderBoxes);
 }
 export function deviceMessage(state, device) {
   if(device.kind==='sequenceButton')return state.puzzles[COLOR_SEQUENCE.id]?.restored?'復位完成':`復位 ${state.puzzles[COLOR_SEQUENCE.id]?.progress??0}/4`;
@@ -175,7 +177,7 @@ function detectedCapture(state,geometry,jumpScare){
   }
   return null;
 }
-function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??false}={}) {
+function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??false,reasoning=false}={}) {
   const allowed=jumpScare===true;
   if(state.jumpScare!==allowed) state={...state,jumpScare:allowed};
   if(state.ui.mode==='caught') state={...state,ui:updateCapture(state.ui,0,{jumpScare:allowed})};
@@ -222,7 +224,7 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
     if(captured)return captured;
   }
   // 先處理開啟，避免同一個 A／✕ 輸入第一位，或開啟當幀移動／耗電。
-  const initialTarget=selectChapterTarget(state);
+  const initialTarget=selectChapterTarget(state,{reasoning});
   if(actions.interactPressed&&initialTarget?.kind==='trainCard')return {...state,trainPuzzle:{...(state.trainPuzzle??createTrainPuzzle()),readCardIds:[...new Set([...(state.trainPuzzle?.readCardIds??[]),initialTarget.clueId])]},events:[],ui:{mode:'explore',messageTargetId:initialTarget.id,message:`已記錄：${initialTarget.name}`}};
   if(actions.interactPressed&&initialTarget?.kind==='clueNote')return {...state,foundClueIds:[...new Set([...(state.foundClueIds??[]),initialTarget.clueId])],events:[],ui:{mode:'explore',messageTargetId:initialTarget.id,message:initialTarget.name}};
   if(actions.interactPressed&&initialTarget?.kind==='sequenceButton'){
@@ -252,7 +254,7 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
   const geometry=getGeometry(state);
   const player=movePlayerWithMonsters(state,actions,dt,geometry.collisionBoxes);
   const equipmentActions=hasFlashlight(state)?actions:{...actions,flashlightPressed:false,uvPressed:false};
-  const target = selectChapterTarget({...state,player});
+  const target = selectChapterTarget({...state,player},{reasoning});
   const isDevice = Boolean(target?.bounds);
   const next=updateEquipment(state,player,{...equipmentActions,interactPressed:actions.interactPressed && !isDevice},dt,ITEMS,geometry.occluderBoxes);
   const result = advanceCheckpoint(advancePower({...next,player},dt));

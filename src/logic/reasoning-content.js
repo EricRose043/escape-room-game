@@ -1,4 +1,5 @@
 import {TRAIN_CARDS} from './puzzles/train-code.js';
+import {CLUES as worldClues} from './world.js';
 
 // 原始讀數、設備順序及單位分散在不同文件；不把驗證密碼當顯示文字。
 export const REASONING=Object.freeze({
@@ -36,7 +37,7 @@ const reverse='撤離規則：從最後一盞往第一盞回讀已完成的燈�
 const trainRule='列車檢修\n校驗單位沿用控制室停機時的照明讀數。\n將三卡換成校驗單位，從最低負載排到最高負載。\n首格填現場完整軌道組數，包含停用線；每組都有兩根鋼軌。\n員工卡驗證後發車。';
 const clueTexts={'power.uv-code':powerInk,'production.sequence-clue':productionInk,'corridor.color-key':transfer,'exit.reverse-clue':reverse};
 export function reasoningClues(clues){return clues.map(c=>({...c,text:clueTexts[c.id]??c.text,
- ...(['power.uv-code','production.sequence-clue'].includes(c.id)?{width:c.id==='power.uv-code'?2.2:1.6,height:.9,reserveReadingSpace:true}:{})}));}
+ ...(['power.uv-code','production.sequence-clue'].includes(c.id)?{width:c.id==='power.uv-code'?2.2:1.6,height:.9,reserveReadingSpace:true}:c.alwaysVisible?{height:.85}:{})}));}
 const paper=(id,text,position,normal)=>({id,text,position,normal,width:1.7,height:1.05,kind:'paper',paperSize:{width:1.7,height:1.05}});
 export function reasoningAreas(areas){return areas.map(area=>{
  const replacements={'production.color-order':stationColors,'production.console-guide':lightRules,'bay.train-formula':trainRule};
@@ -47,10 +48,16 @@ export function reasoningAreas(areas){return areas.map(area=>{
    paper('production.process-note',processOrder,{x:10.3,y:2.25,z:-.32},{x:0,y:0,z:-1}));
  return {...area,clues:reasoningClues(area.clues),signs};
 });}
+const noteClues=new Map(reasoningClues(worldClues).filter(c=>c.alwaysVisible).map(c=>[c.id,c]));
 export function reasoningTarget(target){
  if(!target)return target;
  const documentNames={'corridor.color-key':'維修移轉表','exit.reverse-clue':'撤離規則文件'};
  const name=documentNames[target.clueId]??(target.kind==='sequenceButton'?`${colorNames[target.color]}燈復位按鈕`:target.name);
+ const clue=target.kind==='clueNote'&&target.interactionSource!=='door'?noteClues.get(target.clueId):null;
+ if(clue){
+  const {position:p,normal:n,width,height}=clue,hx=Math.abs(n.z)*(width/2+.08)+Math.abs(n.x)*.003,hz=Math.abs(n.x)*(width/2+.08)+Math.abs(n.z)*.003;
+  return {...target,name,bounds:{minX:p.x-hx,maxX:p.x+hx,minY:p.y-height/2-.08,maxY:p.y+height/2+.08,minZ:p.z-hz,maxZ:p.z+hz}};
+ }
  return name===target.name?target:{...target,name};
 }
 export function reasoningObjective(s,fallback){

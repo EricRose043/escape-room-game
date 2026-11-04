@@ -95,7 +95,7 @@ export function createWorldView(scene,{reasoning=false}={}) {
       }
       cinematic?.reset();return false;
     },
-    syncPresentation(state,session,prompt){const target=selectChapterTarget(state);presentationUI.sync(state,session,prompt,reasoning?reasoningTarget(target):target,session.hasStarted&&!session.paused?signs.readingTarget(state.player,getGeometry(state).occluderBoxes):null);},
+    syncPresentation(state,session,prompt){const target=selectChapterTarget(state,{reasoning});presentationUI.sync(state,session,prompt,reasoning?reasoningTarget(target):target,session.hasStarted&&!session.paused?signs.readingTarget(state.player,getGeometry(state).occluderBoxes):null);},
     createClueMesh(clue){return signs.createClueMesh(clue);},
     createItemMesh(item){const model=createItemArt(item,materials);scene.add(model);return model;},
     enhanceScene(renderer,camera){

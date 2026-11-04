@@ -229,7 +229,7 @@ function syncUI() {
   document.querySelector('#factory-map-button').hidden=!hasMap || chapter.ui.mode==='complete'||film;
   document.querySelector('#ending-screen').hidden=chapter.ui.mode!=='complete'||endingMapOpen||startMenu.mode!=='closed';
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
-  const target = reasoningTarget(selectChapterTarget(chapter));
+  const target = reasoningTarget(selectChapterTarget(chapter,chapterOptions));
   interactionHint.hidden = !target;
   const message=target && chapter.ui.messageTargetId===target.id?(target.kind==='clueNote'?'線索已記錄，地圖可回看':chapter.ui.message):null;
   setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} ${target.bounds ? `${target.name}｜${message ?? deviceMessage(chapter,target)}` : `撿起 ${target.name}`}` : '');
