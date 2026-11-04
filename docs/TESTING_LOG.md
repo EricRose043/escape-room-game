@@ -1,5 +1,9 @@
 # 實測與回歸紀錄
 
+## LOG-20261105-STARTUP
+
+Eric回報同學開場無法略過，回答開啟方式「不知道」。Codex查核舊事件綁在ESM主程式，新增8項回歸先全紅；獨立HTML開場／診斷實作後，全套288/288通過。真HTML及main免GPU整合：ESM尚未執行即可略過、正常首幀解除等待；Renderer故意拋出WebGL錯誤時留下可見診斷。版本準備涵蓋inline啟動碼，71份HTTP資源一致。錯誤由VM顯式轉送window事件，不把這些自動檢查當成Chrome、同學環境或實體手把驗收。見startup-dom-check.json、test-summary.json及STARTUP_TROUBLESHOOTING.md。
+
 統整：shuoen88。各人負責真實操作者與功能自測；Eric 處理主程式串接及審查合併。不得代填別人尚未做的測試。
 
 ## LOG-20261104-INTERACTION：整片門與文件判定

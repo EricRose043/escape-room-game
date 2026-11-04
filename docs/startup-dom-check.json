@@ -1,46 +1,63 @@
 {
-  "date": "2026-11-04",
+  "date": "2026-11-05",
   "result": "PASS",
-  "build": "d58decab32be21b2",
-  "esmModules": 67,
-  "nativeCanvasContexts": 62,
-  "renderedFrames": 12,
-  "sceneChildren": 217,
-  "introSkip": true,
-  "realControllerDiagrams": 2,
-  "inputReceipts": [
+  "scenarios": [
     {
-      "device": "keyboard",
-      "door": "production",
-      "target": "production.sequence-keypad",
-      "result": "keypad-open",
-      "beforeText": "E 裝配線控制器｜控制器已通電"
+      "scenario": "normal",
+      "result": "PASS",
+      "build": "efeb3ebdd4b2f6f3",
+      "esmModules": 67,
+      "nativeCanvasContexts": 62,
+      "renderedFrames": 12,
+      "sceneChildren": 217,
+      "introSkip": true,
+      "introSkipBeforeModules": true,
+      "firstFrameReady": true,
+      "realControllerDiagrams": 2,
+      "inputReceipts": [
+        {
+          "device": "keyboard",
+          "door": "production",
+          "target": "production.sequence-keypad",
+          "result": "keypad-open",
+          "beforeText": "E 裝配線控制器｜控制器已通電"
+        },
+        {
+          "device": "keyboard",
+          "door": "corridor",
+          "target": "corridor.clue-note",
+          "result": "clue-recorded-gate-open",
+          "beforeText": "E 維修代碼：紅＝3、黃＝1、綠＝4、藍＝2。｜閱讀並記錄線索"
+        },
+        {
+          "device": "xbox",
+          "door": "production",
+          "target": "production.sequence-keypad",
+          "result": "keypad-open",
+          "beforeText": "E 裝配線控制器｜控制器已通電"
+        },
+        {
+          "device": "xbox",
+          "door": "corridor",
+          "target": "corridor.clue-note",
+          "result": "clue-recorded-gate-open",
+          "beforeText": "E 維修代碼：紅＝3、黃＝1、綠＝4、藍＝2。｜閱讀並記錄線索"
+        }
+      ],
+      "visiblePaperTargetAndCaption": true,
+      "limitations": [
+        "WebGLRenderer replaced; no GPU shader/compositor/layout or physical controller verification.",
+        "Door state prepared as explicit fixtures; keyboard/gamepad input then travels through actual main.js and real DOM."
+      ]
     },
     {
-      "device": "keyboard",
-      "door": "corridor",
-      "target": "corridor.clue-note",
-      "result": "clue-recorded-gate-open",
-      "beforeText": "E 維修代碼：紅＝3、黃＝1、綠＝4、藍＝2。｜閱讀並記錄線索"
-    },
-    {
-      "device": "xbox",
-      "door": "production",
-      "target": "production.sequence-keypad",
-      "result": "keypad-open",
-      "beforeText": "E 裝配線控制器｜控制器已通電"
-    },
-    {
-      "device": "xbox",
-      "door": "corridor",
-      "target": "corridor.clue-note",
-      "result": "clue-recorded-gate-open",
-      "beforeText": "E 維修代碼：紅＝3、黃＝1、綠＝4、藍＝2。｜閱讀並記錄線索"
+      "scenario": "real-main-WebGL-initialization-failure",
+      "result": "PASS",
+      "introSkipBeforeModules": true,
+      "visibleDiagnostic": true,
+      "limitations": [
+        "Renderer intentionally throws; browser event is forwarded explicitly by VM harness."
+      ]
     }
-  ],
-  "visiblePaperTargetAndCaption": true,
-  "limitations": [
-    "WebGLRenderer replaced; no GPU shader/compositor/layout or physical controller verification.",
-    "Door state prepared as explicit fixtures; keyboard/gamepad input then travels through actual main.js and real DOM."
   ]
 }

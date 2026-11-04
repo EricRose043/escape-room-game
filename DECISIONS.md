@@ -47,4 +47,5 @@ D017 保留 Ryan 原始劇情決定與來源；原工廠分支編號為 D015，�
 | D029 | 2026-11-04 | Eric回報內建瀏覽器能略過、Chrome不能；以整套內容雜湊版本映射及禁止快取的本機服務避免新舊模組混用。啟動器核對資料夾與版本才重用8778，不改存檔origin、不終止未知程序。實際Chrome仍待使用者重新載入，HTTP及真DOM檢查分開記錄。 | EricRose043實玩回饋，Codex修正 | docs/DEPLOYMENT.md、browser-cache-check.json、startup-dom-check.json |
 | D030 | 2026-11-04 | Eric澄清要整片追逐前門板可操作，並指出2413文件必須瞄下方牆面。貨運門與走廊第一門各增加整片門面，觸發原門邊密碼鎖／維修卡；兩文件互動範圍由實際紙面推導。維持原謎題、牆壁遮擋、兩公尺距離及追逐後關門，不修改四色按鈕。 | EricRose043本對話明確指示，Codex修正 | docs/INTERACTION_FIXES.md |
 | D031 | 2026-11-04 | Eric實玩回覆「遊戲可以了」，明確要求將完成版push並將專案設為公開。以當前main為父提交增量加入完整遊戲、素材與四個啟動檔，保留組員歷史與未下載的既有文件；啟動器相容GitHubZIP平面及既有試玩包巢狀位置。公開狀態以GitHub實際回傳為準，若UI權限阻擋不補造完成。 | EricRose043本對話直接授權 | README.md、本次GitHub提交與發布回報 |
+| D032 | 2026-11-05 | Eric回報同學也遇到開場無法略過，開啟方式未知。將開場／診斷放入HTML獨立script，不依賴任何ESM；等待首幀就緒、處理file開啟／不支援importmap／模組載入與WebGL錯誤，前景30秒慢載入可重試或繼續等。不刪存檔、不推定同學已實測通過，修正延續發布到既有專案。 | EricRose043本對話回報，Codex修正 | docs/STARTUP_TROUBLESHOOTING.md、tests/startup.test.js |
 

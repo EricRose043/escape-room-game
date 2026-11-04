@@ -31,12 +31,15 @@ const chapterOptions={jumpScare:settings.jumpScare};
 let settingsOpen=false,endingDispose=null,endingMapOpen=false;
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
+const startup=window.factoryStartup;
 const introSlides=['這間玩具工廠曾風靡全城。藍色迎賓玩偶是招牌，廣告裡總說：「最好的朋友，陪你直到回家。」','封廠那夜，生產線全停，員工被緊急撤出。公司只留下「設備故障」四個字，沒有事故報告。','多年後，你收到匿名訊息：「真正的夜班維修紀錄還在辦公室。無論如何，別重啟主電源。」','為查明真相，你依訊息來到工廠。身後大門鎖上的瞬間，辦公室陷入昏暗；遠處似乎掠過一道藍影。','手電筒、地圖和員工卡都在辦公室裡。員工卡能打開控制室；你必須找到出口，也查明那一夜發生了什麼。'];
 let introStarted=performance.now(),introStage=-1;
 let introTimer;
-function finishIntro(){intro.hidden=true;clearInterval(introTimer);try{audio.start();}catch{}}
-document.querySelector('#intro-skip').addEventListener('click',finishIntro);
-introTimer=setInterval(()=>{const elapsed=performance.now()-introStarted;if(elapsed>=60000){finishIntro();return;}const stage=Math.min(4,Math.floor(elapsed/12000));if(stage!==introStage){introStage=stage;intro.dataset.scene=String(stage);document.querySelector('#intro-copy').textContent=introSlides[stage];}},250);
+function finishIntro(){if(startup)startup.skipIntro();else intro.hidden=true;clearInterval(introTimer);try{audio.start();}catch{}}
+if(!startup){
+ document.querySelector('#intro-skip').addEventListener('click',finishIntro);
+ introTimer=setInterval(()=>{const elapsed=performance.now()-introStarted;if(elapsed>=60000){finishIntro();return;}const stage=Math.min(4,Math.floor(elapsed/12000));if(stage!==introStage){introStage=stage;intro.dataset.scene=String(stage);document.querySelector('#intro-copy').textContent=introSlides[stage];}},250);
+}
 introTimer?.unref?.();
 // 將存取包在函式內，連 localStorage getter 拋錯也交由儲存層處理。
 const saveStorage=createSaveStorage({
@@ -583,6 +586,7 @@ syncUI();
 const fpsDisplay = document.querySelector('#fps');
 let frames = 0;
 let sampleStart;
+let firstRender=true;
 
 function animate(time) {
   if (sampleStart === undefined) sampleStart = time;
@@ -617,6 +621,7 @@ function animate(time) {
   worldView.syncPresentation?.(chapter,session,prompt);
   syncLighting();
   if(!worldView.renderCinematic?.(renderer,chapter,settings,session))renderer.render(scene, camera);
+  if(firstRender){firstRender=false;startup?.markReady();}
   frames += 1;
   const elapsed = time - sampleStart;
   if (elapsed >= 1000) {

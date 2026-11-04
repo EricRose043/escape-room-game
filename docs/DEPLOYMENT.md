@@ -22,6 +22,8 @@ py play_escape_room.py
 
 不要用`file://`。遊戲需要WebGL；Pointer Lock被瀏覽器限制時可依頁面提示使用鍵盤備援開始與方向鍵轉頭。解壓檔請保留四個父資料夾檔案：`Play-EscapeRoom.cmd`、`play_escape_room.py`、`prepare_escape_room_assets.py`、`serve_escape_room.py`。
 
+2026-11-05起，開場與錯誤提示直接在HTML中獨立執行，不依賴ESM或Three.js。若開場卡住，請依[開場問題處理](STARTUP_TROUBLESHOOTING.md)檢查；新版會保留可回報的錯誤資訊。單純公開GitHub專案不等於部署了可直接玩的網站，本機127.0.0.1連結只連到各自電腦。
+
 ## 靜態主機
 
 將以下內容保持相對路徑一起放在同一個網站目錄：

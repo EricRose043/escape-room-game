@@ -1,8 +1,8 @@
 {
-  "date": "2026-11-04",
+  "date": "2026-11-05",
   "result": "PASS",
-  "build": "d58decab32be21b2",
-  "fileCount": 194,
+  "build": "efeb3ebdd4b2f6f3",
+  "fileCount": 196,
   "checks": [
     "all game files and all four launcher/build/server files included",
     "every archive member compared byte-for-byte with the delivered local file",
