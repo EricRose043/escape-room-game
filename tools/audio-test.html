@@ -1,7 +1,8 @@
 <!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S1 聲音試聽</title>
 <style>body{font:17px/1.6 system-ui;background:#f3f2e9;color:#183b32;max-width:900px;margin:24px auto;padding:0 16px}button{font:inherit;min-height:44px;padding:10px 16px;margin:4px;background:#214e40;color:white;border:0;border-radius:5px}button:focus-visible,input:focus-visible{outline:3px solid #a86c00;outline-offset:3px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#e2e8df;padding:12px}input{min-height:44px;max-width:100%}</style>
-<h1>S1 聲音試聽</h1><p>原創程式合成聲音，尚未接入遊戲。先按啟用，再逐項試聽；建議先調低裝置音量。停止會清除所有循環，離開頁面會釋放音訊。</p>
+<h1>S1 聲音試聽</h1><p>使用遊戲同一套原創合成音效。先按啟用，再逐項試聽；停止會清除所有循環，離開頁面會釋放音訊。</p>
 <button id="unlock">啟用聲音</button><button data-action="foot">腳步聲</button><button data-action="walk">連續步行</button><button data-action="door">門聲</button><button data-action="alarm">警報</button><button data-action="ambience">生產線環境聲</button><button data-action="heart-low">較遠心跳</button><button data-action="heart-high">靠近心跳</button><button id="stop">全部停止</button>
+<button data-action="caught">被抓驚嚇音效（新版）</button>
 <p><label>主音量 <input id="volume" type="range" min="0" max="1" value="0.35" step="0.01"></label><output id="volume-text">35%</output></p>
 <p id="status" role="status">尚未啟用，未建立 AudioContext。</p><h2>瀏覽器測量紀錄</h2><p>訊號峰值只驗證有輸出；是否好聽、音量是否舒適仍需真人試聽。</p><pre id="measure" role="log"></pre><pre id="state"></pre>
 <script type="module">
@@ -21,7 +22,7 @@ function measure(label,action){
 }
 document.querySelector('#unlock').onclick=async()=>{const ok=await audio.unlock();status.textContent=ok?'聲音已啟用，可逐項試聽。':'瀏覽器不支援或尚未允許，請再點啟用。';};
 const actions={
- foot:()=>audio.playFootstep(),door:()=>audio.playDoor(),alarm:()=>audio.playAlarm(),
+ foot:()=>audio.playFootstep(),door:()=>audio.playDoor(),alarm:()=>audio.playAlarm(),caught:()=>audio.playCue('caught'),
  walk:()=>{audio.playFootstep();walking=setInterval(()=>audio.playFootstep(),footstepInterval(2.5)*1000);},
  ambience:()=>audio.setAmbience('production'),
  'heart-low':()=>audio.setHeartbeat(heartbeatIntensity(11)),

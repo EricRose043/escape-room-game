@@ -7,7 +7,9 @@ const AMBIENCE = Object.freeze({ lobby: 55, 'power-room': 65, production: 73, 'c
 const CUES = Object.freeze({
   power:[[82,.32,'sine',.06,0],[123,.32,'triangle',.045,.12],[165,.4,'sine',.035,.24]],
   chase:[[145,.36,'sawtooth',.05,0],[119,.42,'triangle',.04,.13]],
-  caught:[[38,.16,'sine',.07,0],[131,.28,'sawtooth',.065,.15],[139,.32,'sawtooth',.055,.15],[311,.18,'triangle',.035,.17],[47,.95,'sine',.07,.23],[73,.48,'sawtooth',.035,.72]],
+  // 衝擊、近距離失諧低吼及下滑尾音；只提高被抓提示，不改主音量設定。
+  caught:[[42,.24,'sine',.20,0,29],[118,.6,'sawtooth',.17,.03,47],[127,.65,'sawtooth',.15,.04,52],
+    [590,.3,'square',.055,.05,180],[50,1.35,'sine',.14,.14,28],[82,.55,'sawtooth',.09,.8,43]],
   hide:[[88,.16,'triangle',.035,0],[62,.2,'sine',.03,.1]],
   unhide:[[105,.18,'triangle',.03,0]],
   escape:[[220,.34,'triangle',.045,0],[330,.42,'sine',.04,.18],[440,.7,'sine',.035,.38]],
@@ -147,7 +149,8 @@ export function createAudio(options = {}) {
     playCue: cue => {
       if (!canPlay() || !Object.hasOwn(CUES, cue)) return false;
       let played=false;
-      for (const [frequency,duration,type,peak,delay] of CUES[cue]) played=tone(frequency,duration,peak,{type,delay}) || played;
+      for (const [frequency,duration,type,peak,delay,end=frequency] of CUES[cue]) played=tone(frequency,duration,peak,{type,delay,end}) || played;
+      if(cue==='caught') played=rustle(.3,.12,1500)||played;
       return played;
     },
     playFootstep: () => rustle(0.11, 0.1, 550),
