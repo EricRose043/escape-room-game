@@ -1,0 +1,24 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>本機沉浸感候選版預覽</title>
+<style>body{margin:24px;background:#10171c;color:#e3e6df;font:17px/1.6 system-ui;max-width:920px}button,a{display:inline-block;min-height:44px;box-sizing:border-box;margin:6px;padding:10px 18px;background:#314b52;color:#fff;border:1px solid #c3a15c;font:inherit}a{text-decoration:none}button:focus-visible,a:focus-visible{outline:3px solid #ffe489}#capture-screen{position:fixed;inset:0;background:#000;overflow:hidden;z-index:10}#capture-screen[hidden]{display:none}#capture-canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}input{min-height:44px;vertical-align:middle}</style>
+<h1>本機候選版：聲音與驚嚇動畫</h1><p>這頁使用遊戲同一套音效與近景。按播放即可試聽／觀看，不改遊戲進度或個人設定。動畫依顯示器更新，實際流暢度請以此電腦觀察。</p>
+<button id="capture">播放新版驚嚇</button><button id="step">新版腳步聲</button><button id="room">工廠環境聲</button><button id="stop">停止／關閉預覽</button>
+<p><label>預覽音量 <input id="volume" type="range" min="0" max="1" step=".01" value=".32"></label></p>
+<p id="status" role="status">尚未啟用音訊。</p><a href="../index.html">回遊戲試玩</a>
+<div id="capture-screen" hidden><canvas id="capture-canvas" aria-label="原創玩偶近景演出"></canvas></div>
+<script type="module">
+import {createCaptureView} from '../src/game/capture-view.js';
+import {createAudio} from '../src/game/audio.js';
+import {createCapture,updateCapture,CAPTURE_SECONDS} from '../src/logic/capture.js';
+const audio=createAudio(),view=createCaptureView(document.querySelector('#capture-screen')),status=document.querySelector('#status');
+let ui={mode:'explore'},last;
+audio.setMasterVolume(.32);
+document.querySelector('#capture').onclick=async()=>{audio.stop();if(!await audio.unlock()){status.textContent='音訊未允許，請再點一次播放。';return;}ui=createCapture({jumpScare:true});audio.playCue('caught');last=undefined;status.textContent='正在播放新版驚嚇；Esc可停止預覽。';};
+document.querySelector('#step').onclick=async()=>{if(await audio.unlock()){audio.playFootstep();status.textContent='已播放鞋跟與落腳聲。';}};
+document.querySelector('#room').onclick=async()=>{if(await audio.unlock()){audio.setAmbience('production');status.textContent='工廠底噪播放中，可按停止。';}};
+function stop(){ui={mode:'explore'};view.sync(ui,{jumpScare:false});audio.stop();status.textContent='預覽已停止。';}
+document.querySelector('#stop').onclick=stop;document.addEventListener('keydown',e=>{if(e.code==='Escape')stop();});
+document.querySelector('#volume').oninput=e=>audio.setMasterVolume(Number(e.target.value));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});window.addEventListener('blur',stop);
+window.addEventListener('pagehide',()=>{stop();void audio.dispose();});
+function frame(time){const dt=last===undefined?0:Math.max(0,(time-last)/1000);last=time;if(ui.mode==='caught'){ui=updateCapture(ui,dt,{jumpScare:true});if(ui.elapsed>=CAPTURE_SECONDS){ui={mode:'explore'};status.textContent='播放結束，可再試一次或回遊戲。';}}view.sync(ui,{jumpScare:true});requestAnimationFrame(frame);}requestAnimationFrame(frame);
+</script></html>
