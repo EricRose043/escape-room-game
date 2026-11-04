@@ -430,3 +430,7 @@ location.reload();
 ## 2026-11-05 shuoen分工覆核
 
 本輪從最新main 6ff1d44修改，S1／S2／S3已接入的狀態與282項回歸見[最新分工統整](docs/SHUOEN_STATUS_20261104.md)。本輪修復合法小數靈敏度與滑桿顯示不一致，驚嚇沿用經shuoen確認的Eric最新D028策略。實體手把／舊電腦與真人觀感仍待實測。
+
+## 2026-11-05 試玩網站與報告備份
+
+公開示範：[立即試玩](https://shuoen-toy-factory-demo.breathtakingchair.chatgpt.site)。本機網址http://127.0.0.1:8778/index.html；本機同層另有escape-room-demo-2026-11-05.zip。操作與確認項目見[試玩交付](docs/DEMO_READY.md)。公開站與本機存檔分開，請先用報告時的瀏覽器試一輪。

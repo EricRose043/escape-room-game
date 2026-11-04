@@ -1,0 +1,13 @@
+{
+  "project_id": "appgprj_6aeb59e36838819198e5559bd6813b97",
+  "url": "https://shuoen-toy-factory-demo.breathtakingchair.chatgpt.site",
+  "access": "public",
+  "siteSourceCommit": "05d2a4921d41f7b057b932d213e52fe025d0d730",
+  "version_id": "appgprj_6aeb59e36838819198e5559bd6813b97~appgver_d65c1a3adc288191b6027fbf5cd565ac",
+  "deployment_id": "appgdep_6aeb5a58c3a88191a092bce7dda239cd",
+  "status": "succeeded",
+  "githubCodeBase": "a96cebe30ccd209c8fe396f60e064c711731d3ab",
+  "assetPreparation": "prepare_escape_room_assets.py",
+  "localUrl": "http://127.0.0.1:8778/index.html",
+  "publicHttpProbe": "Cloudflare 403 / 1010 for automated HTTP client; native publication and public access confirmed; human browser check pending"
+}

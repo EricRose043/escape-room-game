@@ -287,3 +287,7 @@ Xbox下一步（正式index.html，先用目前main；PR #6經Eric合併後重�
 5. 只用手把走完色序、3142、走廊、2413、三卡2123與列車結局；記卡關步驟，查看結局地圖與重玩確認是否可操作。
 
 回報請填：測試commit或PR版本、手把型號、瀏覽器、通過／失敗步驟、預期／實際。沒有完成的項目可直接填未做；不需一次完成所有項目。
+
+## LOG-20261105-DEMO：公開站與本機試玩包
+
+依使用者要求同台Xbox／鍵鼠試玩及報告公開網址，保留最新main基線與本分支修復；沒有再改遊戲規則。prepare_escape_room_assets更新index共同版本；完整282/282。本機8778已啟動，72個檔案逐一HTTP200且位元一致；ZIP已通過CRC與解壓後臨時8780服務確認（測完只停止本輪啟動的臨時程序）。公開Sites source05d2a492、version1、deployment succeeded與public存取原生回傳確認；ID及網址見demo-site.json。公開HTTP探測遇Cloudflare403/1010，未繞過，也未代填瀏覽器通關。備份包SHA256及檔案位置見evidence/2026-11-05/demo-release/package.json；完整套件與本機HTTP清單在同目錄。先前Chrome政策停止後，本輪未重試瀏覽器自動操作。
