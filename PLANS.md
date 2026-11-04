@@ -167,3 +167,12 @@ STEP 10 整體仍未完成；本次不修改 S2 設定與 S3 場地，也不改�
 
 詳見docs/INTERACTION_FIXES.md；本次未修改BRIEF.md、VERIFY.md或四色按鈕。
 
+## 2026-11-04 shuoen最新main覆測
+
+- [x] 以所有遠端heads核對最新版本；新分支從main 6ff1d44建立，沒有把舊42d8357重新蓋回主程式。
+- [x] 核對PR #1／#4／#5已合併、S1／S2／S3已接入及三位原作者可追溯。
+- [x] shuoen確認保留Eric D028驚嚇策略，記D032，不改BRIEF／VERIFY。
+- [x] DEF-010設定小數精度回歸先紅b600b38，修復7bd0c55；完整282/282、Windows282/282。
+- [x] 更新53條狀態、測試／缺陷／貢獻及實機交接；遠端CI查到startup_failure與0 jobs，不冒稱通過。
+- [ ] 最新版瀏覽器GPU、實體Xbox／PS、舊電腦FPS與真人聽感／首次解題；無實際結果不填通過。
+- [ ] Eric審查本輪新PR；帳戶管理者處理CI啟動失敗後重跑，無法用本機測試替代遠端矩陣。

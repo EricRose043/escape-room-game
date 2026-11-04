@@ -66,3 +66,9 @@ Ryan 鎖定 fc603adece9baf554cdbd87d291b9d21ba7e3954，相對 main 0fab5ef 有 6
 核對方法：`git merge-base --is-ancestor <來源完整SHA> <整合HEAD>`；三者成功。main 的最後追溯以 PR #4 合併後對其 merge SHA 執行同一命令為準。原分支與 PR #1／#2／#3 均不刪除、不改寫；不製造 Ryan／shuoen 的新 commit 或共同作者宣告。
 
 本輪與原 main 的作者差異可由 `git shortlog -s origin/main..codex/github-team-integration` 重現；不把尚未進 main 的歷史冒稱已在 main。PR 即時狀態是合併與交付狀態的依據。
+
+## 2026-11-04 main正式追溯完成
+
+鎖定main 6ff1d44cf5114197d99aeef54eae101a5b2bbe53，對3072dfa、42d8357、05b290b、80fbb65及c571347執行git merge-base --is-ancestor，五者皆成功（原始完整SHA與結果見本輪verification.json）。所以分工、shuoen全部S0/S1/S2/S3與Ryan兩輪成果均已可從main追溯，不再保留「尚未進main」作目前判斷。
+
+git shortlog -sn origin/main當時為RyanDing1010 95、EricRose043 81、shuoen88 25筆，這是Git作者提交數，並非工作量評分。PR #1、#4、#5為MERGED，#2雖CLOSED但原SHA已在main，不能把關閉解讀成貢獻遺失。本輪新測試／修復用shuoen88既有真實身分提交，從最新main開新分支，不force push或重寫歷史。

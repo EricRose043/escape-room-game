@@ -249,3 +249,26 @@
 [run 41320466639](https://github.com/EricRose043/escape-room-game/actions/runs/41320466639) 的 GitHub Summary／Annotations 明確顯示帳戶近期付款失敗或支出上限需要調整，沒有啟動任何 job。GitHub API 未提供該註解，已用原生 Chrome 讀取確認；詳 [原始狀態](evidence/2026-11-01/owner-integration/github-ci-startup.json)。
 
 工作流程 YAML 已本機解析；本機235項及三條Chrome路線通過。但 Linux／Windows × Node22／24 的遠端CI **NOT_RUN，不是 PASS**，也不以歷史220項Windows結果代替。沒有更改付款、預算、Actions權限或分支保護；只有帳戶持有人可處理帳務限制，解除後再重跑CI。
+
+## LOG-20261104-SHUOEN：最新版分工覆核與小數設定修復
+
+查核開始2026-11-04、收尾2026-11-05；操作者shuoen88授權的Codex。以git ls-remote --heads及明確fetch所有分支核對，鎖定main **6ff1d44cf5114197d99aeef54eae101a5b2bbe53**，從該版開shuoen/nov04-integration-audit，沒有以舊S1分支覆蓋main。PR #1／#4／#5已合併，#2／#3已關閉但原始來源SHA均在main。
+
+### 先確認分工狀態
+
+S1／S2／S3已由owner接入。S3位置已由D021解決，色序、警報、線索出口及列車均已實作，本輪主要工作為重新驗收、修復S2缺口及統整狀態。D028驚嚇預設／升級與先前shuoen選擇不同，先詢問，使用者明確回覆「保留Eric最新行為，記錄與我原選擇的差異」，記D032；未改其策略。
+
+### 測試與修復
+
+1. 基線`node --test --test-reporter=tap`：280/280、無失敗／略過。
+2. 檢查S2接受合法小數，但原生range步距會量化值。新增integration-settings-precision.test.js（Node DOM步距替身）驗37.4音量／1.1倍率，以及手把調成1.35後的面板一致性；b600b38先紅2失敗。
+3. 7bd0c55修正：倍率及既存小數音量採step=any；整數音量保留step=1，鍵盤／手把增量沿用純規則。原測試斷言未改。完整282/282。
+4. 全新Windows clone同一修復SHA，core.autocrlf=true，main.js CRLF=0，同指令282/282。Node v24.22.1，本環境直接用Node runner，未聲稱直接跑npm test。
+5. ancestor核對3072dfa／42d8357／05b290b／80fbb65／c571347對main皆成功；完整SHA在verification.json。Git作者main當時Ryan95、Eric81、shuoen25，不用提交數評量工作量。
+6. GitHub最新main run41859330532為startup_failure，API jobs total_count=0。遠端矩陣NOT_RUN；未拿本機通過替代，未更改帳戶付款或Actions設定；最新失敗根因本輪未取得。
+
+### 證據與限制
+
+[基線TAP](evidence/2026-11-04/shuoen-audit/baseline.tap)、[先紅](evidence/2026-11-04/shuoen-audit/settings-red.tap)、[完整套件](evidence/2026-11-04/shuoen-audit/full-suite.tap)、[Windows](evidence/2026-11-04/shuoen-audit/windows-suite.tap)、[版本與作者追溯](evidence/2026-11-04/shuoen-audit/verification.json)、[CI狀態](evidence/2026-11-04/shuoen-audit/ci-runs.json)、[0 jobs](evidence/2026-11-04/shuoen-audit/ci-jobs.json)。TAP僅整理行尾空白及換行。
+
+本輪沒有新瀏覽器／GPU畫面驗證；可用瀏覽器技能檔缺失，沒有使用舊工具或未讀API冒充測試。Node DOM替身與舊11/01通關證據分開。尚缺實體Xbox／PS、學校舊電腦FPS、真人首次解題與音色結果；已詢問設備狀況，未知結果不代填。原53條結果表已按目前功能更新，VERIFY員工卡門禁文字差異仍需人審，本輪不更改BRIEF／VERIFY。

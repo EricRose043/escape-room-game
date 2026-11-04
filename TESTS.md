@@ -235,3 +235,9 @@ TF 表是分支查核證據，玩法及驗收含義變更仍待人確認；Q-004
 - 原 T4.01 文本與新版員工卡門禁的差異、實體手把、舊電腦效能與真人聽感仍如實區分；未改 VERIFY，不宣稱53條全部人類驗收通過。
 
 詳細與原始輸出：[INTEGRATION_STATUS](docs/INTEGRATION_STATUS.md)、[LOG](docs/TESTING_LOG.md)、[PR #4](https://github.com/EricRose043/escape-room-game/pull/4)。
+
+## 2026-11-04 shuoen最新main覆測
+
+來源：TEAM_TASKS S0／S2、VERIFY TG.01設定操作。新tests/integration-settings-precision.test.js驗合法小數存讀後的面板表示，以及手把微調後顯示與狀態一致。先紅2失敗（b600b38），修復後完整282/282，乾淨Windows clone282/282。測試使用Node DOM替身；不列為最新GPU／實體手把實測。
+
+原53條最新逐項結果見docs/ACCEPTANCE_STATUS.md；S3位置與整合已由owner完成，不再要求舊位置選擇。驚嚇D028已由本次shuoen確認保留。實體設備與真人結果仍待HUMAN_TEST_CHECKLIST。

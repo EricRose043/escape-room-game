@@ -426,3 +426,7 @@ location.reload();
 - `/tools/corridor-test.html`是可操作的S3獨立場地預覽，WASD／方向鍵或自動走訪三道門；不寫正式存檔。原分工座標與新版列車區重疊，尚未加入正式地圖，不能把預覽當整章追逐。
 - 最新完整220/220、乾淨Windows220/220；設定鍵盤／模擬手把與真關頁、S3預覽已驗。全部53條驗收的逐項結果見[驗收狀態](docs/ACCEPTANCE_STATUS.md)，[實體交接](docs/HUMAN_TEST_CHECKLIST.md)仍待結果。
 - [接入與交付說明](docs/SETTINGS_AND_CORRIDOR.md)、最新LOG-08。S3接入方向與Q-004需求差異仍待決，PR未合併main。
+
+## 2026-11-05 shuoen分工覆核
+
+本輪從最新main 6ff1d44修改，S1／S2／S3已接入的狀態與282項回歸見[最新分工統整](docs/SHUOEN_STATUS_20261104.md)。本輪修復合法小數靈敏度與滑桿顯示不一致，驚嚇沿用經shuoen確認的Eric最新D028策略。實體手把／舊電腦與真人觀感仍待實測。
