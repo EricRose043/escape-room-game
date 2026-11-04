@@ -18,7 +18,7 @@ py play_escape_room.py
 
 固定使用`http://127.0.0.1:8778/index.html`。啟動器呼叫`prepare_escape_room_assets.py`，以全部程式、樣式、PNG及引擎內容計算共同版本，將所有模組映射到相同版本的網址；再啟動`serve_escape_room.py`，GET／HEAD一律提供目前檔案及禁止快取標頭。這能避免瀏覽器混用不同版本的ES模組，導致開場停在第一段、略過按鈕無反應。
 
-現有服務的資料夾識別與首頁版本必須一致才會重用；其他服務占用8778時明確停止並提示原因，不會終止陌生程序或改埠。加`--serve-only`只啟動伺服器；本機準備版本與靜態HTTP檢查不等同Chrome實際操作驗收。
+現有服務的資料夾識別、首頁版本與交接能力一致時直接重用。另一份本遊戲使用8778時，新版啟動器會驗證後停止舊遊戲服務，再從這次點選的資料夾啟動；不終止陌生程序或改埠。新服務以本機私有交接憑證確認；Windows另相容已發布的舊Python服務。詳見[啟動器更新](LAUNCHER_UPDATES.md)。加`--serve-only`只啟動伺服器；本機準備版本與靜態HTTP檢查不等同Chrome實際操作驗收。
 
 不要用`file://`。遊戲需要WebGL；Pointer Lock被瀏覽器限制時可依頁面提示使用鍵盤備援開始與方向鍵轉頭。解壓檔請保留四個父資料夾檔案：`Play-EscapeRoom.cmd`、`play_escape_room.py`、`prepare_escape_room_assets.py`、`serve_escape_room.py`。
 

@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-05",
+  "result": "PASS",
+  "port": 65459,
+  "checks": [
+    "published legacy server replaced after in-place launcher upgrade",
+    "new server authenticated handover to another extracted folder",
+    "same folder launcher reuses server and PID",
+    "fixed origin and no browser launch",
+    "Unicode paths containing spaces"
+  ],
+  "launches": [
+    {
+      "folder": "舊版 A",
+      "port": 65459,
+      "result": "PASS"
+    },
+    {
+      "folder": "新版 B",
+      "port": 65459,
+      "result": "PASS"
+    },
+    {
+      "folder": "新版 C",
+      "port": 65459,
+      "result": "PASS"
+    },
+    {
+      "folder": "新版 C",
+      "port": 65459,
+      "result": "PASS"
+    }
+  ]
+}

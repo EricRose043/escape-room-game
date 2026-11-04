@@ -3,12 +3,22 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 from functools import partial
 import hashlib
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+import json
 import os
 from pathlib import Path
+import secrets
 import sys
+import threading
+
+STATE_DIRECTORY = Path.home() / '.escape-room-game'
+
+
+def control_state_path(port):
+    return STATE_DIRECTORY / f'server-{int(port)}.json'
 
 
 def directory_identity(directory: str | Path) -> str:
@@ -30,9 +40,29 @@ class NoCacheGameHandler(SimpleHTTPRequestHandler):
         ".svg": "image/svg+xml",
     }
 
-    def __init__(self, *args, directory=None, **kwargs):
+    def __init__(self, *args, directory=None, control_token=None, **kwargs):
         self.game_root_identity = directory_identity(directory or Path.cwd())
+        self.control_token = control_token
         super().__init__(*args, directory=directory, **kwargs)
+
+    def do_POST(self):
+        if self.path != '/__escape-room__/shutdown' or not self.control_token:
+            self.send_error(404)
+            return
+        supplied = self.headers.get('X-Escape-Room-Control-Token', '')
+        # Only the local Python launcher has the per-server token. Browser
+        # requests are rejected even if they somehow supply a matching header.
+        if self.headers.get('Origin') is not None or not secrets.compare_digest(supplied.encode('utf-8'), self.control_token.encode('ascii')):
+            self.send_error(403)
+            return
+        body = b'{"stopping":true}'
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+        self.wfile.flush()
+        threading.Thread(target=self.server.shutdown, daemon=True).start()
 
     def send_head(self):
         # SimpleHTTPRequestHandler normally compares whole-second mtimes and
@@ -50,11 +80,43 @@ class NoCacheGameHandler(SimpleHTTPRequestHandler):
         self.send_header("Expires", "0")
         self.send_header("X-Escape-Room-Server", "no-cache-v1")
         self.send_header("X-Escape-Room-Root", self.game_root_identity)
+        if self.control_token:
+            self.send_header('X-Escape-Room-Control', 'handover-v1')
         super().end_headers()
 
     def log_message(self, _format, *args):
         # Local polling and module requests should not flood the game console.
         pass
+
+
+@contextmanager
+def game_server(directory, port):
+    directory = Path(directory).resolve()
+    token = secrets.token_hex(32)
+    handler = partial(NoCacheGameHandler, directory=str(directory), control_token=token)
+    app = ThreadingHTTPServer(('127.0.0.1', port), handler)
+    app.control_token = token
+    state_path = control_state_path(app.server_port)
+    state = {'app': 'escape-room-game', 'version': 1, 'pid': os.getpid(),
+             'port': app.server_port, 'directory': str(directory), 'token': token}
+    try:
+        STATE_DIRECTORY.mkdir(mode=0o700, parents=True, exist_ok=True)
+        temporary = state_path.with_name(state_path.name + '.' + token + '.tmp')
+        with os.fdopen(os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w', encoding='utf-8') as stream:
+            json.dump(state, stream)
+        temporary.replace(state_path)
+    except OSError:
+        # Gameplay remains available when a school profile disallows metadata.
+        print('Automatic server handover metadata could not be saved.', file=sys.stderr)
+    try:
+        with app:
+            yield app
+    finally:
+        try:
+            if json.loads(state_path.read_text(encoding='utf-8')).get('token') == token:
+                state_path.unlink()
+        except (OSError, ValueError, AttributeError):
+            pass
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -77,21 +139,19 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"Cannot resolve game directory: {exc}")
     if not directory.is_dir():
         parser.error(f"Not a directory: {directory}")
-    handler = partial(NoCacheGameHandler, directory=str(directory))
     try:
-        server = ThreadingHTTPServer(("127.0.0.1", args.port), handler)
+        with game_server(directory, args.port) as server:
+            print(
+                f"Escape Room no-cache-v1: http://127.0.0.1:{server.server_port}/index.html",
+                flush=True,
+            )
+            try:
+                server.serve_forever(poll_interval=0.1)
+            except KeyboardInterrupt:
+                pass
     except OSError as exc:
         print(f"Cannot start game server: {exc}", file=sys.stderr)
         return 1
-    with server:
-        print(
-            f"Escape Room no-cache-v1: http://127.0.0.1:{server.server_port}/index.html",
-            flush=True,
-        )
-        try:
-            server.serve_forever(poll_interval=0.25)
-        except KeyboardInterrupt:
-            pass
     return 0
 
 

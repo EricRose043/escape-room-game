@@ -1,5 +1,9 @@
 # 實測與回歸紀錄
 
+## LOG-20261105-LAUNCHER
+
+Eric重新解壓a97400a並雙擊CMD，遇到「server serves another extracted game folder」。Codex核對舊服務的程序／路徑後停止，從Eric新下載的副本實際啟動，再以更新後的啟動器完成原地服務升級。7項初始Python測試先紅，實作後新增啟動器拒絕陌生服務，8/8通過；既有Node288/288通過。真實程序依序測舊服務→原地更新→新版B→新版C→再次C，固定埠不變、再次啟動重用PID，未開瀏覽器；launcher-handover-check.json留存結果。CI加入Python回歸，遠端結果仍需依實際run判定；Linux跳過Windows專屬舊程序案例。詳見LAUNCHER_UPDATES.md。
+
 ## LOG-20261105-STARTUP
 
 Eric回報同學開場無法略過，回答開啟方式「不知道」。Codex查核舊事件綁在ESM主程式，新增8項回歸先全紅；獨立HTML開場／診斷實作後，全套288/288通過。真HTML及main免GPU整合：ESM尚未執行即可略過、正常首幀解除等待；Renderer故意拋出WebGL錯誤時留下可見診斷。版本準備涵蓋inline啟動碼，71份HTTP資源一致。錯誤由VM顯式轉送window事件，不把這些自動檢查當成Chrome、同學環境或實體手把驗收。見startup-dom-check.json、test-summary.json及STARTUP_TROUBLESHOOTING.md。

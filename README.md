@@ -6,6 +6,8 @@
 
 **2026-11-05開場修正：**略過與換段已獨立於3D主程式；直接開檔、不支援的瀏覽器、模組載入失敗及WebGL錯誤會顯示處理方式，慢載入可繼續等待。最新288項Node測試通過。[開場卡住處理方式](docs/STARTUP_TROUBLESHOOTING.md)。
 
+同日啟動器修正：解壓新版到不同資料夾後，會自動接替經確認的舊遊戲服務，仍沿用8778與原存檔網址。8項Python回歸與舊版→新版→其他資料夾的真實啟動檢查通過。[啟動器更新](docs/LAUNCHER_UPDATES.md)。
+
 此次內容、組員來源及驗證限制見 [列車與模型交付](docs/TRAIN_AND_MODEL_DELIVERY.md)及[視覺改版](docs/VISUAL_UPGRADE.md)。2026-11-04 Eric 實玩回覆「遊戲可以了」，並授權發布本次完整遊戲；本次程式在既有 main／[PR #5](https://github.com/EricRose043/escape-room-game/pull/5)後增量提交，保留所有組員原始提交。[PR #5](https://github.com/EricRose043/escape-room-game/pull/5)本身是已合併的劇情規格文件；[PR #4](https://github.com/EricRose043/escape-room-game/pull/4)保留11月1日原整合歷史。
 
 ## 目前完整流程
@@ -39,7 +41,7 @@ Windows PowerShell：
 py play_escape_room.py
 ```
 
-Windows 若只有 `python`，可替代 `py`，需為 Python 3。加上`--serve-only`可只啟動伺服器。若8778被另一份遊戲或舊伺服器占用，啟動器會指出原因，先關閉原伺服器再重開；不會自動切換存檔網址。不要直接點兩下`index.html`使用`file://`。本機伺服器僅提供靜態檔案，沒有遊戲後端或帳號。
+Windows 若只有`python`，可替代`py`，需為Python 3。加上`--serve-only`可只啟動伺服器。若8778已被另一份本遊戲使用，新版啟動器會確認後自動接替；無法確認的其他服務則保留並提示。網址不改埠，瀏覽器存檔不刪除。不要直接點兩下`index.html`使用`file://`。本機伺服器僅提供靜態檔案，沒有遊戲後端或帳號。
 
 ## 操作
 

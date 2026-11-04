@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-05",
+  "result": "PASS",
+  "command": "python -m unittest discover -s tests -p test_launcher.py -v",
+  "tests": 8,
+  "pass": 8,
+  "fail": 0,
+  "skipped": 0,
+  "environment": "Windows, Python 3.11",
+  "publishedLegacyServerTestExecuted": true,
+  "checks": [
+    "authenticated handover preserves fixed port",
+    "missing, incorrect and browser-origin control requests rejected",
+    "stale folder, token and port metadata rejected",
+    "unrelated services remain running",
+    "launcher does not spawn or open browser when an unrelated service occupies the port",
+    "private state removed on server exit",
+    "known legacy source and exact Windows process verified before stopping"
+  ],
+  "limitations": [
+    "Linux CI skips Windows-only legacy process verification.",
+    "This is server and launcher verification, not browser/GPU validation."
+  ]
+}
