@@ -19,7 +19,7 @@ export async function runtime(storage,seed) {
   class Object3D {constructor(){this.position=vector();this.rotation=vector();}add(){}remove(){}lookAt(){}}
   class Renderer {constructor(){this.domElement=element();this.domElement.requestPointerLock=async()=>{
     document.pointerLockElement=this.domElement;document.emit('pointerlockchange');
-  };}setPixelRatio(){}setSize(){}render(){}}
+  };this.renderCalls=0;}setPixelRatio(){}setSize(){}render(){this.renderCalls++;}}
   class Material {constructor(options){this.options=options;}dispose(){assert.fail('重新開始不應刪除共用物品資源');}}
   class Light extends Object3D {constructor(){super();this.target=new Object3D();this.color={setHex(){}};}}
   class Camera extends Object3D {updateProjectionMatrix(){}}
@@ -32,7 +32,7 @@ export async function runtime(storage,seed) {
   const {createCaptureView}=await import('../../src/game/capture-view.js');
   let pads=[],frame;
   const source=(await readFile(new URL('../../src/game/main.js',import.meta.url),'utf8'))
-    .replace(/^import[\s\S]*?from '[^']+';\n/gm,'')+'\nreturn {state:()=>chapter,setChapter:value=>{chapter=value;},options:()=>chapterOptions,settings:()=>settings,session:()=>session,look:()=>({dYaw,dPitch})};';
+    .replace(/^import[\s\S]*?from '[^']+';\n/gm,'')+'\nreturn {state:()=>chapter,setChapter:value=>{chapter=value;},options:()=>chapterOptions,settings:()=>settings,session:()=>session,look:()=>({dYaw,dPitch}),renders:()=>renderer.renderCalls};';
   const values={...logic,createChapter:options=>seed?{...structuredClone(seed),jumpScare:options?.jumpScare===true}:logic.createChapter(options)};
   const dependencies={THREE,document,window,navigator:{getGamepads:()=>pads},createFactoryAudio,requestAnimationFrame:fn=>{frame=fn;},
     createWorldView:()=>({sync(){}}),createMonsterView:()=>({sync(){}}),createKeypadView:()=>({sync(){}}),

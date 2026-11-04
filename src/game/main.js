@@ -9,7 +9,7 @@ import {
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
   keyboardStartMenuCommand, startMenuGamepadCommand,
   createSettings, createGameSettingsStorage, deserialize,finishChapter,chapterObjective,factoryMapText,trainCinematicFrame,
-  createMouseLook,advanceMouseLook,worldVisible,progressiveObjective,
+  createMouseLook,advanceMouseLook,worldVisible,progressiveObjective,assessFrameQuality,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
@@ -56,9 +56,10 @@ scene.background = new THREE.Color(0x0c1015);
 const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 50);
 camera.rotation.order = 'YXZ';
 
-// 簡單幾何、無即時陰影或後製；像素比上限 1，降低內顯負擔。
+// 無即時陰影或後製；依實測幀率調整3D解析度，DOM與輸入仍逐幀更新。
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 let renderPixelRatio=Math.min(window.devicePixelRatio||1,1.25);
+let renderQuality={scale:renderPixelRatio,stable:0};
 renderer.setPixelRatio(renderPixelRatio);
 document.body.appendChild(renderer.domElement);
 
@@ -633,7 +634,8 @@ function animate(time) {
   if (elapsed >= 1000) {
     const fps=Math.round(frames*1000/elapsed);
     fpsDisplay.textContent = `FPS: ${fps}`;
-    if(fps<42 && renderPixelRatio>1) {renderPixelRatio=1;renderer.setPixelRatio(renderPixelRatio);resize();}
+    renderQuality=assessFrameQuality(renderQuality,fps,Math.min(window.devicePixelRatio||1,1.25));
+    if(Math.abs(renderQuality.scale-renderPixelRatio)>.001){renderPixelRatio=renderQuality.scale;renderer.setPixelRatio(renderPixelRatio);resize();}
     frames = 0;
     sampleStart = time;
   }
