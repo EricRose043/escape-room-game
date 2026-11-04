@@ -1,5 +1,6 @@
 // 原創 Web Audio 合成；不下載音檔、不匯入 three.js，也不主動接入遊戲。
 // 主音量 v 為 0～1；S2 的 0～100 請除以 100 再傳入。
+import {createScareTexture} from './horror-stinger.js';
 const clamp = value => typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
 const AMBIENCE = Object.freeze({ lobby: 55, 'power-room': 65, production: 73, 'chase-corridor': 82, exit: 49, train: 38 });
 
@@ -7,9 +8,8 @@ const AMBIENCE = Object.freeze({ lobby: 55, 'power-room': 65, production: 73, 'c
 const CUES = Object.freeze({
   power:[[82,.32,'sine',.06,0],[123,.32,'triangle',.045,.12],[165,.4,'sine',.035,.24]],
   chase:[[145,.36,'sawtooth',.05,0],[119,.42,'triangle',.04,.13]],
-  // 衝擊、近距離失諧低吼及下滑尾音；只提高被抓提示，不改主音量設定。
-  caught:[[42,.24,'sine',.20,0,29],[118,.6,'sawtooth',.17,.03,47],[127,.65,'sawtooth',.15,.04,52],
-    [590,.3,'square',.055,.05,180],[50,1.35,'sine',.14,.14,28],[82,.55,'sawtooth',.09,.8,43]],
+  // 主體為預建氣流／尖叫紋理，只用兩個低頻音作衝擊與下滑尾音。
+  caught:[[42,.24,'sine',.20,0,29],[50,1.35,'sine',.10,.14,28]],
   hide:[[88,.16,'triangle',.035,0],[62,.2,'sine',.03,.1]],
   unhide:[[105,.18,'triangle',.03,0]],
   escape:[[220,.34,'triangle',.045,0],[330,.42,'sine',.04,.18],[440,.7,'sine',.035,.38]],
@@ -27,7 +27,7 @@ export function createAudio(options = {}) {
   const later = options.setTimeout ?? globalThis.setTimeout;
   const cancel = options.clearTimeout ?? globalThis.clearTimeout;
   let context = null, master = null, outputBoost=null,limiter=null,ready = false, disposed = false, pendingUnlock = null;
-  let volume = 0.35, ambience = null, intensity = 0, heartbeatTimer = null, noise = null;
+  let volume = 0.35, ambience = null, intensity = 0, heartbeatTimer = null, noise = null,scareBuffer=null;
   const voices = new Set(), ambient = new Map();
   const ambientFilters=new Set();
   const canPlay = () => ready && !disposed && context?.state === 'running';
@@ -77,6 +77,19 @@ export function createAudio(options = {}) {
     const voice = { source, nodes: [source, filter, gain] }; voices.add(voice);
     source.onended = () => release(voice);
     source.start(); source.stop(context.currentTime + duration + 0.01); return true;
+  }
+  function prepareScare(){
+    if(scareBuffer)return;
+    const channels=createScareTexture(context.sampleRate);
+    scareBuffer=context.createBuffer(2,channels[0].length,context.sampleRate);
+    channels.forEach((samples,c)=>scareBuffer.getChannelData(c).set(samples));
+  }
+  function scare(){
+    if(!canPlay()||!scareBuffer||voices.size>=16)return false;
+    const source=context.createBufferSource(),gain=context.createGain();source.buffer=scareBuffer;
+    gain.gain.setValueAtTime(.40,context.currentTime);source.connect(gain);gain.connect(master);
+    const voice={source,nodes:[source,gain]};voices.add(voice);source.onended=()=>release(voice);
+    source.start();source.stop(context.currentTime+1.66);return true;
   }
   function stopAmbience() {
     for (const [source, gain] of ambient) { try { source.stop(); } catch { /* 已停止。 */ } disconnect(source); disconnect(gain); }
@@ -144,7 +157,7 @@ export function createAudio(options = {}) {
         }
         if (context.state !== 'running') await context.resume();
         ready = context.state === 'running' && !disposed;
-        if (ready) { startAmbience(); if (intensity > 0 && heartbeatTimer === null) beat(); }
+        if (ready) { prepareScare();startAmbience(); if (intensity > 0 && heartbeatTimer === null) beat(); }
         return ready;
       } catch { ready = false; return false; }
     })();
@@ -156,7 +169,7 @@ export function createAudio(options = {}) {
   }
   async function dispose() {
     if (disposed) return;
-    stop(); disposed = true; ready = false; noise = null;
+    stop(); disposed = true; ready = false; noise = null;scareBuffer=null;
     if (master) disconnect(master);
     if(outputBoost)disconnect(outputBoost);if(limiter)disconnect(limiter);
     try { if (context && context.state !== 'closed') await context.close(); } catch { /* 關閉失敗不阻擋離頁。 */ }
@@ -166,8 +179,12 @@ export function createAudio(options = {}) {
     playCue: cue => {
       if (!canPlay() || !Object.hasOwn(CUES, cue)) return false;
       let played=false;
+      if(cue==='caught'){
+        // 短暫中止腳步／心跳的排程，避免把尖叫變成一團持續的噪音。
+        for(const voice of [...voices])endVoice(voice);
+        clearHeartbeat();played=scare();
+      }
       for (const [frequency,duration,type,peak,delay,end=frequency] of CUES[cue]) played=tone(frequency,duration,peak,{type,delay,end}) || played;
-      if(cue==='caught') played=rustle(.3,.12,1500)||played;
       return played;
     },
     playFootstep: () => {const played=rustle(.14,.17,1000);if(played)tone(92,.085,.085,{end:48,type:'triangle'});return played;},
