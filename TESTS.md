@@ -241,3 +241,18 @@ TF 表是分支查核證據，玩法及驗收含義變更仍待人確認；Q-004
 來源：TEAM_TASKS S0／S2、VERIFY TG.01設定操作。新tests/integration-settings-precision.test.js驗合法小數存讀後的面板表示，以及手把微調後顯示與狀態一致。先紅2失敗（b600b38），修復後完整282/282，乾淨Windows clone282/282。測試使用Node DOM替身；不列為最新GPU／實體手把實測。
 
 原53條最新逐項結果見docs/ACCEPTANCE_STATUS.md；S3位置與整合已由owner完成，不再要求舊位置選擇。驚嚇D028已由本次shuoen確認保留。實體設備與真人結果仍待HUMAN_TEST_CHECKLIST。
+
+## 2026-11-05 本機沉浸感候選（LOG-20261105-IMMERSION）
+
+來源為 shuoen88 本次實玩要求／S-D034，以及既有 BRIEF 恐怖程度、操作、探索／解謎；不更改 VERIFY 原文。下列是細部自動案例，人類體感仍依原 T1.01、T1b.07、T6.01／04、T7／8／9、TG.01／03 另驗。
+
+| 案例 | 對應來源與測試檔 | 已檢查結果 |
+|---|---|---|
+| IM-01 | T1.01／03、S2；integration-mouse-look.test.js、integration-main-immersion.test.js | 降低總轉角、平滑、停用清餘量；正式 main 路徑暫停凍結，4項通過 |
+| IM-02 | TB-A01／03、S1；integration-immersion-audio.test.js | 主音量仍有效、增益及限制器、腳步增強、底噪不疊加與清理，2項通過 |
+| IM-03 | T6.01／04、BRIEF恐怖程度；integration-capture-detail.test.js | 1536px八層與120個連續姿態取樣，無逐幀重畫／新增圖層；1項通過。IM-01另驗正式抓捕時鐘繼續、背後不重畫 |
+| IM-04 | BRIEF探索、S-D034畫面要求；integration-surface-materials.test.js | 真Three.js建立粗糙／金屬／凹凸材質、共用快取與單批陰影，碰撞資料不變，2項通過；未驗GPU shader呈現 |
+| IM-05 | T7／8／9、S-D034難度；integration-progressive-difficulty.test.js | 保留前段提示、後段改推理、錯碼短鎖／警報、暫停凍結、取消重開不繞過、壓力速度有上限，2項通過；另最高壓力全章邏輯路線1/1到END |
+| IM-06 | TG.03、S-D034卡頓回饋；integration-frame-budget.test.js | 低幀率下降、穩定後漸進恢復、上下限與無效量測，2項通過；不等於已量測實機FPS |
+
+總套件305/305，Windows乾淨clone305/305、啟動器Python8/8、本機77資源HTTP與位元核對。操作與證據見docs/IMMERSION_CANDIDATE.md；本輪未做新GPU／實體手把／真人聽感驗證，舊電腦依使用者要求暫緩。未上傳、未重發公開站或備份包，等使用者確認。

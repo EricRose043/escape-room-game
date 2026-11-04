@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: 工廠牆地與金屬使用受燈光影響的粗糙度與細微凹凸，材質保持共用
+not ok 1 - 工廠牆地與金屬使用受燈光影響的粗糙度與細微凹凸，材質保持共用
+  ---
+  duration_ms: 99.7074
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-surface-materials.test.js:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + undefined
+    - true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-surface-materials.test.js:10:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: 落地接觸陰影使用單一批次，不新增阻擋通道的物件
+not ok 2 - 落地接觸陰影使用單一批次，不新增阻擋通道的物件
+  ---
+  duration_ms: 2.4895
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-surface-materials.test.js:15:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, open 'C:\\Users\\user\\codex projects\\escape-room-game\\src\\game\\contact-shadows.js'"
+  code: 'ENOENT'
+  stack: |-
+    async open (node:internal/fs/promises:1345:25)
+    async readFile (node:internal/fs/promises:2003:14)
+    async load (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-surface-materials.test.js:6:42)
+    async TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-surface-materials.test.js:17:35)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 236.5704

@@ -309,3 +309,44 @@ Xbox下一步（正式index.html，先用目前main；PR #6經Eric合併後重�
 音效新回歸d4f12de先紅（2項中1失敗）；實作後完整292/292。被抓六聲部的起始峰值由原最大0.07提高至0.20（程式增益，不聲稱主觀音量倍數），加入下滑頻率、失諧粗糙雙音、短低通噪聲與約1.5秒低頻尾音；不更動主音量設定、其他事件旋律或16聲部限制。停止／靜音／dispose仍由同一引擎管理，回歸檢查保留門聲增益與清理能力。
 
 tools/audio-test.html新增「被抓驚嚇音效（新版）」直接呼叫遊戲同一playCue，便於使用者試聽。index、音效模組與試聽頁皆本機HTTP200且位元相同；程序記錄在scare-audio/local-http.json。這是Node WebAudio替身與HTTP驗證，尚未真人試聽或實體手把整章覆驗；恐怖感等待使用者回覆，不代填通過。
+
+## LOG-20261105-IMMERSION：本機再次試玩候選
+
+shuoen88要求整體／腳步更大聲、靈敏度降低及改善轉頭卡頓、細化近景、加強工廠寫實感與難度遞增；對難度選項明確回覆「我覺得一跟二都很好」，因此採前段教學、中後段推理及有上限的錯誤壓力。發布順序改依S-D034：先本機試玩，確認後才上傳GitHub、更新公開站／正式ZIP及交付講稿；本輪沒有push、PR更新、Sites版本保存／部署或正式ZIP修改。
+
+### 基線與變更
+
+開始已納入main a97400a，工作期間發現main更新為fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8，透過da6f4e6合併啟動器交接修復，未覆蓋或重寫三人提交。遊戲程式完成點e31295aabac83eaa7a536e47a1f9f89cb8b6f7d7；入口雜湊映射再用prepare_escape_room_assets.py生成。BRIEF／VERIFY未改。
+
+1. 輸出增益1.65及原生壓縮限制器保留主音量／靜音；加強腳步與鞋跟，區域增加循環通風／電流底噪，停止可清理。沿用前輪驚嚇低吼與衝擊。
+2. 滑鼠總轉角降至同倍率原先55%，指數平滑約12ms；暫停清餘量、手把轉速保留。移除一次重複介面更新，依每秒幀率量測逐步調整3D解析度，穩定十秒才恢復。
+3. 八層近景提高為1536px，連續眼球與下顎細微姿態；抓捕期間邏輯／UI繼續，省略遮住的工廠WebGL繪圖。物件不逐幀重建。
+4. 實體材質的粗糙度、金屬反應與細微凹凸，單批接地陰影與霧／曝光調整，不增即時陰影光源或改碰撞資料。
+5. 四色線索改為唯一排序條件，後段目標少透露直接公式。錯碼警報／復位最高4秒，錯誤壓力最高3級、走廊速度最高2.28m/s仍低於玩家2.5；不遺失物品、已讀線索或已解謎題，壓力不存檔。故事、既有正確答案與存檔版本保留。
+
+### 先紅再綠與執行結果
+
+| 範圍 | 紅燈提交 | 綠燈實作 | 證據 |
+|---|---|---|---|
+| 滑鼠／遮住世界 | 16036b5 | 38865ce | mouse-red.tap |
+| 音效與生命週期 | c1b71ff | 63a222a | audio-red.tap |
+| 近景細節 | 18e3232 | fc8c361 | capture-red.tap |
+| 材質／接地陰影 | 1dac755 | 3aa032f | material-red.tap |
+| 漸進難度 | 5bc99ee | 7e6b15a | progression-red.tap |
+| 自動解析度 | eef4a49 | e31295a | frame-budget-red.tap |
+
+難度測試新寫時有一處將字串傳入assert.match，改成更精確的assert.equal文字斷言，沒有改既有測試或降低期望；其餘紅燈為新增行為尚不存在。main整合測試另驗正式讀取滑鼠、暫停及被抓時鐘／繪圖路徑，不只測獨立函式。
+
+- Node v24.22.1：`node --test --test-reporter=tap` **305/305**，0失敗／略過。WebAudio／DOM為替身；材質使用真正隨附Three.js模組建立與查值，並未建立真GPU context。
+- 全新Windows clone、core.autocrlf=true：**305/305**，main.js CRLF=0；未用本機結果代替GitHub CI，這輪沒有推送觸發遠端CI。
+- Python啟動器：**8/8**。
+- 使用既有stealth-route路線，代理updateChapter強制progressive=true並以pressure.level=3開始：**1/1到END**。是最高壓力自動邏輯路線，非真人實玩。
+- 本機8778：**77個**執行資源／預覽HTTP200且與磁碟內容相同，預覽內嵌模組Node語法檢查通過。
+
+原始輸出：[完整套件](evidence/2026-11-05/immersion-candidate/full-suite.tap)、[Windows](evidence/2026-11-05/immersion-candidate/windows-suite.tap)、[啟動器](evidence/2026-11-05/immersion-candidate/launcher-tests.txt)、[最高壓力路線](evidence/2026-11-05/immersion-candidate/hardest-progressive-route.tap)、[版本摘要](evidence/2026-11-05/immersion-candidate/verification.json)。同目錄六份red.tap對應上表；僅整理換行及行尾空白。
+
+### 未檢查與環境限制
+
+目前沒有新真瀏覽器GPU／shader、實機FPS、實體Xbox／PS或真人音色／完整首次解題的結果。先前瀏覽器自動操作因無法確定目前網址被安全機制停止，未另換工具繞過。新程式不代表實機已達固定60／120fps，也不代填「寫實／更恐怖」通過。舊電腦效能依使用者要求暫緩。實玩操作在[本機候選說明](IMMERSION_CANDIDATE.md)，用本機8778及Ctrl+F5更新；不要拿舊公開站／備份包評估本批修改。
+
+歷史編號澄清：本紀錄較早段落提及的shuoen決定D033／設定精度DEF-011，現在分別為S-D033／S-DEF-011；owner D033與DEF-011留給啟動器修復。

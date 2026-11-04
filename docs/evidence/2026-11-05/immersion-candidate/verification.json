@@ -1,0 +1,17 @@
+{
+  "codeCommit": "e31295aabac83eaa7a536e47a1f9f89cb8b6f7d7",
+  "baseMain": "fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8",
+  "tests": 305,
+  "windowsPass": true,
+  "autocrlfTrueClone": true,
+  "mainCRLF": 0,
+  "http200AndByteIdentical": 77,
+  "browserGpuFps": "not measured; user trial pending",
+  "publication": "hold: no GitHub push, no Sites deployment, no ZIP refresh until user accepts",
+  "httpEvidence": "local-http.json",
+  "previewInlineModuleSyntax": "pass",
+  "ancestorChecks": "main fffe647 and five prior team source commits all preserved",
+  "remoteMainAtFinalCheck": "fffe647ae34eb7bb7d34cd417aa31b3f2feb77a8",
+  "remoteBranchAtFinalCheck": "3d14735f88efe159aa16c239c5309b91281c4cf9",
+  "entryBuild": "b4376d4a2709a87d"
+}

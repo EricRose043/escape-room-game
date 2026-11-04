@@ -1,0 +1,387 @@
+[
+  {
+    "path": "index.html",
+    "status": 200,
+    "sha256": "4ba653eae4f89822bedcb2e6f75819fbdbc3eee604b4f6827b44af6f709f4928"
+  },
+  {
+    "path": "src/game/art-materials.js",
+    "status": 200,
+    "sha256": "3db0cc235726a4a1f42c3650c2869285395faaf82458287bf49edd4598cafeb8"
+  },
+  {
+    "path": "src/game/audio.js",
+    "status": 200,
+    "sha256": "e3f930e65213023e86cb4178bb521401bc9ab89e8f56639687756803856cc831"
+  },
+  {
+    "path": "src/game/capture-scare-art.js",
+    "status": 200,
+    "sha256": "f8f549d4e7aef53a78626ac9ee828c245e8a8717a64455f228b4963918674761"
+  },
+  {
+    "path": "src/game/capture-view.js",
+    "status": 200,
+    "sha256": "a94438d0cb6f79ed0ae5b06810a87ac4640df31df28d05a5d1c0c19cb747290a"
+  },
+  {
+    "path": "src/game/contact-shadows.js",
+    "status": 200,
+    "sha256": "a4abc1c698145f7f480c1da720db156dbb597155cd9575c58f6502b3d38894f6"
+  },
+  {
+    "path": "src/game/control-glyph.js",
+    "status": 200,
+    "sha256": "1dc53f5a4fbd2d036d3d062df6c7db27dc4817bf01aacdcbaf1182fe41d2bd89"
+  },
+  {
+    "path": "src/game/controller-diagram.js",
+    "status": 200,
+    "sha256": "951c2e3203d98e0dca1e4379ed5257ca4dac92e2255138fdef7d0c47091afcb6"
+  },
+  {
+    "path": "src/game/doll-expression.js",
+    "status": 200,
+    "sha256": "031cc6a92528db091b2c5f494b9f46314a1b2236215b3eec035b36ec23bb5a16"
+  },
+  {
+    "path": "src/game/ending-view.js",
+    "status": 200,
+    "sha256": "6399585ab4ea3f98823f266032c89ae6674338c953b35e69b81d9c358af2891e"
+  },
+  {
+    "path": "src/game/environment-art.js",
+    "status": 200,
+    "sha256": "0fa77dbd0b95debac8c1fb012fd000691c0da2f9050cc7e51f921e6d489afd27"
+  },
+  {
+    "path": "src/game/factory-detailed-art.js",
+    "status": 200,
+    "sha256": "18d1be7fbca517b13dd59b3cdfc0d7f4001f320972c2ffdb995503ae2b228a30"
+  },
+  {
+    "path": "src/game/factory-document-clearance.js",
+    "status": 200,
+    "sha256": "464fb10cfcf886b3c6b09ba301d587e71dc43416c051b6383e0071a1a50e3a18"
+  },
+  {
+    "path": "src/game/geometry-batching.js",
+    "status": 200,
+    "sha256": "7338f511c971523f54eb99018c57bd979c22c0a1fbe058d4f342a2b63095c1d2"
+  },
+  {
+    "path": "src/game/item-art.js",
+    "status": 200,
+    "sha256": "ca7748e98345193e053b07b0c6a0085b742d538494c8f4a1f8484ad761dbade1"
+  },
+  {
+    "path": "src/game/keypad-view.js",
+    "status": 200,
+    "sha256": "ec7b76230794b1f2b8bccc49fb9653de1bc624bff99ba2d86a22d4276ec6fda4"
+  },
+  {
+    "path": "src/game/lighting.js",
+    "status": 200,
+    "sha256": "e2dd6365adcc9460ef9ee829967c9c661d3bbde81265ed5bc339944a8ec2a4e2"
+  },
+  {
+    "path": "src/game/main.js",
+    "status": 200,
+    "sha256": "ceffe5b08051bcb8b76dfbcafa08beaa47e7e8160557d9cf850579314fa288ed"
+  },
+  {
+    "path": "src/game/monster-view.js",
+    "status": 200,
+    "sha256": "3c18543c7f93cac9ec661adc373f99282339271df442e58afb892cd5a810c5de"
+  },
+  {
+    "path": "src/game/operation-guide.js",
+    "status": 200,
+    "sha256": "a0894aecb7c9f54185fb977c2712761f55a2235de6f20d9f4b2f18d28a9064c1"
+  },
+  {
+    "path": "src/game/presentation-ui.js",
+    "status": 200,
+    "sha256": "cdd0b8c2329b1cb7adc92eb0eacb58580d0d7d3852ff6ff0ed1120514ef09a56"
+  },
+  {
+    "path": "src/game/procedural-audio.js",
+    "status": 200,
+    "sha256": "3e20c1632c0e6d1e1c46e1f58d2f197c3d999440dea44ebd18c2c7df1ddfaad8"
+  },
+  {
+    "path": "src/game/settings-entry.js",
+    "status": 200,
+    "sha256": "11e694cd64807fbea051b3e2cc681a1e26bd566336fefd10da374669d0315a73"
+  },
+  {
+    "path": "src/game/settings-view.js",
+    "status": 200,
+    "sha256": "246684aa071f136ec1068c8d21697b88c68ac935eb1b69b5c3f1d954e4339a91"
+  },
+  {
+    "path": "src/game/sign-design.js",
+    "status": 200,
+    "sha256": "5e15555fdc3117251c6ccb8020dd3433785f0d9731f7af568fa55654dce4768f"
+  },
+  {
+    "path": "src/game/sign-view.js",
+    "status": 200,
+    "sha256": "c97f3e70e4bef4de177a3b36427c18ce62525634ab85c61864e855212e0d2fe6"
+  },
+  {
+    "path": "src/game/start-menu-view.js",
+    "status": 200,
+    "sha256": "f0211ec15cafb68a8a07ce6a0235ca6d65c4deffad3c9bd4d6d07bab5b0b410c"
+  },
+  {
+    "path": "src/game/train-cinematic-view.js",
+    "status": 200,
+    "sha256": "9c8eb4542e0d037017a5aa6d671348a224c5187676f0a7742328d6a01e2702ae"
+  },
+  {
+    "path": "src/game/visual-design.js",
+    "status": 200,
+    "sha256": "d6e0c756b5f15c671ef665d7e85e833a3e994ca092006c4f86a2a1ad9742ca08"
+  },
+  {
+    "path": "src/game/world-view.js",
+    "status": 200,
+    "sha256": "eb529c5149b80fecd9b2cca96f9744a4dc52abbb49942192b1d42db6daa968f5"
+  },
+  {
+    "path": "src/logic/areas/chase-corridor.js",
+    "status": 200,
+    "sha256": "2718df0d1e71dab8b5ce9af48c26ac37fbe2ff47a4273d2f412d104f4b08bb49"
+  },
+  {
+    "path": "src/logic/areas/connected-chapter.js",
+    "status": 200,
+    "sha256": "c6ad61f56dc91dbdf721e5d6ea3d0994b0f6e17246ff3a7126bc8fc8118d0fa9"
+  },
+  {
+    "path": "src/logic/areas/exit.js",
+    "status": 200,
+    "sha256": "0b68f4a7011738602437b0de55fa729e8589c0d19e85e1463cf92c0a4173d9a2"
+  },
+  {
+    "path": "src/logic/areas/loading-bay.js",
+    "status": 200,
+    "sha256": "e0a8012a1140add4bb6ebdf45af6f1a8d1f29b23c7e8a8b8524701d2c655c13d"
+  },
+  {
+    "path": "src/logic/areas/lobby.js",
+    "status": 200,
+    "sha256": "ff6562413684edb4ecd86dba699f23da363715e67909e0eb63ec9da922fb847d"
+  },
+  {
+    "path": "src/logic/areas/power-room.js",
+    "status": 200,
+    "sha256": "1ad589c2711c80ada3252aac623f33bc2a025042839920ac4b3fe05e43d5fb8d"
+  },
+  {
+    "path": "src/logic/areas/production.js",
+    "status": 200,
+    "sha256": "e3dc7459969b17f278d01ddc4db6ca2562d2df7709c71458e3740f8da752533a"
+  },
+  {
+    "path": "src/logic/audio-mix.js",
+    "status": 200,
+    "sha256": "14593582e5e4becb342ef27157c16e1b963724670cb75a0878e1ad4e6523d56f"
+  },
+  {
+    "path": "src/logic/capture.js",
+    "status": 200,
+    "sha256": "bd4a6fbdaae97e49624e5dd23307704d6044150276ee364a19d0cdeb7c454d4e"
+  },
+  {
+    "path": "src/logic/chapter-guidance.js",
+    "status": 200,
+    "sha256": "b0a65c8dc7223a96bf8048ba24678eae737553e2f23b6d0c8e6595837d82e94c"
+  },
+  {
+    "path": "src/logic/chapter-save.js",
+    "status": 200,
+    "sha256": "42b71642ec0955bb453d143a0877bdab2c22bf69ff54f46eb9559cf1f7960cf5"
+  },
+  {
+    "path": "src/logic/chapter.js",
+    "status": 200,
+    "sha256": "b2315aad791ac0d07532fd901e9ae617fccf9d6bee7793c609bd3aa9ca12b024"
+  },
+  {
+    "path": "src/logic/checkpoints.js",
+    "status": 200,
+    "sha256": "0daf43b4e2114f5083b2045de6d8c31539eab2b2604fdfd80c22cce2b4d74f7b"
+  },
+  {
+    "path": "src/logic/clues.js",
+    "status": 200,
+    "sha256": "53c347c3573be437c0ac0dd009498c5cd38d798dc86c6abb7cad24929b9bb703"
+  },
+  {
+    "path": "src/logic/corridor-chase.js",
+    "status": 200,
+    "sha256": "892fccde1c7b163bf3074c3573d1f40463c7bccc64680b1708be8ff765fa3014"
+  },
+  {
+    "path": "src/logic/corridor-doors.js",
+    "status": 200,
+    "sha256": "303e2077ac893cf5cebbbe58cb81d26dd2fc4e6e5909ab277bacc53a6929f3fa"
+  },
+  {
+    "path": "src/logic/ending.js",
+    "status": 200,
+    "sha256": "f7f90528ae9ce4f53b5fa3a3011e7af601abecfbe46d9daff28f27e53d544f28"
+  },
+  {
+    "path": "src/logic/flashlight.js",
+    "status": 200,
+    "sha256": "432eaa4d4a29f361736c214d2cafbfb36cc569844a29972ea79baa1ca39ad5f4"
+  },
+  {
+    "path": "src/logic/frame-budget.js",
+    "status": 200,
+    "sha256": "302336cde3071dc9f7d2a503e3d0dd577044053c0329dc2c5fc42f003d8b6ff5"
+  },
+  {
+    "path": "src/logic/gamepad.js",
+    "status": 200,
+    "sha256": "4c0195e3b0a32597df171acc11e69a499257e089fac59409794ac7899cef021b"
+  },
+  {
+    "path": "src/logic/hiding.js",
+    "status": 200,
+    "sha256": "a357bbe42019ee632ce695acc23000c9b6a8d966be4f0cc26f78fb8ab5ae2ea8"
+  },
+  {
+    "path": "src/logic/illumination.js",
+    "status": 200,
+    "sha256": "648dbe2ae1ff6395156363f620475360d89eedc6d3fcc28b1c0c79f144046fa5"
+  },
+  {
+    "path": "src/logic/index.js",
+    "status": 200,
+    "sha256": "466dd86cc5f9756a2423f96cd713758f9a1459dc212705e06b1f53ae3a356f61"
+  },
+  {
+    "path": "src/logic/interaction.js",
+    "status": 200,
+    "sha256": "4406afd0be25a267f782b060883401fa5720a8b1e0681a575de837fde6c5bce9"
+  },
+  {
+    "path": "src/logic/items.js",
+    "status": 200,
+    "sha256": "2601b98859e085549e458e7243978f886cb734fb0f54690bd3b3b6cf68936621"
+  },
+  {
+    "path": "src/logic/keypad.js",
+    "status": 200,
+    "sha256": "9bc48c699281ede0c9602dee0aec6052b9ff437aa9fbc79f718eef31706a0fee"
+  },
+  {
+    "path": "src/logic/level.js",
+    "status": 200,
+    "sha256": "e29bef39fc4a3f4d4f9a5ee84c02bd4e365305480319c480ed4bdf306d1470d1"
+  },
+  {
+    "path": "src/logic/monster-vision.js",
+    "status": 200,
+    "sha256": "cfd18e6a5fbf962b53b123b06ea01faa17d9cd9148dbbb4ea76bbdd166750c0d"
+  },
+  {
+    "path": "src/logic/monster.js",
+    "status": 200,
+    "sha256": "2db821f5b5a00462f25e359a5a04096eff9352f9ba36b01f21138e35c0381249"
+  },
+  {
+    "path": "src/logic/mouse-look.js",
+    "status": 200,
+    "sha256": "7d3eab0d63c763cc2e7e5e9621587937b05f24fc8ab6b4823e3c90d27d09c440"
+  },
+  {
+    "path": "src/logic/movement.js",
+    "status": 200,
+    "sha256": "3a393ed2502a75ee1364a23fb7e3583d0c558f925a0817b3963be35fad87c2ac"
+  },
+  {
+    "path": "src/logic/navigation.js",
+    "status": 200,
+    "sha256": "52a50fcb55cee3f0bb8e3a969d8c578092361c289c29dd47ff83b3efad9722d3"
+  },
+  {
+    "path": "src/logic/progression.js",
+    "status": 200,
+    "sha256": "e0c165cb6088dd28b36032f958f11138e49b6f2024324fcf576f11f71b0cc9ea"
+  },
+  {
+    "path": "src/logic/puzzles/color-sequence.js",
+    "status": 200,
+    "sha256": "515ce39c3b061311be071623a2a2c8eef9f801ac81cc7702a3eec96287f2c613"
+  },
+  {
+    "path": "src/logic/puzzles/exit-code.js",
+    "status": 200,
+    "sha256": "5c0df30d4202adaada7ae2c0c0658943d9d4c45530184ffee50f18ee82435499"
+  },
+  {
+    "path": "src/logic/puzzles/train-code.js",
+    "status": 200,
+    "sha256": "8b711f65177b368dc262e4181bf6629c40aa636f49351b5e13bb439eb8a12ce0"
+  },
+  {
+    "path": "src/logic/save-storage.js",
+    "status": 200,
+    "sha256": "570f342e213ea2c116e42df237d8dd2616641bfa36d94cafc03f4bbd6314da22"
+  },
+  {
+    "path": "src/logic/settings.js",
+    "status": 200,
+    "sha256": "261add7ec2375195a623f78cfa99460efb3a6bd06c1138b0d467ab6b314b1fd7"
+  },
+  {
+    "path": "src/logic/start-menu.js",
+    "status": 200,
+    "sha256": "37c72e1c6495cbc2215beb33a1e093a8da843f10515661a5c62cdeaa900382b8"
+  },
+  {
+    "path": "src/logic/story-beats.js",
+    "status": 200,
+    "sha256": "372b7d983487ac8c75551a7b834dc8a9845c73135c4d184d21c387e16209ea6f"
+  },
+  {
+    "path": "src/logic/train-cinematic.js",
+    "status": 200,
+    "sha256": "48b24bba11381d057b93a883df469fcbe1cf3c52df87851a6c61ddfafda37601"
+  },
+  {
+    "path": "src/logic/world.js",
+    "status": 200,
+    "sha256": "5371058fbddd2704d0c22e04e1a690aa14ec249767ddd3fa5571badea87d333f"
+  },
+  {
+    "path": "src/game/presentation.css",
+    "status": 200,
+    "sha256": "ea8f484286561336da84738f53e00d05323be8d7a564e5c5439e51a6045c5222"
+  },
+  {
+    "path": "src/game/settings.css",
+    "status": 200,
+    "sha256": "6087382b0f59f710871dc9793f781772ae99bb318a7fa8fa90f14a6348f1d2c5"
+  },
+  {
+    "path": "assets/art/factory-keyart.png",
+    "status": 200,
+    "sha256": "02cba16d6353d584a44dc2b3df54b5d4fd7909ee2e96287c7857a2d1e9e32bb6"
+  },
+  {
+    "path": "vendor/three/three.module.js",
+    "status": 200,
+    "sha256": "76dea8151bc9352aef3528b4262e249b2604f62543828328db978d060d61a495"
+  },
+  {
+    "path": "tools/immersion-preview.html",
+    "status": 200,
+    "sha256": "381956133f81057a640e92a80db33b5a0e9efb01b7ec1cd13e82a5d057894b15"
+  }
+]

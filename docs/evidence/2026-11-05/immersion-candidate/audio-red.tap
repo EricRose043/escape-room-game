@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: 共用輸出提升整體音量並限制尖峰，腳步含更明確落腳聲
+not ok 1 - 共用輸出提升整體音量並限制尖峰，腳步含更明確落腳聲
+  ---
+  duration_ms: 3.1083
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-immersion-audio.test.js:10:1'
+  failureType: 'testCodeFailure'
+  error: '提升輸出，不覆蓋玩家主音量'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-immersion-audio.test.js:12:9)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: 區域環境有固定噪聲層且重送同區域不堆疊，停止會釋放
+not ok 2 - 區域環境有固定噪聲層且重送同區域不堆疊，停止會釋放
+  ---
+  duration_ms: 4.1586
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-immersion-audio.test.js:18:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+
+      assert.ok(nodes.some(n=>n.kind==='noise'&&n.loop===true))
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-immersion-audio.test.js:20:9)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 111.369

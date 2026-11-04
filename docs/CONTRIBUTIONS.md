@@ -72,3 +72,9 @@ Ryan 鎖定 fc603adece9baf554cdbd87d291b9d21ba7e3954，相對 main 0fab5ef 有 6
 鎖定main 6ff1d44cf5114197d99aeef54eae101a5b2bbe53，對3072dfa、42d8357、05b290b、80fbb65及c571347執行git merge-base --is-ancestor，五者皆成功（原始完整SHA與結果見本輪verification.json）。所以分工、shuoen全部S0/S1/S2/S3與Ryan兩輪成果均已可從main追溯，不再保留「尚未進main」作目前判斷。
 
 git shortlog -sn origin/main當時為RyanDing1010 95、EricRose043 81、shuoen88 25筆，這是Git作者提交數，並非工作量評分。PR #1、#4、#5為MERGED，#2雖CLOSED但原SHA已在main，不能把關閉解讀成貢獻遺失。本輪新測試／修復用shuoen88既有真實身分提交，從最新main開新分支，不force push或重寫歷史。
+
+## 2026-11-05 本機沉浸感候選
+
+依shuoen試玩回饋，本輪以shuoen88既有真實身分提交聲音、滑鼠、近景、材質、漸進難度、自動解析度及測試，六組TDD紅／綠提交見LOG-20261105-IMMERSION。da6f4e6以merge納入Eric的main fffe647啟動器修復，原main與Ryan／shuoen來源提交均保留祖先鏈；沒有force push、rebase或squash。新增整合與調整不改Ryan原劇情／謎題及Eric場景／抓捕設計的作者歸屬。
+
+這批候選目前**僅存在本機**；依S-D034，使用者確認順暢後才推送。不能將本機commit存在描述成已上GitHub或main已合併，也未替其他成員發訊息／宣告驗收。
