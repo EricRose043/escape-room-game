@@ -9,7 +9,7 @@ import {
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
   keyboardStartMenuCommand, startMenuGamepadCommand,
   createSettings, createGameSettingsStorage, deserialize,finishChapter,chapterObjective,factoryMapText,trainCinematicFrame,
-  createMouseLook,advanceMouseLook,worldVisible,
+  createMouseLook,advanceMouseLook,worldVisible,progressiveObjective,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
@@ -28,7 +28,7 @@ const settingsStorage=createGameSettingsStorage({
   setItem:(key,value)=>window.localStorage.setItem(key,value),
 },{search:window.location.search});
 let settings=settingsStorage.load();
-const chapterOptions={jumpScare:settings.jumpScare};
+const chapterOptions={jumpScare:settings.jumpScare,progressive:true};
 let settingsOpen=false,endingDispose=null,endingMapOpen=false;
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
@@ -213,7 +213,7 @@ function syncUI() {
   if(film){const frame=trainCinematicFrame(chapter.ui.elapsed??0);filmPanel.dataset.blackout=String(frame.blackout);setText(filmCaption,frame.dialogue);filmCaption.hidden=!frame.dialogue;}
   document.querySelector('#settings-button')?.setAttribute('aria-disabled',film?'true':'false');
   pauseScreen.hidden = !session.paused || startMenu.mode!=='closed' || chapter.ui.mode==='complete' || (chapter.ui.mode==='ending'&&!film) || !mapPanel.hidden || settingsOpen;
-  setText(document.querySelector('#objective'),chapterObjective(chapter));
+  setText(document.querySelector('#objective'),progressiveObjective(chapter,chapterObjective(chapter)));
   setText(document.querySelector('#keypad-title'),chapter.ui.deviceId==='bay.train-console'?'列車檢修控制器':chapter.ui.deviceId==='exit.final-keypad'?'出口控制板':chapter.ui.deviceId==='production.sequence-keypad'?'裝配線控制器':'電力控制器');
   startMenuView.sync(startMenu,prompt.device);
   startOpen.hidden=!session.hasStarted||film;

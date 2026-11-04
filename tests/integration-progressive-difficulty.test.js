@@ -15,7 +15,7 @@ test('後段錯碼有警報與短復位，暫停不倒數、取消重開也不�
  s={...s,ui:{...s.ui,buffer:'2413'}};s=l.updateChapter(s,{keypadCommands:[{type:'submit'}]},.1,{progressive:true});assert.equal(s.puzzles['exit.final'].restored,true);
 });
 test('前段保留教學、後段不直接交公式；追逐壓力有上限且仍慢於玩家',()=>{
- assert.match(progressiveObjective(l.createChapter(),'找保險絲'),'找保險絲');
+ assert.equal(progressiveObjective(l.createChapter(),'找保險絲'),'找保險絲');
  const s=ready();s.puzzles['exit.final']={restored:true};s.trainPuzzle={readCardIds:[...l.TRAIN_CARD_IDS],solved:false};
  assert.doesNotMatch(progressiveObjective(s,'讀數除以 6、由小到大排列'),/除以 6|由小到大/);
  assert.equal(pressureSpeed(0),2.1);assert.ok(pressureSpeed(99)<l.WALK_SPEED);assert.ok(pressureSpeed(2)>pressureSpeed(0));

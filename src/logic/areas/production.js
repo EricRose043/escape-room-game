@@ -38,7 +38,7 @@ export const PRODUCTION = {
     {id:'production.alert-light',position:{x:14.2,y:2.8,z:-12.25},powerPuzzleId:'power.main',offIntensity:0.4,onIntensity:1.5,color:0xc04a39,distance:11},
   ],
   signs:[
-    {id:'production.color-order',text:EXIT_CODE_CLUES[0].text,position:{x:21.18,y:2.8,z:-2.75},normal:{x:-1,y:0,z:0},width:3.5,height:.4},
+    {id:'production.color-order',text:'復位條件：紅在黃之前，黃緊接綠，藍最後。',position:{x:21.18,y:2.8,z:-2.75},normal:{x:-1,y:0,z:0},width:3.5,height:.6},
     {id:'production.east-sign',text:'貨運區｜列車月台',position:{x:21.18,y:2.9,z:-6.5},normal:{x:-1,y:0,z:0},width:1.5,height:0.3},
     {id:'production.monitor-record',text:'監視器最後畫面：展示台空了；封鎖門沒有開啟紀錄',position:{x:14.2,y:2.75,z:-0.32},normal:{x:0,y:0,z:-1},width:3.8,height:0.38},
     {id:'production.console-guide',text:'月台檢修碼輸入後，東側貨運門解鎖',position:{x:14.2,y:2.85,z:-12.48},normal:{x:0,y:0,z:1},width:3.8,height:0.38},

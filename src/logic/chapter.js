@@ -15,6 +15,7 @@ import {createCorridor,updateCorridor} from './corridor-chase.js';
 import {finishChapter} from './ending.js';
 import {createTrainPuzzle,trainReady,validateTrainCode} from './puzzles/train-code.js';
 import {TRAIN_CINEMATIC_SECONDS} from './train-cinematic.js';
+import {progressionBefore,progressionAfter,pressureSpeed} from './progression.js';
 
 export const DEVICES = WORLD.areas.flatMap(area => area.devices);
 export const MONSTERS = WORLD.areas.flatMap(area => area.monsters ?? []);
@@ -275,11 +276,16 @@ function updateChapterCore(state,actions={},dt=0,{jumpScare=state.jumpScare??fal
 
 export function updateChapter(state,actions={},dt=0,options={}) {
  if(state.ui.mode==='complete')return state;
+ if(options.progressive){
+   state=progressionBefore(state,actions,dt);
+   if(state.pressure.remaining>0&&state.ui.mode==='keypad')actions={...actions,keypadCommands:(actions.keypadCommands??[]).filter(c=>c.type==='cancel')};
+ }
  let next=updateChapterCore(state,actions,dt,options);
+ if(options.progressive)next=progressionAfter(state,next,actions.keypadCommands);
  if(!state.player.paused&&!next.player.paused&&actions.gameplayActive!==false&&['explore','hiding'].includes(state.ui.mode)) next={...next,elapsedSeconds:(state.elapsedSeconds??0)+(Number.isFinite(dt)?Math.max(0,Math.min(MAX_DT,dt)):0)};
  if(next.ui.mode==='complete')return {...next,completed:true,endingResult:finishChapter(0,next.elapsedSeconds??0)};
  if(next.player.paused||actions.gameplayActive===false||next.ui.mode!=='explore'||state.ui.mode==='caught'||!next.puzzles[COLOR_SEQUENCE.id]?.restored)return next;
- const corridor=updateCorridor(next.corridor??createCorridor(),next.player,dt);
+ const corridor=updateCorridor(next.corridor??createCorridor(),next.player,dt,{speed:options.progressive?pressureSpeed(next.pressure?.level):2.1});
  if(corridor===next.corridor)return next;
  next=advanceCheckpoint({...next,corridor});
  if(corridor.active||corridor.complete)next.monsters=Object.fromEntries(MONSTERS.map(d=>[d.id,{...next.monsters[d.id],mode:'inactive'}]));

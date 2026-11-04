@@ -66,8 +66,8 @@ export function createPresentationUI(doc=document){
     }
     const guide=operationGuide(state,device,target),guideKey=device+JSON.stringify(guide);
     if(guideKey!==previousGuide){previousGuide=guideKey;title.textContent=guide.title;copy.textContent=guide.body;renderControls(actions,guide.actions,device);}
-    tutorial.hidden=session.paused||!['explore','hiding'].includes(state.ui.mode);
-    ribbon.hidden=session.paused||!['explore','hiding'].includes(state.ui.mode);
+    tutorial.hidden=session.paused||!['explore','hiding'].includes(state.ui.mode)||state.puzzles['power.main']?.restored;
+    ribbon.hidden=session.paused||!['explore','hiding'].includes(state.ui.mode)||state.puzzles['power.main']?.restored;
     help.hidden=!session.hasStarted||!['explore','hiding'].includes(state.ui.mode);
     reader.hidden=!reading;body.dataset.reading=reading?'true':'false';
     if(reading&&reading.text!==previousReading){previousReading=reading.text;reader.querySelector('#document-copy').textContent=reading.text;}
