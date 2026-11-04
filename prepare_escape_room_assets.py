@@ -19,6 +19,12 @@ def prepare_assets(directory):
         digest.update(b'\0')
         digest.update(path.read_bytes())
         digest.update(b'\0')
+    # The dependency-free opening/error controller lives inline so it still
+    # works when module loading fails. Include it without hashing version tags.
+    startup = re.search(r'<script id="game-startup">([\s\S]*?)</script>', page.read_text(encoding='utf-8'))
+    if startup:
+        digest.update(b'game-startup\0')
+        digest.update(startup.group(1).encode('utf-8'))
     version = digest.hexdigest()[:16]
     imports = {'three': './vendor/three/three.module.js?v=' + version}
     for path in modules:

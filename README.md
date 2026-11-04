@@ -4,6 +4,8 @@
 
 同日最新修正：貨運門與追逐前第一道隔離門整片都可觸發原門邊操作；兩張2413文件的互動判定對齊紙面。啟動器統一模組版本並禁止舊快取，避免Chrome混用程式；詳見[門與文件修正](docs/INTERACTION_FIXES.md)。
 
+**2026-11-05開場修正：**略過與換段已獨立於3D主程式；直接開檔、不支援的瀏覽器、模組載入失敗及WebGL錯誤會顯示處理方式，慢載入可繼續等待。最新288項Node測試通過。[開場卡住處理方式](docs/STARTUP_TROUBLESHOOTING.md)。
+
 此次內容、組員來源及驗證限制見 [列車與模型交付](docs/TRAIN_AND_MODEL_DELIVERY.md)及[視覺改版](docs/VISUAL_UPGRADE.md)。2026-11-04 Eric 實玩回覆「遊戲可以了」，並授權發布本次完整遊戲；本次程式在既有 main／[PR #5](https://github.com/EricRose043/escape-room-game/pull/5)後增量提交，保留所有組員原始提交。[PR #5](https://github.com/EricRose043/escape-room-game/pull/5)本身是已合併的劇情規格文件；[PR #4](https://github.com/EricRose043/escape-room-game/pull/4)保留11月1日原整合歷史。
 
 ## 目前完整流程
