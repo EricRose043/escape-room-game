@@ -272,3 +272,18 @@ S1／S2／S3已由owner接入。S3位置已由D021解決，色序、警報、線
 [基線TAP](evidence/2026-11-04/shuoen-audit/baseline.tap)、[先紅](evidence/2026-11-04/shuoen-audit/settings-red.tap)、[完整套件](evidence/2026-11-04/shuoen-audit/full-suite.tap)、[Windows](evidence/2026-11-04/shuoen-audit/windows-suite.tap)、[版本與作者追溯](evidence/2026-11-04/shuoen-audit/verification.json)、[CI狀態](evidence/2026-11-04/shuoen-audit/ci-runs.json)、[0 jobs](evidence/2026-11-04/shuoen-audit/ci-jobs.json)。TAP僅整理行尾空白及換行。
 
 本輪沒有新瀏覽器／GPU畫面驗證；可用瀏覽器技能檔缺失，沒有使用舊工具或未讀API冒充測試。Node DOM替身與舊11/01通關證據分開。尚缺實體Xbox／PS、學校舊電腦FPS、真人首次解題與音色結果；已詢問設備狀況，未知結果不代填。原53條結果表已按目前功能更新，VERIFY員工卡門禁文字差異仍需人審，本輪不更改BRIEF／VERIFY。
+
+
+## 2026-11-05 使用者設備回覆
+
+shuoen已確認有Xbox／Xbox配置手把；尚未提供實測結果，不能勾為通過。使用者明確要求舊電腦先跳過，因此學校舊電腦30FPS標為「依使用者要求暫緩／未驗」，不再作本輪交付阻擋；PS實體仍未提供設備結果。
+
+Xbox下一步（正式index.html，先用目前main；PR #6經Eric合併後重測設定）：
+
+1. 連接手把、按任一鍵，核對顯示Xbox；左搖桿移動、右搖桿轉頭，放手不得漂移。
+2. Y開設定，十字鍵上下選、左右調，A切換驚嚇、B返回；保持暫停，Start再繼續。
+3. RB開關燈、LB換UV、A拾物與操作密碼鎖，View開關地圖；進行中拔除使用中的手把應暫停。
+4. 設定音量及靈敏度後關頁重開，核對數字與選擇保留；沒有經過一次升級的舊設定依D028先開啟驚嚇，之後手動關閉需能保存。
+5. 只用手把走完色序、3142、走廊、2413、三卡2123與列車結局；記卡關步驟，查看結局地圖與重玩確認是否可操作。
+
+回報請填：測試commit或PR版本、手把型號、瀏覽器、通過／失敗步驟、預期／實際。沒有完成的項目可直接填未做；不需一次完成所有項目。
