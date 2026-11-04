@@ -1,0 +1,223 @@
+TAP version 13
+# Subtest: 原位驚嚇兩種開關都保留位置視角與進度，玩偶至少消失五秒且不重新捕捉
+not ok 1 - 原位驚嚇兩種開關都保留位置視角與進度，玩偶至少消失五秒且不重新捕捉
+  ---
+  duration_ms: 6.1668
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\encounter-recovery.test.js:11:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+        paused: false,
+    +   pitch: 0,
+    +   x: 6.5,
+    +   yaw: -1.5707963267948966,
+    +   z: -6.5
+    -   pitch: -0.17,
+    -   x: 18.5,
+    -   yaw: 0.42,
+    -   z: -5.5
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    x: 18.5
+    z: -5.5
+    yaw: 0.42
+    pitch: -0.17
+    paused: false
+  actual:
+    x: 6.5
+    z: -6.5
+    yaw: -1.5707963267948966
+    pitch: 0
+    paused: false
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/encounter-recovery.test.js:15:61)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+# Subtest: 消失期間能走動、沒有透明碰撞，暫停失焦及面板都不偷跑倒數
+not ok 2 - 消失期間能走動、沒有透明碰撞，暫停失焦及面板都不偷跑倒數
+  ---
+  duration_ms: 1.6627
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\encounter-recovery.test.js:23:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'remaining')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/encounter-recovery.test.js:24:91)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: 消失後在安全巡邏點恢復，不在玩家面前或貼身瞬間出現抓人
+not ok 3 - 消失後在安全巡邏點恢復，不在玩家面前或貼身瞬間出現抓人
+  ---
+  duration_ms: 1.2811
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\encounter-recovery.test.js:33:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + undefined
+    - null
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/encounter-recovery.test.js:36:9)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: 走廊被抓也留原位並保留關門紀錄，隱身期間可到出口且不再觸發caught
+not ok 4 - 走廊被抓也留原位並保留關門紀錄，隱身期間可到出口且不再觸發caught
+  ---
+  duration_ms: 1.1406
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\encounter-recovery.test.js:42:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+        paused: false,
+        pitch: 0,
+    +   x: 6.5,
+    +   yaw: -1.5707963267948966,
+    +   z: -6.5
+    -   x: 27,
+    -   yaw: 0,
+    -   z: -13
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    x: 27
+    z: -13
+    yaw: 0
+    pitch: 0
+    paused: false
+  actual:
+    x: 6.5
+    z: -6.5
+    yaw: -1.5707963267948966
+    pitch: 0
+    paused: false
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/encounter-recovery.test.js:46:33)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: 走廊追兵回來時在玩家後方留距離，既有關門與追逐仍能繼續
+not ok 5 - 走廊追兵回來時在玩家後方留距離，既有關門與追逐仍能繼續
+  ---
+  duration_ms: 0.7881
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\encounter-recovery.test.js:53:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + undefined
+    - null
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/encounter-recovery.test.js:58:9)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: 正式main啟用原位回復，驚嚇結束保留視角位置且清掉殘留移動輸入
+not ok 6 - 正式main啟用原位回復，驚嚇結束保留視角位置且清掉殘留移動輸入
+  ---
+  duration_ms: 32.0579
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-encounter-recovery.test.js:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + undefined
+    - 'stay'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'stay'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-encounter-recovery.test.js:9:9)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: 消失期間走廊也沒有追兵心跳，環境音仍可運作
+not ok 7 - 消失期間走廊也沒有追兵心跳，環境音仍可運作
+  ---
+  duration_ms: 0.971
+  type: 'test'
+  location: 'C:\\Users\\user\\codex projects\\escape-room-game\\tests\\integration-encounter-recovery.test.js:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    1 !== 0
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/user/codex%20projects/escape-room-game/tests/integration-encounter-recovery.test.js:21:33)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 0
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 205.5081
