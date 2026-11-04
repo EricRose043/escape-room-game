@@ -281,6 +281,8 @@ export function updateChapter(state,actions={},dt=0,options={}) {
    if(state.pressure.remaining>0&&state.ui.mode==='keypad')actions={...actions,keypadCommands:(actions.keypadCommands??[]).filter(c=>c.type==='cancel')};
  }
  let next=updateChapterCore(state,actions,dt,options);
+ if(options.reasoning&&next.ui.mode==='keypad'&&next.ui.deviceId==='bay.train-console'&&/錯誤/.test(next.ui.message??''))
+   next={...next,ui:{...next.ui,message:'檢修碼錯誤。重新核對校驗來源、負載順序與完整軌道組數。'}};
  if(options.progressive)next=progressionAfter(state,next,actions.keypadCommands);
  if(!state.player.paused&&!next.player.paused&&actions.gameplayActive!==false&&['explore','hiding'].includes(state.ui.mode)) next={...next,elapsedSeconds:(state.elapsedSeconds??0)+(Number.isFinite(dt)?Math.max(0,Math.min(MAX_DT,dt)):0)};
  if(next.ui.mode==='complete')return {...next,completed:true,endingResult:finishChapter(0,next.elapsedSeconds??0)};

@@ -8,13 +8,15 @@ import { createPresentationUI } from './presentation-ui.js';
 import { createSignView } from './sign-view.js';
 import { createTrainCinematicView } from './train-cinematic-view.js';
 import {createContactShadows} from './contact-shadows.js';
+import {reasoningAreas,reasoningTarget} from '../logic/reasoning-content.js';
 
-export function createWorldView(scene) {
+export function createWorldView(scene,{reasoning=false}={}) {
   const art=createArtMaterials(),materials=art.palette;
+  const areas=reasoning?reasoningAreas(WORLD.areas):WORLD.areas;
   createContactShadows(scene,STATIC_BOXES);
   let heldTorch=null,cinematic=null;
-  const presentationUI=createPresentationUI();
-  const signs=createSignView(scene,WORLD.areas,STATIC_BOXES,materials);
+  const presentationUI=createPresentationUI(document,{reasoning});
+  const signs=createSignView(scene,areas,STATIC_BOXES,materials);
   const addBox = (b,kind=b.kind) => {
     const mesh=new THREE.Mesh(new THREE.BoxGeometry(b.maxX-b.minX,b.maxY-b.minY,b.maxZ-b.minZ),materials[kind]??materials.trim);
     mesh.position.set((b.minX+b.maxX)/2,(b.minY+b.maxY)/2,(b.minZ+b.maxZ)/2);
@@ -73,7 +75,7 @@ export function createWorldView(scene) {
       minZ:b.maxZ,maxZ:b.maxZ+0.025},'trim');
   }
   const doors=new Map(DOORS.map(d=>{const leaf=addBox(d.bounds,'door');scene.remove(leaf);const group=decorateDoor(leaf,d.bounds,materials);scene.add(group);return [d.id,group];}));
-  createEnvironmentArt(scene,art);
+  createEnvironmentArt(scene,art,{areas});
   // 指示燈使用獨立發光材質，不新增光源；位置從電箱 bounds 導出。
   const indicators = new Map(DEVICES.filter(device=>device.kind==='fuseBox').map(device=>{
     const b=device.bounds;
@@ -93,7 +95,7 @@ export function createWorldView(scene) {
       }
       cinematic?.reset();return false;
     },
-    syncPresentation(state,session,prompt){presentationUI.sync(state,session,prompt,selectChapterTarget(state),session.hasStarted&&!session.paused?signs.readingTarget(state.player,getGeometry(state).occluderBoxes):null);},
+    syncPresentation(state,session,prompt){const target=selectChapterTarget(state);presentationUI.sync(state,session,prompt,reasoning?reasoningTarget(target):target,session.hasStarted&&!session.paused?signs.readingTarget(state.player,getGeometry(state).occluderBoxes):null);},
     createClueMesh(clue){return signs.createClueMesh(clue);},
     createItemMesh(item){const model=createItemArt(item,materials);scene.add(model);return model;},
     enhanceScene(renderer,camera){

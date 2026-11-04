@@ -3,7 +3,7 @@ import { operationGuide,controlLegend } from './operation-guide.js';
 import { createControlGlyph } from './control-glyph.js';
 import { createControllerDiagram } from './controller-diagram.js';
 
-export function createPresentationUI(doc=document){
+export function createPresentationUI(doc=document,{reasoning=false}={}){
   const body=doc.body,map=doc.querySelector?.('#factory-map'),content=doc.querySelector?.('#map-content');
   if(!body||!map||!content||!doc.createElementNS)return {sync(){}};
   const namespace='http://www.w3.org/2000/svg';
@@ -64,7 +64,7 @@ export function createPresentationUI(doc=document){
       }else {pauseController.replaceChildren();startControllerMap.replaceChildren();}
       help.textContent=`操作指南 · ${device==='keyboard'?'H':device==='ps'?'Options':'Start'}`;
     }
-    const guide=operationGuide(state,device,target),guideKey=device+JSON.stringify(guide);
+    const guide=operationGuide(state,device,target,{reasoning}),guideKey=device+JSON.stringify(guide);
     if(guideKey!==previousGuide){previousGuide=guideKey;title.textContent=guide.title;copy.textContent=guide.body;renderControls(actions,guide.actions,device);}
     tutorial.hidden=session.paused||!['explore','hiding'].includes(state.ui.mode)||state.puzzles['power.main']?.restored;
     ribbon.hidden=session.paused||!['explore','hiding'].includes(state.ui.mode)||state.puzzles['power.main']?.restored;

@@ -8,8 +8,9 @@ import {
   createChapter, updateChapter, hasFlashlight, getGeometry, keyboardKeypadCommand,
   createSaveStorage, restoreChapterSave, createStartMenu, updateStartMenu,
   keyboardStartMenuCommand, startMenuGamepadCommand,
-  createSettings, createGameSettingsStorage, deserialize,finishChapter,chapterObjective,factoryMapText,trainCinematicFrame,
+  createSettings, createGameSettingsStorage, deserialize,finishChapter,chapterObjective,trainCinematicFrame,
   createMouseLook,advanceMouseLook,worldVisible,progressiveObjective,assessFrameQuality,
+  reasoningClues,reasoningMapText,reasoningTarget,reasoningObjective,
 } from '../logic/index.js';
 import { createWorldView } from './world-view.js';
 import { createMonsterView } from './monster-view.js';
@@ -28,7 +29,8 @@ const settingsStorage=createGameSettingsStorage({
   setItem:(key,value)=>window.localStorage.setItem(key,value),
 },{search:window.location.search});
 let settings=settingsStorage.load();
-const chapterOptions={jumpScare:settings.jumpScare,progressive:true};
+const chapterOptions={jumpScare:settings.jumpScare,progressive:true,reasoning:true};
+const playClues=reasoningClues(CLUES);
 let settingsOpen=false,endingDispose=null,endingMapOpen=false;
 let chapter = createChapter(chapterOptions);
 const intro=document.querySelector('#story-intro');
@@ -63,7 +65,7 @@ let renderQuality={scale:renderPixelRatio,stable:0};
 renderer.setPixelRatio(renderPixelRatio);
 document.body.appendChild(renderer.domElement);
 
-const worldView = createWorldView(scene);
+const worldView = createWorldView(scene,{reasoning:true});
 worldView.enhanceScene?.(renderer,camera);
 const monsterView = createMonsterView(scene);
 const audio=createFactoryAudio();
@@ -93,7 +95,7 @@ torch.visible = false;
 scene.add(torch);
 scene.add(torch.target);
 
-const clueMeshes = new Map(CLUES.map(clue => {
+const clueMeshes = new Map(playClues.map(clue => {
   const mounted=worldView.createClueMesh?.(clue);
   if(mounted)return [clue.id,mounted];
   const canvas = document.createElement('canvas');
@@ -132,7 +134,7 @@ function syncLighting() {
   torch.target.position.set(origin.x + direction.x, origin.y + direction.y, origin.z + direction.z);
   torch.visible = hasFlashlight(chapter) && chapter.flashlight.enabled && chapter.flashlight.charge > 0;
   torch.color.setHex(chapter.flashlight.mode === 'uv' ? 0x9977ff : 0xffeed0);
-  for (const clue of CLUES) {
+  for (const clue of playClues) {
     clueMeshes.get(clue.id).visible = clue.alwaysVisible||isClueVisible(chapter.player, chapter.flashlight, clue, geometry.occluderBoxes);
   }
 }
@@ -214,7 +216,7 @@ function syncUI() {
   if(film){const frame=trainCinematicFrame(chapter.ui.elapsed??0);filmPanel.dataset.blackout=String(frame.blackout);setText(filmCaption,frame.dialogue);filmCaption.hidden=!frame.dialogue;}
   document.querySelector('#settings-button')?.setAttribute('aria-disabled',film?'true':'false');
   pauseScreen.hidden = !session.paused || startMenu.mode!=='closed' || chapter.ui.mode==='complete' || (chapter.ui.mode==='ending'&&!film) || !mapPanel.hidden || settingsOpen;
-  setText(document.querySelector('#objective'),progressiveObjective(chapter,chapterObjective(chapter)));
+  setText(document.querySelector('#objective'),reasoningObjective(chapter,progressiveObjective(chapter,chapterObjective(chapter))));
   setText(document.querySelector('#keypad-title'),chapter.ui.deviceId==='bay.train-console'?'列車檢修控制器':chapter.ui.deviceId==='exit.final-keypad'?'出口控制板':chapter.ui.deviceId==='production.sequence-keypad'?'裝配線控制器':'電力控制器');
   startMenuView.sync(startMenu,prompt.device);
   startOpen.hidden=!session.hasStarted||film;
@@ -227,9 +229,9 @@ function syncUI() {
   document.querySelector('#factory-map-button').hidden=!hasMap || chapter.ui.mode==='complete'||film;
   document.querySelector('#ending-screen').hidden=chapter.ui.mode!=='complete'||endingMapOpen||startMenu.mode!=='closed';
   crosshair.hidden = session.paused || chapter.ui.mode!=='explore';
-  const target = selectChapterTarget(chapter);
+  const target = reasoningTarget(selectChapterTarget(chapter));
   interactionHint.hidden = !target;
-  const message=target && chapter.ui.messageTargetId===target.id?chapter.ui.message:null;
+  const message=target && chapter.ui.messageTargetId===target.id?(target.kind==='clueNote'?'線索已記錄，地圖可回看':chapter.ui.message):null;
   setText(interactionHint, target ? `${buttonLabel('interact', prompt.device)} ${target.bounds ? `${target.name}｜${message ?? deviceMessage(chapter,target)}` : `撿起 ${target.name}`}` : '');
   const contact=Object.values(chapter.monsters).some(m=>m.contactFeedbackRemaining>0);
   contactHint.hidden=session.paused || chapter.ui.mode!=='explore' || !contact;
@@ -256,7 +258,7 @@ function syncUI() {
 }
 
 let mapReturnToGame=false,mapAwaitRelease=false;
-function openMap(){if(inTrainFilm())return;mapAwaitRelease=true;mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=factoryMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
+function openMap(){if(inTrainFilm())return;mapAwaitRelease=true;mapPanel.hidden=false;endingMapOpen=chapter.ui.mode==='complete';mapReturnToGame=!session.paused&&chapter.ui.mode==='explore';document.querySelector('#map-content').textContent=reasoningMapText(chapter,chapter.completed);if(mapReturnToGame)applySession({forcePause:true});releasePointer('map');document.querySelector('#map-close').focus();syncUI();}
 function closeMap(){mapPanel.hidden=true;endingMapOpen=false;if(mapReturnToGame){mapReturnToGame=false;applySession({pausePressed:true});}clearInput();syncUI();if(chapter.ui.mode==='complete')document.querySelector('[data-ending-action="map"]')?.focus();}
 window.addEventListener('factory-help-open',()=>{
   if(!intro.hidden||startMenu.mode!=='closed'||settingsOpen||inTrainFilm())return;
@@ -610,7 +612,7 @@ function animate(time) {
   if(beforeMode!=='complete' && chapter.ui.mode==='complete') {
     try { localStorage.setItem('toy-factory-complete','true'); } catch {}
     document.querySelector('#map-title').textContent='完整工廠地圖｜通關解鎖';
-    document.querySelector('#map-content').textContent=factoryMapText(chapter,true);mountEnding();
+    document.querySelector('#map-content').textContent=reasoningMapText(chapter,true);mountEnding();
   }
   if(session.hasStarted && startMenu.mode==='closed') saveStorage.observe(beforeChapter,chapter,actions.gameplayActive?dt:0);
   if (beforeMode!==chapter.ui.mode) {

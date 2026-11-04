@@ -35,7 +35,9 @@ test('新排序規則實際畫成文件，不會被固定答案箭頭取代；�
 test('跨區回看依已解進度出現，列車未取得的卡與校驗數字不提前洩漏',()=>{
  const s=l.createChapter(),initial=reasoningMapText(s);
  assert.doesNotMatch(initial,/照明：6|送料：3|18 A|除以 6|÷ 6/);
- s.puzzles['power.main'].restored=true;s.puzzles['production.sequence'].restored=true;
+ s.inventory.itemIds=['lobby.flashlight','lobby.employee-card','power.fuse'];
+ s.puzzles['power.main']={installedItemId:'power.fuse',restored:true};s.puzzles['production.sequence'].restored=true;
+ s.puzzles['production.color-sequence'].restored=true;
  s.foundClueIds=['production.color-clue','corridor.color-key'];
  const notes=reasoningMapText(s);assert.match(notes,/照明：6/);assert.match(notes,/送料：3/);assert.match(notes,/熱壓/);assert.doesNotMatch(notes,/18 A|除以 6|÷ 6/);
  assert.doesNotMatch(reasoningTarget(l.DEVICES.find(d=>d.id==='corridor.clue-note')).name,/紅＝3|黃＝1/);
