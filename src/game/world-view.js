@@ -7,9 +7,11 @@ import { createItemArt, createHeldTorch } from './item-art.js';
 import { createPresentationUI } from './presentation-ui.js';
 import { createSignView } from './sign-view.js';
 import { createTrainCinematicView } from './train-cinematic-view.js';
+import {createContactShadows} from './contact-shadows.js';
 
 export function createWorldView(scene) {
   const art=createArtMaterials(),materials=art.palette;
+  createContactShadows(scene,STATIC_BOXES);
   let heldTorch=null,cinematic=null;
   const presentationUI=createPresentationUI();
   const signs=createSignView(scene,WORLD.areas,STATIC_BOXES,materials);
@@ -95,10 +97,10 @@ export function createWorldView(scene) {
     createClueMesh(clue){return signs.createClueMesh(clue);},
     createItemMesh(item){const model=createItemArt(item,materials);scene.add(model);return model;},
     enhanceScene(renderer,camera){
-      scene.fog=new THREE.FogExp2(0x1b2a2b,.019);
-      scene.background=new THREE.Color(0x162325);
+      scene.fog=new THREE.FogExp2(0x181c20,.012);
+      scene.background=new THREE.Color(0x10151b);
       renderer.outputColorSpace=THREE.SRGBColorSpace;
-      renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+      renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
       heldTorch=createHeldTorch(camera,materials);scene.add(camera);
     },
     sync(state) {

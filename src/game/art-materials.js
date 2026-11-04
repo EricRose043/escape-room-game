@@ -52,7 +52,10 @@ export function createArtMaterials(){
   function material(kind,color=0xffffff,worldScale=0){
     const key=`${kind}/${color}/${worldScale}`;
     if(materials.has(key))return materials.get(key);
-    const m=new THREE.MeshLambertMaterial({map:texture(kind),color});
+    const metal=kind==='metal',floor=kind==='tile';
+    const m=new THREE.MeshStandardMaterial({map:texture(kind),color,
+      roughness:metal?.43:floor?.62:.91,metalness:metal?.38:.015,
+      bumpMap:texture(kind),bumpScale:metal?.003:floor?.006:.008});
     if(worldScale){
       m.onBeforeCompile=shader=>{
         shader.vertexShader='varying vec3 vArtPosition; varying vec3 vArtNormal;\n'+shader.vertexShader;

@@ -83,7 +83,7 @@ const itemMeshes = new Map(ITEMS.map(item => [item.id,
     (item.minX + item.maxX) / 2, (item.minY + item.maxY) / 2, (item.minZ + item.maxZ) / 2,
     new THREE.MeshLambertMaterial({ color: item.color }))]));
 
-scene.add(new THREE.AmbientLight(0x8e9eae, 0.45));
+scene.add(new THREE.AmbientLight(0x9da7b4, 0.32));
 
 // 單盞手電筒，不開陰影或後製；照射範圍與 logic 共用設定。
 const torch = new THREE.SpotLight(0xffeed0, 18, BEAM.distance, BEAM.halfAngle, .4, 2);
